@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.0.0",
-    "actualizado": "2026-10-17",
-    "fase": "Modelo de datos completo (19 tablas, 28 relaciones, docs/echo_db.drawio) y reporte técnico de la base de datos entregado. Siguiente: dimensionamiento en Railway, definir framework (PEND-06) y diseñar las 17 vistas.",
+    "version": "1.1.0",
+    "actualizado": "2026-10-18",
+    "fase": "Modelo de datos y reporte técnico completos; stack, dimensionamiento, respaldos, accesibilidad y cierre del proyecto decididos (sin pendientes bloqueantes). Siguiente: inicializar NestJS + Prisma 7.10.1, primera migración y diseño de las 17 vistas.",
     "historial": [
       {
         "version": "0.1.0",
@@ -29,6 +29,11 @@
         "version": "1.0.0",
         "fecha": "2026-10-17",
         "cambio": "Reporte técnico (PostgreSQL 18, Prisma, Railway, roles, cifrado, índices, funciones, escalabilidad) y este grafo para Claude Code."
+      },
+      {
+        "version": "1.1.0",
+        "fecha": "2026-10-18",
+        "cambio": "PEND-01..10 resueltos: Next.js + NestJS (DEC-64), Prisma 7.10.1 fijado (DEC-65), Resend (DEC-66), grafo como fuente de verdad (DEC-67), LFPDPPP (DEC-68), respaldo manual cifrado (DEC-69), dimensionamiento Hobby con supuesto de 100 estudiantes (DEC-70), WCAG 2.2 AA (DEC-71), Railway Cron (DEC-63), Argon2id (DEC-72), cierre del proyecto (DEC-74), datos sensibles fuera de la app (DEC-75). Nuevos INV-22..26, OP-37/38, PEND-11..13."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -41,6 +46,8 @@
       "Para buscar un nodo usa Grep con su id (p. ej. \"DEC-19\" o \"TBL-INTENTO\") o el nombre de una tabla; no hace falta leer el archivo completo.",
       "Los nodos con estado «propuesto» o «pendiente» NO son definitivos: preguntar antes de asumir (ver «pregunta_abierta»).",
       "Nada de lo que esté en «fuera_de_alcance» se implementa sin aprobación.",
+      "No pidas ni leas el documento de requerimientos original: este grafo lo sustituye (DEC-67). Los nodos «requerimiento» con estado «parchado» o «descartado» ya no se implementan tal como decía el documento.",
+      "Las cifras de DEC-70 son estimaciones sobre un supuesto ilustrativo de 100 estudiantes; no las presentes como mediciones.",
       "Al tomar una decisión nueva, agregar el nodo y sus aristas, subir la versión, actualizar «actualizado» y registrar el cambio en «historial»."
     ],
     "convenciones_de_id": {
@@ -86,6 +93,7 @@
       "propuesto": "Recomendado, falta confirmación",
       "pendiente": "Sin decidir",
       "parchado": "Hueco resuelto o requerimiento modificado por una decisión",
+      "resuelto": "Pregunta ya contestada",
       "descartado": "No se usará",
       "fuera_de_alcance": "Excluido de la versión 1",
       "riesgo_aceptado": "Documentado y aceptado",
@@ -112,7 +120,8 @@
       "aplica_a": "decisión → tabla",
       "ejecutada_por": "operación → actor, o función → rol",
       "pertenece_a": "operación → módulo",
-      "regida_por": "operación → decisión",
+      "regida_por": "operación o pantalla → decisión",
+      "resuelta_por": "pregunta resuelta → decisión",
       "parte_de": "pantalla → módulo",
       "invoca": "pantalla → operación",
       "navega_a": "pantalla → pantalla (nota = disparador)",
@@ -126,20 +135,20 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 383,
-      "aristas": 954,
+      "nodos": 421,
+      "aristas": 1065,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
-        "restriccion": 10,
+        "restriccion": 12,
         "actor": 5,
-        "tecnologia": 22,
-        "decision": 63,
-        "invariante": 21,
+        "tecnologia": 29,
+        "decision": 75,
+        "invariante": 26,
         "requerimiento": 83,
-        "hueco": 30,
+        "hueco": 33,
         "modulo": 8,
-        "operacion": 36,
+        "operacion": 38,
         "consulta": 13,
         "pantalla": 17,
         "tabla": 19,
@@ -147,9 +156,9 @@
         "disparador": 2,
         "vista_bd": 2,
         "rol_bd": 5,
-        "fuera_de_alcance": 17,
-        "riesgo_aceptado": 8,
-        "pregunta_abierta": 10
+        "fuera_de_alcance": 20,
+        "riesgo_aceptado": 9,
+        "pregunta_abierta": 13
       }
     }
   },
@@ -178,12 +187,23 @@
         "documentos": {
           "grafo": "ai/context/grafo-conocimiento.json (este archivo)",
           "diagrama_er_oficial": "docs/echo_db.drawio (19 tablas, 28 relaciones)",
-          "reporte_tecnico_bd": "Reporte_Tecnico_BD_Echo.docx (entregado al profesor; fuera del repositorio)",
+          "reporte_tecnico_bd": "Reporte_Tecnico_BD_Echo.docx (fuera del repositorio), actualizado el 18/10 con Prisma 7.10.1, dimensionamiento estimado sobre el supuesto de 100 estudiantes, respaldos, datos sensibles y cierre del proyecto.",
           "decisiones_y_parches": "https://claude.ai/code/artifact/3abb8826-9ae1-4c4d-9c43-8f46a4689b06 (documento «Echo — Parches y decisiones de datos»)",
           "reporte_tecnico_editable": "https://claude.ai/code/artifact/549b6323-1a36-4fa3-8412-5a848cb1e772",
-          "requerimientos": "Documento de requerimientos de software de Echo (fuera del repositorio; contiene errores listados en PEND-10)",
+          "requerimientos": "Documento de requerimientos original (fuera del repositorio). NO se consulta para programar: este grafo es la fuente de verdad (DEC-67); los requerimientos están como nodos «requerimiento» con su estado y la decisión que los ajusta.",
           "diagrama_er_figma": "Diagrama inicial de 23 tablas en Figma: DESACTUALIZADO, no usar"
-        }
+        },
+        "stack": {
+          "frontend": "Next.js (React) + TypeScript",
+          "backend": "NestJS + TypeScript",
+          "orm": "Prisma 7.10.1 (versión exacta, sin ^)",
+          "base_de_datos": "PostgreSQL 18 en Railway",
+          "correo": "Resend",
+          "hosting": "Railway, plan Hobby"
+        },
+        "periodo_de_uso": "Pruebas de finales de octubre a principios de diciembre de 2026 (cierre del cuatrimestre); después se ejecuta el cierre del proyecto (DEC-74).",
+        "usuarios_supuestos": "Supuesto ilustrativo de 100 estudiantes; la prueba real puede ser de 5 a 10, incluidos estudiantes con discapacidad.",
+        "responsable_de_datos": "El equipo de desarrollo (no la universidad), bajo la LFPDPPP (DEC-68)."
       }
     },
     {
@@ -252,8 +272,8 @@
     {
       "id": "RES-04",
       "tipo": "restriccion",
-      "nombre": "Volumen pequeño",
-      "descripcion": "Varios grupos de la universidad: de cientos a pocos miles de estudiantes, 2 a 4 sesiones semanales de 20 a 45 minutos.",
+      "nombre": "Volumen muy pequeño",
+      "descripcion": "Supuesto ilustrativo de 100 estudiantes de la carrera (de distintos grados); la prueba real puede ser de 5 a 10. Uso estimado: 3 sesiones semanales de 30 minutos durante unas 6 semanas.",
       "estado": "decidido"
     },
     {
@@ -329,8 +349,8 @@
     {
       "id": "ACT-05",
       "tipo": "actor",
-      "nombre": "Servicio de correo (SMTP)",
-      "descripcion": "Envía enlaces de verificación, recuperación de contraseña y cambio de correo. Proveedor por definir (PEND-07).",
+      "nombre": "Resend",
+      "descripcion": "Servicio de envío de correos: enlaces de verificación, recuperación de contraseña y cambio de correo.",
       "estado": "decidido"
     },
     {
@@ -344,21 +364,21 @@
       "id": "TEC-PRISMA",
       "tipo": "tecnologia",
       "nombre": "Prisma ORM",
-      "descripcion": "ORM del backend: Prisma Client (conexión por DATABASE_URL) y Prisma Migrate (prisma migrate deploy). Lo que Prisma no modela (CHECK, índices parciales, GIN, funciones, disparadores, vistas, roles) se escribe en SQL dentro de las migraciones (--create-only). Versión: PEND-01.",
+      "descripcion": "ORM del backend, versión 7.10.1 fijada con versión exacta en package.json (prisma y @prisma/client). Prisma 7 declara soporte para PostgreSQL 18. Prisma Client usa DATABASE_URL con connection_limit=10; Prisma Migrate aplica migraciones con prisma migrate deploy. Lo que Prisma no modela (CHECK, índices parciales, GIN, funciones, disparadores, vistas, roles) va en SQL dentro de las migraciones (--create-only).",
       "estado": "decidido"
     },
     {
       "id": "TEC-NODE",
       "tipo": "tecnologia",
       "nombre": "Node.js + TypeScript",
-      "descripcion": "Implícito al usar Prisma. Framework web por definir (PEND-06).",
-      "estado": "propuesto"
+      "descripcion": "Entorno de ejecución del backend (NestJS) y del frontend (Next.js).",
+      "estado": "decidido"
     },
     {
       "id": "TEC-RAILWAY",
       "tipo": "tecnologia",
       "nombre": "Railway",
-      "descripcion": "Hosting de backend y base de datos; red privada postgres.railway.internal; respaldos (PITR y copias de volumen) según el plan; escalado vertical; permite convertir a clúster HA o agregar PgBouncer sin migrar datos.",
+      "descripcion": "Hosting de backend, frontend y base de datos en un mismo proyecto, plan Hobby (5 USD/mes con 5 USD de consumo incluidos). Red privada postgres.railway.internal; respaldo diario del volumen (6 días); servicio Cron para la limpieza diaria; escalado vertical.",
       "estado": "decidido"
     },
     {
@@ -372,7 +392,7 @@
       "id": "TEC-ARGON2",
       "tipo": "tecnologia",
       "nombre": "Argon2id",
-      "descripcion": "Hash de contraseñas con sal, calculado en el backend (RNF-03). bcrypt solo como alternativa si el entorno lo complica. Parámetros: PEND-09.",
+      "descripcion": "Hash de contraseñas en el backend con el paquete argon2 de npm: argon2id, memoryCost 19456 KiB (19 MiB), timeCost 2, parallelism 1 (mínimo recomendado por OWASP). Hash estimado: ~30 ms. Se guarda en formato PHC; needsRehash permite subir parámetros sin migrar.",
       "estado": "decidido"
     },
     {
@@ -399,9 +419,9 @@
     {
       "id": "TEC-SMTP",
       "tipo": "tecnologia",
-      "nombre": "Correo saliente (SMTP)",
-      "descripcion": "Envío de enlaces. Proveedor por definir (PEND-07).",
-      "estado": "propuesto"
+      "nombre": "Correo saliente",
+      "descripcion": "Se usa Resend (TEC-RESEND).",
+      "estado": "decidido"
     },
     {
       "id": "TEC-JSON",
@@ -413,9 +433,9 @@
     {
       "id": "TEC-WEB",
       "tipo": "tecnologia",
-      "nombre": "HTML5, CSS3 y JavaScript",
-      "descripcion": "Frontend web responsivo según la sección 11.3 de los requerimientos. Framework por definir (PEND-06).",
-      "estado": "propuesto"
+      "nombre": "HTML5, CSS3 y JavaScript (vía Next.js)",
+      "descripcion": "El frontend se construye con Next.js (TEC-NEXT); HTML, CSS y JS son su salida. Debe cumplir WCAG 2.2 AA (DEC-71).",
+      "estado": "decidido"
     },
     {
       "id": "TEC-MARKDOWN",
@@ -435,7 +455,7 @@
       "id": "TEC-FIGMA",
       "tipo": "tecnologia",
       "nombre": "Figma",
-      "descripcion": "Se usó para un primer diagrama ER (23 tablas, desactualizado). Diseño de vistas por definir.",
+      "descripcion": "Se usó para un primer diagrama ER (23 tablas, desactualizado). No se usa como fuente del modelo.",
       "estado": "propuesto"
     },
     {
@@ -770,10 +790,11 @@
       "id": "DEC-28",
       "tipo": "decision",
       "nombre": "Aviso de privacidad como página fija",
-      "descripcion": "Basta el consentimiento tácito: el aviso es una página fija enlazada en el registro («Al registrarte aceptas el aviso de privacidad») y en el pie de página. No se guarda qué versión aceptó cada alumno. Si algún día se usan los datos para otro fin, habrá que pedir consentimiento de nuevo.",
+      "descripcion": "Basta el consentimiento tácito (LFPDPPP): el aviso es una página fija enlazada en el registro («Al registrarte aceptas el aviso de privacidad») y en el pie de página. Nombra al equipo de desarrollo como responsable e incluye un correo de contacto para solicitudes ARCO (PEND-12). No se guarda qué versión aceptó cada alumno.",
       "estado": "decidido",
       "detalles": {
-        "origen": "P-24 (revisado el 17/10); elimina las tablas aviso_privacidad y aceptacion_aviso, la ventana V-05 y la operación O-13"
+        "origen": "P-24 (revisado el 17/10); elimina las tablas aviso_privacidad y aceptacion_aviso, la ventana V-05 y la operación O-13",
+        "ley": "LFPDPPP (DEC-68)"
       }
     },
     {
@@ -829,9 +850,9 @@
     {
       "id": "DEC-34",
       "tipo": "decision",
-      "nombre": "Respaldos",
-      "descripcion": "Respaldo completo diario con 30 días de retención, usando los respaldos de Railway. Falta definir la pérdida máxima aceptable (PEND-03): con 24 h basta el diario; con menos se necesita recuperación a un punto en el tiempo.",
-      "estado": "propuesto",
+      "nombre": "Respaldos: Railway diario + manual cifrado",
+      "descripcion": "Respaldo diario automático del volumen en Railway (se conserva 6 días). Sin respaldo semanal. Además, respaldo manual cifrado (DEC-69). Pérdida máxima aceptada: lo hecho desde el último respaldo; los alumnos rehacen lo de ese periodo.",
+      "estado": "decidido",
       "detalles": {
         "origen": "P-30; RNF-12, RNF-13"
       }
@@ -875,7 +896,7 @@
       "id": "DEC-40",
       "tipo": "decision",
       "nombre": "PostgreSQL 18",
-      "descripcion": "Por uuidv7() nativo (índices ordenados por fecha). La versión mayor se fija en la imagen para permitir actualizaciones en sitio. Si la versión de Prisma no soporta 18, se usa la 17 y los UUID v7 se generan en la aplicación (PEND-01).",
+      "descripcion": "Por uuidv7() nativo (índices ordenados por fecha). Confirmado: Prisma 7.10.1 soporta PostgreSQL 18. La versión mayor se fija en la imagen de Railway.",
       "estado": "decidido"
     },
     {
@@ -889,7 +910,7 @@
       "id": "DEC-42",
       "tipo": "decision",
       "nombre": "Instancia única en Railway, sin réplicas ni clúster",
-      "descripcion": "Justificación: volumen bajo (RES-04); 98% de disponibilidad tolera ~14.6 h sin servicio al mes y una instancia se reinicia en minutos (RES-06); un clúster multiplica costo y operación; las réplicas no aportan y pueden ir atrasadas (un alumno vería bloqueada una lección recién completada, contra RF-PROG-04); Railway permite convertir a clúster HA o agregar PgBouncer sin migrar datos. Se reconsidera si se exige más disponibilidad, hay caídas reales > 30 min o Echo sale de la universidad.",
+      "descripcion": "Justificación: volumen muy pequeño (RES-04: supuesto de 100 estudiantes, real de 5 a 10, hasta diciembre); 98% de disponibilidad tolera ~14.6 h sin servicio al mes y una instancia se reinicia en minutos (RES-06); un clúster multiplica costo y operación; las réplicas no aportan y pueden ir atrasadas (un alumno vería bloqueada una lección recién completada, contra RF-PROG-04); Railway permite convertir a clúster HA o agregar PgBouncer sin migrar datos. Se reconsidera si se exige más disponibilidad, hay caídas reales > 30 min o Echo sale de la universidad.",
       "estado": "decidido",
       "detalles": {
         "descartados": [
@@ -958,7 +979,7 @@
       "id": "DEC-51",
       "tipo": "decision",
       "nombre": "Escalabilidad",
-      "descripcion": "Escalado vertical en Railway como primera opción. Sin particionamiento, sin sharding, sin Redis y sin PgBouncer en la versión 1. Primera tabla a particionar si crece: intento y sus respuestas, por rango de fecha (ciclo escolar), si respuesta_opcion supera ~100 millones de filas. Se vigilan CPU, memoria, disco y conexiones con las métricas de Railway y se revisa tras el primer ciclo.",
+      "descripcion": "Escalado vertical en Railway como primera opción; para la prueba bastan 512 MB por servicio. Sin particionamiento, sharding, Redis ni PgBouncer. Particionar intento y sus respuestas solo si Echo siguiera varios ciclos con miles de estudiantes y respuesta_opcion superara decenas de millones de filas. Se revisan las métricas de Railway tras la primera semana de pruebas.",
       "estado": "decidido"
     },
     {
@@ -1047,9 +1068,10 @@
     {
       "id": "DEC-63",
       "tipo": "decision",
-      "nombre": "Limpieza diaria programada",
-      "descripcion": "fn_limpieza_diaria se ejecuta una vez al día desde un proceso programado del backend o un cron de Railway (mecanismo por confirmar, PEND-08).",
-      "estado": "propuesto"
+      "nombre": "Limpieza diaria con Railway Cron",
+      "descripcion": "Servicio Cron de Railway, del mismo repositorio que el backend, con horario «0 9 * * *» (09:00 UTC = 03:00 en America/Mexico_City, sin horario de verano). Ejecuta un script que se conecta como echo_app, llama a SELECT fn_limpieza_diaria() y termina siempre (también con error), porque Railway salta la ejecución si la anterior sigue corriendo. No se usa @nestjs/schedule: dependería del proceso web y correría dos veces con dos instancias.",
+      "estado": "decidido",
+      "origen": "PEND-08 (18/10)"
     },
     {
       "id": "INV-01",
@@ -3603,7 +3625,7 @@
       "id": "SCR-05",
       "tipo": "pantalla",
       "nombre": "Aviso de privacidad (página fija)",
-      "descripcion": "Texto del aviso. Antes era una ventana de aceptación (eliminada, DEC-28).",
+      "descripcion": "Página fija con el aviso de privacidad: el equipo como responsable (LFPDPPP), finalidades, datos recabados (nombre, apellidos, correo), derechos ARCO y correo de contacto (PEND-12).",
       "estado": "decidido",
       "detalles": {
         "origen": "V-05",
@@ -3622,7 +3644,7 @@
         "origen": "V-06",
         "estados_a_disenar": "Primer ingreso con 0%; módulo bloqueado con su requisito; búsqueda sin resultados",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3635,7 +3657,7 @@
         "origen": "V-07",
         "estados_a_disenar": "Curso bloqueado con su requisito",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3648,7 +3670,7 @@
         "origen": "V-08",
         "estados_a_disenar": "Lección «nueva» en curso completado; examen bloqueado, en espera o aprobado",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3661,7 +3683,7 @@
         "origen": "V-09",
         "estados_a_disenar": "Retomar en la última sección vista; lección ya terminada",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3672,9 +3694,9 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-10",
-        "estados_a_disenar": "Preguntas sin responder; etiqueta de decisión en casos; reintento",
+        "estados_a_disenar": "Preguntas sin responder; etiqueta de decisión en casos; reintento; relación de columnas operable sin arrastrar (lista desplegable o clics)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3687,7 +3709,7 @@
         "origen": "V-11",
         "estados_a_disenar": "Disponible, intento a medias («Continuar»), en espera con cuenta regresiva, aprobado",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3698,9 +3720,9 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-12",
-        "estados_a_disenar": "Sin conexión (respuestas a salvo hasta el último guardado); preguntas pendientes al enviar",
+        "estados_a_disenar": "Sin conexión (respuestas a salvo hasta el último guardado); preguntas pendientes al enviar; relación de columnas operable sin arrastrar (lista desplegable o clics)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3713,7 +3735,7 @@
         "origen": "V-13",
         "estados_a_disenar": "Reprobado con lecciones a repasar y espera; aprobado con insignia nueva",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3726,7 +3748,7 @@
         "origen": "V-14",
         "estados_a_disenar": "Sin avance todavía",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3739,7 +3761,7 @@
         "origen": "V-15",
         "estados_a_disenar": "Sin resultados; filtros sin coincidencias",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -3752,7 +3774,7 @@
         "origen": "V-16",
         "estados_a_disenar": "Cuenta de Google (sin contraseña, correo no editable); confirmación de eliminar",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
       }
     },
     {
@@ -4980,78 +5002,395 @@
       "id": "RSG-08",
       "tipo": "riesgo_aceptado",
       "nombre": "Pérdida de datos hasta el último respaldo",
-      "descripcion": "Mientras no se defina el RPO (PEND-03) se puede perder hasta un día de datos.",
+      "descripcion": "En el peor caso se pierde lo hecho desde el último respaldo (diario de Railway o manual); los alumnos lo rehacen.",
       "estado": "riesgo_aceptado"
     },
     {
       "id": "PEND-01",
       "tipo": "pregunta_abierta",
       "nombre": "Versión de Prisma y soporte de PostgreSQL 18",
-      "descripcion": "Confirmar que la versión de Prisma declare soporte para PostgreSQL 18; si no, imagen 17 y UUID v7 desde la aplicación. Falta escribir la versión en el reporte técnico (tabla 1.2).",
-      "estado": "pendiente"
+      "descripcion": "Confirmar que la versión de Prisma declare soporte para PostgreSQL 18; si no, imagen 17 y UUID v7 desde la aplicación. Falta escribir la versión en el reporte técnico (tabla 1.2). RESUELTO el 18/10: Prisma 7.10.1 fijado; soporta PostgreSQL 18.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-02",
       "tipo": "pregunta_abierta",
       "nombre": "¿LFPDPPP o ley para sujetos obligados?",
-      "descripcion": "Si Echo lo opera la UP Chiapas (institución pública), probablemente aplica la ley de protección de datos para sujetos obligados (general o de Chiapas). Confirmar con el área jurídica; puede cambiar el aviso de privacidad y RN-14.",
-      "estado": "pendiente"
+      "descripcion": "Si Echo lo opera la UP Chiapas (institución pública), probablemente aplica la ley de protección de datos para sujetos obligados (general o de Chiapas). Confirmar con el área jurídica; puede cambiar el aviso de privacidad y RN-14. RESUELTO el 18/10: LFPDPPP; el equipo es el responsable.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-03",
       "tipo": "pregunta_abierta",
       "nombre": "Pérdida máxima aceptable de datos (RPO)",
-      "descripcion": "¿Cuántas horas de datos es aceptable perder? Define si basta el respaldo diario o se necesita PITR.",
-      "estado": "pendiente"
+      "descripcion": "¿Cuántas horas de datos es aceptable perder? Define si basta el respaldo diario o se necesita PITR. RESUELTO el 18/10: Respaldo diario de Railway + respaldo manual cifrado con 8 reglas.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-04",
       "tipo": "pregunta_abierta",
       "nombre": "Dimensionamiento en Railway",
-      "descripcion": "CPU, memoria, disco y plan. Lo define el documento de despliegue que el equipo compartirá después.",
-      "estado": "pendiente"
+      "descripcion": "CPU, memoria, disco y plan. Lo define el documento de despliegue que el equipo compartirá después. RESUELTO el 18/10: Plan Hobby, 512 MB por servicio, ~6.50 USD/mes.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-05",
       "tipo": "pregunta_abierta",
       "nombre": "Nivel de accesibilidad",
-      "descripcion": "Propuesto WCAG 2.1 AA como RNF nuevo; falta confirmarlo.",
-      "estado": "pendiente"
+      "descripcion": "Propuesto WCAG 2.1 AA como RNF nuevo; falta confirmarlo. RESUELTO el 18/10: WCAG 2.2 AA.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-06",
       "tipo": "pregunta_abierta",
       "nombre": "Framework de backend y frontend",
-      "descripcion": "Prisma implica Node.js + TypeScript; el framework web (backend y frontend) no se ha decidido.",
-      "estado": "pendiente"
+      "descripcion": "Prisma implica Node.js + TypeScript; el framework web (backend y frontend) no se ha decidido. RESUELTO el 18/10: Next.js + NestJS.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-07",
       "tipo": "pregunta_abierta",
       "nombre": "Proveedor de correo",
-      "descripcion": "Servicio SMTP para verificación, recuperación y cambio de correo.",
-      "estado": "pendiente"
+      "descripcion": "Servicio SMTP para verificación, recuperación y cambio de correo. RESUELTO el 18/10: Resend.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-08",
       "tipo": "pregunta_abierta",
       "nombre": "Mecanismo de la limpieza diaria",
-      "descripcion": "Cron de Railway o tarea programada del backend.",
-      "estado": "pendiente"
+      "descripcion": "Cron de Railway o tarea programada del backend. RESUELTO el 18/10: Railway Cron a las 09:00 UTC.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-09",
       "tipo": "pregunta_abierta",
       "nombre": "Parámetros de Argon2id",
-      "descripcion": "Memoria, iteraciones y paralelismo según los recursos de la instancia de Railway; librería argon2 de npm propuesta.",
-      "estado": "pendiente"
+      "descripcion": "Memoria, iteraciones y paralelismo según los recursos de la instancia de Railway; librería argon2 de npm propuesta. RESUELTO el 18/10: argon2id m=19456, t=2, p=1.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-10",
       "tipo": "pregunta_abierta",
       "nombre": "Corregir el documento de requerimientos",
-      "descripcion": "24 cambios pendientes: «Codex» → «Echo»; renumerar sección 9 y agregar 11.1; referencias perdidas en 11.3; glosario; 7.2 multimedia → imágenes; jerarquía; desbloqueo lineal; lección leída; fórmula RN-15; RN-07/RNF-17; casos en lecciones; quitar «completar información»; RF-EVAL-01; eliminar RF-EVAL-04 y 9.2.3; RF-EVAL-06/RN-05; retomar intento y mezcla; RF-RETRO; nombre en tres campos y verificación; RN-08/RN-14; sesión de 30 min; perfil, bloqueo y aviso; historial con anonimización; UTC; RNF de accesibilidad y respaldos.",
+      "descripcion": "24 cambios pendientes: «Codex» → «Echo»; renumerar sección 9 y agregar 11.1; referencias perdidas en 11.3; glosario; 7.2 multimedia → imágenes; jerarquía; desbloqueo lineal; lección leída; fórmula RN-15; RN-07/RNF-17; casos en lecciones; quitar «completar información»; RF-EVAL-01; eliminar RF-EVAL-04 y 9.2.3; RF-EVAL-06/RN-05; retomar intento y mezcla; RF-RETRO; nombre en tres campos y verificación; RN-08/RN-14; sesión de 30 min; perfil, bloqueo y aviso; historial con anonimización; UTC; RNF de accesibilidad y respaldos. RESUELTO el 18/10: El grafo sustituye al documento de requerimientos para programar.",
+      "estado": "resuelto"
+    },
+    {
+      "id": "RES-11",
+      "tipo": "restriccion",
+      "nombre": "Fin del periodo: principios de diciembre de 2026",
+      "descripcion": "El cuatrimestre termina a principios de diciembre; para entonces el proyecto ya está calificado. No se diseña para uso posterior.",
+      "estado": "decidido"
+    },
+    {
+      "id": "RES-12",
+      "tipo": "restriccion",
+      "nombre": "Pruebas con estudiantes con discapacidad",
+      "descripcion": "El profesor pide probar Echo con un grupo reducido que incluye estudiantes con discapacidad, para validar estándares de accesibilidad y la legislación en TI.",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-NEXT",
+      "tipo": "tecnologia",
+      "nombre": "Next.js",
+      "descripcion": "Framework del frontend (React + TypeScript). Servicio propio en Railway (512 MB).",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-NEST",
+      "tipo": "tecnologia",
+      "nombre": "NestJS",
+      "descripcion": "Framework del backend / API REST (TypeScript) con Prisma. Servicio propio en Railway (512 MB).",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-RESEND",
+      "tipo": "tecnologia",
+      "nombre": "Resend",
+      "descripcion": "API de envío de correo transaccional.",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-PRISMA8",
+      "tipo": "tecnologia",
+      "nombre": "Prisma 8",
+      "descripcion": "Release candidate al 18/10/2026 y causó problemas al equipo en un proyecto anterior. No se usa sin aprobación explícita.",
+      "estado": "descartado"
+    },
+    {
+      "id": "TEC-RAILWAY-CRON",
+      "tipo": "tecnologia",
+      "nombre": "Railway Cron",
+      "descripcion": "Servicio que ejecuta un comando con un horario crontab en UTC (mínimo cada 5 minutos) y debe terminar al acabar.",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-A11Y",
+      "tipo": "tecnologia",
+      "nombre": "axe / Lighthouse + NVDA",
+      "descripcion": "Revisión automática de accesibilidad y prueba manual con lector de pantalla y teclado.",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-PGDUMP",
+      "tipo": "tecnologia",
+      "nombre": "pg_dump 18 + 7-Zip (AES-256)",
+      "descripcion": "Respaldo manual en formato custom, cifrado con contraseña antes de guardarse.",
+      "estado": "decidido"
+    },
+    {
+      "id": "DEC-64",
+      "tipo": "decision",
+      "nombre": "Stack: Next.js + NestJS",
+      "descripcion": "Frontend con Next.js (React + TypeScript) y backend con NestJS (TypeScript) como API REST con JSON. Son servicios separados en Railway; solo el backend se conecta a la base.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-06 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-65",
+      "tipo": "decision",
+      "nombre": "Prisma 7.10.1 fijado",
+      "descripcion": "package.json declara \"prisma\": \"7.10.1\" y \"@prisma/client\": \"7.10.1\" sin ^ ni ~. Nunca usar «npx prisma» sin la versión instalada en el proyecto: descargaría la última, y Prisma 8 se lanza en octubre de 2026. Subir de versión requiere aprobación del equipo.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-01 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-66",
+      "tipo": "decision",
+      "nombre": "Correo con Resend",
+      "descripcion": "Los correos de verificación, recuperación y cambio de correo se envían con Resend desde el backend. La llave de API vive en variables de entorno de Railway.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-07 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-67",
+      "tipo": "decision",
+      "nombre": "El grafo es la fuente de verdad",
+      "descripcion": "Claude Code no consulta el documento de requerimientos original: todo lo vigente está en este grafo (requerimientos con su estado, decisiones, tablas, operaciones y pantallas). Si algo falta, se pregunta y se agrega al grafo.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-10 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-68",
+      "tipo": "decision",
+      "nombre": "Ley aplicable: LFPDPPP",
+      "descripcion": "El equipo opera Echo y es el responsable de los datos personales; aplica la LFPDPPP. Si la universidad adoptara el sistema, se revisa (aplicaría la ley para sujetos obligados). En la base de datos no cambia nada.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-02 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-69",
+      "tipo": "decision",
+      "nombre": "Respaldo manual cifrado",
+      "descripcion": "pg_dump 18 (formato custom) con credenciales de echo_migracion. Reglas: (1) se cifra al crearse (7-Zip AES-256 con contraseña); (2) se guarda fuera del repositorio, en carpeta ignorada por .gitignore; (3) solo sirve para restaurar producción, nunca se carga en desarrollo; (4) se conservan las últimas 7 copias; (5) lo hace una persona designada; (6) se toma antes de cada migración, antes de cada carga de contenido y una vez por semana; (7) se prueba restaurar al menos una vez en una base local vacía; (8) la versión de pg_dump debe ser la 18. Tamaño estimado: ~5 MB comprimido con 100 estudiantes.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-03 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-70",
+      "tipo": "decision",
+      "nombre": "Dimensionamiento en Railway",
+      "descripcion": "Plan Hobby. Tres servicios (PostgreSQL 18, backend NestJS, frontend Next.js) con límite de 512 MB de RAM y 1 vCPU cada uno, más el Cron diario. Prisma con connection_limit=10. Costo estimado ~6.50 USD/mes (~13 USD en el periodo); la RAM es ~80% del costo y no depende del número de estudiantes.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-04 (18/10)",
+        "estimaciones_supuesto_100": {
+          "aviso": "Estimaciones aproximadas sobre el supuesto ilustrativo de 100 estudiantes en el peor caso (100% del contenido, 2 intentos por cuestionario). Confirmar con las métricas de Railway tras la primera semana (PEND-11).",
+          "base_de_datos": "51 MB en total: ~43 MB de tablas e índices + ~8 MB del catálogo de PostgreSQL; contenido fijo ~4.7 MB; ~0.4 MB por estudiante; ~16 MB con 10 estudiantes",
+          "filas": "intento 26,000; respuesta_opcion 138,000; respuesta_pareja 72,000; progreso_leccion 7,500",
+          "respaldo_comprimido": "~5 MB",
+          "carga_pico": "30 estudiantes simultáneos ≈ 2 peticiones/s; peor caso 100 simultáneos ≈ 7 peticiones/s (1 petición cada 15 s por estudiante)",
+          "tiempos_de_consulta": "validar sesión ~0.06 ms; avance de un estudiante ~2 ms; historial ~0.6 ms; búsqueda <0.1 ms",
+          "ram": "PostgreSQL ~0.18 GB, backend ~0.15 GB, frontend ~0.18 GB (≈0.51 GB, referencia de Railway para servicios comparables)",
+          "costo_mensual": "RAM $5.10 + CPU $1.20 (0.06 vCPU) + volumen $0.03 + salida $0.09 ≈ $6.42 de consumo; con Hobby ≈ $6.50 USD"
+        }
+      }
+    },
+    {
+      "id": "DEC-71",
+      "tipo": "decision",
+      "nombre": "Accesibilidad WCAG 2.2 nivel AA",
+      "descripcion": "Toda pantalla cumple WCAG 2.2 AA: contraste ≥ 4.5:1; navegación completa con teclado y foco visible; el estado (bloqueado, disponible, completado) se indica con ícono y texto, nunca solo con color; la relación de columnas NO depende de arrastrar (lista desplegable o clics, criterio 2.5.7); etiquetas en todos los campos y errores anunciados a lectores de pantalla (aria-live); objetivos de al menos 24×24 px; lang=\"es\"; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado». Pruebas: axe o Lighthouse automáticos + prueba manual con teclado y NVDA en las pantallas principales.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-05 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-72",
+      "tipo": "decision",
+      "nombre": "Parámetros de Argon2id",
+      "descripcion": "argon2id con memoryCost 19456 KiB, timeCost 2, parallelism 1 (OWASP). Paquete argon2 de npm con su grupo de 4 hilos: como máximo 4 hashes simultáneos (~76 MB), cabe en 512 MB. Tiempo estimado ~30 ms por hash; medir en Railway al desplegar (PEND-11). Si un hash tardara menos de 100 ms se puede subir la memoria; needsRehash actualiza los hashes al iniciar sesión.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "PEND-09 (18/10)"
+      }
+    },
+    {
+      "id": "DEC-73",
+      "tipo": "decision",
+      "nombre": "Respaldos sin copia semanal de Railway",
+      "descripcion": "Con el volumen de la prueba basta el respaldo diario de Railway más el manual; el semanal no se activa.",
+      "estado": "decidido"
+    },
+    {
+      "id": "DEC-74",
+      "tipo": "decision",
+      "nombre": "Cierre del proyecto",
+      "descripcion": "Después de recibir las calificaciones: (1) se anonimiza o elimina la base de datos; (2) se detienen los servicios de Railway; (3) se borran los respaldos de Railway y todas las copias manuales cifradas. La LFPDPPP pide no conservar datos personales sin una finalidad vigente y Railway seguiría cobrando.",
+      "estado": "decidido"
+    },
+    {
+      "id": "DEC-75",
+      "tipo": "decision",
+      "nombre": "Datos sensibles fuera de la app",
+      "descripcion": "Echo no guarda ningún dato de salud ni de discapacidad (datos sensibles para la LFPDPPP). Las observaciones de las pruebas con estudiantes con discapacidad se registran fuera de la app, con consentimiento expreso y por escrito de cada participante, identificadores anónimos («Participante 3, usa lector de pantalla») y borrado de notas y grabaciones al terminar la evaluación.",
+      "estado": "decidido"
+    },
+    {
+      "id": "INV-22",
+      "tipo": "invariante",
+      "nombre": "Sin datos de salud ni discapacidad",
+      "descripcion": "Ningún campo, tabla, log ni analítica guarda o infiere salud o discapacidad de un estudiante.",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "INV-23",
+      "tipo": "invariante",
+      "nombre": "Prisma 7.10.1 exacto",
+      "descripcion": "No cambiar la versión de prisma ni @prisma/client, no usar ^/~ y no ejecutar «npx prisma@latest». Prisma 8 está prohibido sin aprobación.",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "INV-24",
+      "tipo": "invariante",
+      "nombre": "Respaldos cifrados y fuera del repositorio",
+      "descripcion": "Ningún volcado de la base (.dump, .sql, .7z) se versiona ni se carga en desarrollo; la carpeta de respaldos va en .gitignore.",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "INV-25",
+      "tipo": "invariante",
+      "nombre": "Accesibilidad WCAG 2.2 AA",
+      "descripcion": "Ninguna pantalla se da por terminada sin teclado, foco visible, contraste, etiquetas y alternativa a arrastrar.",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "INV-26",
+      "tipo": "invariante",
+      "nombre": "Solo el backend toca la base",
+      "descripcion": "El frontend Next.js nunca se conecta a PostgreSQL ni usa Prisma; todo pasa por la API de NestJS.",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "OP-37",
+      "tipo": "operacion",
+      "nombre": "Respaldo manual cifrado",
+      "descripcion": "pg_dump 18 + cifrado 7-Zip, siguiendo las 8 reglas de DEC-69.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva (18/10)",
+        "tipo_acceso": "L",
+        "frecuencia": "Antes de cada migración y carga de contenido, y semanal",
+        "recibe": "Credenciales de echo_migracion",
+        "devuelve": "Archivo .7z cifrado fuera del repositorio"
+      }
+    },
+    {
+      "id": "OP-38",
+      "tipo": "operacion",
+      "nombre": "Cierre del proyecto",
+      "descripcion": "Anonimizar o eliminar la base, detener servicios y borrar respaldos y copias (DEC-74).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva (18/10)",
+        "tipo_acceso": "E",
+        "frecuencia": "Una vez, tras las calificaciones (diciembre de 2026)",
+        "recibe": "Aprobación del equipo",
+        "devuelve": "—"
+      }
+    },
+    {
+      "id": "PEND-11",
+      "tipo": "pregunta_abierta",
+      "nombre": "Confirmar recursos reales en Railway",
+      "descripcion": "Tras la primera semana de pruebas: RAM real de cada servicio, tiempo de un hash Argon2id y tamaño de la base, contra las estimaciones de DEC-70 y DEC-72.",
       "estado": "pendiente"
+    },
+    {
+      "id": "PEND-12",
+      "tipo": "pregunta_abierta",
+      "nombre": "Correo de contacto ARCO",
+      "descripcion": "Qué correo del equipo aparece en el aviso de privacidad para solicitudes ARCO.",
+      "estado": "pendiente"
+    },
+    {
+      "id": "PEND-13",
+      "tipo": "pregunta_abierta",
+      "nombre": "Formato de consentimiento para las pruebas",
+      "descripcion": "Quién redacta el consentimiento expreso por escrito para los participantes con discapacidad y dónde se resguardan las notas hasta borrarlas.",
+      "estado": "pendiente"
+    },
+    {
+      "id": "HUE-31",
+      "tipo": "hueco",
+      "nombre": "Dimensionamiento para miles de estudiantes",
+      "descripcion": "El modelo se dimensionó para miles cuando la prueba real es de 5 a 100 estudiantes hasta diciembre.",
+      "estado": "parchado"
+    },
+    {
+      "id": "HUE-32",
+      "tipo": "hueco",
+      "nombre": "Datos sensibles en las pruebas de accesibilidad",
+      "descripcion": "Probar con estudiantes con discapacidad implica datos sensibles que requieren consentimiento expreso.",
+      "estado": "parchado"
+    },
+    {
+      "id": "HUE-33",
+      "tipo": "hueco",
+      "nombre": "Sin plan de cierre",
+      "descripcion": "No se había definido qué pasa con los datos y los servicios al terminar el proyecto.",
+      "estado": "parchado"
+    },
+    {
+      "id": "RSG-09",
+      "tipo": "riesgo_aceptado",
+      "nombre": "RAM estimada, no medida en Railway",
+      "descripcion": "La RAM de NestJS y Next.js se tomó de una referencia de Railway; se confirma tras la primera semana (PEND-11). Con 512 MB de límite hay margen.",
+      "estado": "riesgo_aceptado"
+    },
+    {
+      "id": "FDA-18",
+      "tipo": "fuera_de_alcance",
+      "nombre": "Datos de salud o discapacidad en la aplicación",
+      "descripcion": "Excluido de la versión 1; no se implementa sin aprobación.",
+      "estado": "fuera_de_alcance"
+    },
+    {
+      "id": "FDA-19",
+      "tipo": "fuera_de_alcance",
+      "nombre": "Respaldo semanal de Railway",
+      "descripcion": "Excluido de la versión 1; no se implementa sin aprobación.",
+      "estado": "fuera_de_alcance"
+    },
+    {
+      "id": "FDA-20",
+      "tipo": "fuera_de_alcance",
+      "nombre": "Operación después de diciembre de 2026",
+      "descripcion": "Excluido de la versión 1; no se implementa sin aprobación.",
+      "estado": "fuera_de_alcance"
     }
   ],
   "aristas": [
@@ -9900,6 +10239,561 @@
       "origen": "DEC-32",
       "destino": "TBL-LECCION",
       "relacion": "aplica_a"
+    },
+    {
+      "origen": "PRY-01",
+      "destino": "RES-11",
+      "relacion": "limitado_por"
+    },
+    {
+      "origen": "PRY-01",
+      "destino": "RES-12",
+      "relacion": "limitado_por"
+    },
+    {
+      "origen": "DEC-41",
+      "destino": "TEC-NEST",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-63",
+      "destino": "TEC-RAILWAY-CRON",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-64",
+      "destino": "TEC-NEXT",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-64",
+      "destino": "TEC-NEST",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-64",
+      "destino": "TEC-NODE",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-64",
+      "destino": "TEC-JSON",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-65",
+      "destino": "TEC-PRISMA",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-65",
+      "destino": "DEC-40",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-65",
+      "destino": "DEC-41",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-65",
+      "destino": "TEC-PRISMA8",
+      "relacion": "excluye_tecnologia"
+    },
+    {
+      "origen": "DEC-66",
+      "destino": "TEC-RESEND",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-67",
+      "destino": "DEC-62",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-69",
+      "destino": "TEC-PGDUMP",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-69",
+      "destino": "DEC-34",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-69",
+      "destino": "DEC-48",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-70",
+      "destino": "TEC-RAILWAY",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-70",
+      "destino": "DEC-42",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-71",
+      "destino": "TEC-A11Y",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-71",
+      "destino": "DEC-31",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-71",
+      "destino": "DEC-04",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-72",
+      "destino": "TEC-ARGON2",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-72",
+      "destino": "DEC-47",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-73",
+      "destino": "DEC-34",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-74",
+      "destino": "DEC-68",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-74",
+      "destino": "DEC-69",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-75",
+      "destino": "DEC-59",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-75",
+      "destino": "DEC-68",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "RES-12",
+      "destino": "DEC-71",
+      "relacion": "motiva"
+    },
+    {
+      "origen": "RES-12",
+      "destino": "DEC-75",
+      "relacion": "motiva"
+    },
+    {
+      "origen": "RES-11",
+      "destino": "DEC-74",
+      "relacion": "motiva"
+    },
+    {
+      "origen": "RES-11",
+      "destino": "DEC-70",
+      "relacion": "motiva"
+    },
+    {
+      "origen": "RES-04",
+      "destino": "DEC-70",
+      "relacion": "motiva"
+    },
+    {
+      "origen": "DEC-71",
+      "destino": "OBJ-GEN",
+      "relacion": "cumple"
+    },
+    {
+      "origen": "INV-22",
+      "destino": "DEC-75",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "INV-23",
+      "destino": "DEC-65",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "INV-24",
+      "destino": "DEC-69",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "INV-25",
+      "destino": "DEC-71",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "INV-26",
+      "destino": "DEC-64",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "SCR-01",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-03",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-04",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-05",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-06",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-07",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-08",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-09",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-10",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-11",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-12",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-13",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-14",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-15",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-16",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-17",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-05",
+      "destino": "DEC-68",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-33",
+      "destino": "TEC-RESEND",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-33",
+      "destino": "DEC-66",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-34",
+      "destino": "TEC-RAILWAY-CRON",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "MOD-CARGA",
+      "relacion": "pertenece_a"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "ACT-03",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-SESION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-TOKEN-CORREO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-MODULO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-CURSO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-SECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-IMAGEN",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-FUNDAMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-CUESTIONARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-PREGUNTA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-INTENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-RESPUESTA-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-RESPUESTA-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-PROGRESO-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TBL-INSIGNIA-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "DEC-69",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "TEC-PGDUMP",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-38",
+      "destino": "MOD-CARGA",
+      "relacion": "pertenece_a"
+    },
+    {
+      "origen": "OP-38",
+      "destino": "ACT-03",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "OP-38",
+      "destino": "DEC-74",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "PEND-01",
+      "destino": "DEC-65",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-02",
+      "destino": "DEC-68",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-03",
+      "destino": "DEC-69",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-04",
+      "destino": "DEC-70",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-05",
+      "destino": "DEC-71",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-06",
+      "destino": "DEC-64",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-07",
+      "destino": "DEC-66",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-08",
+      "destino": "DEC-63",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-09",
+      "destino": "DEC-72",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-10",
+      "destino": "DEC-67",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "PEND-11",
+      "destino": "DEC-70",
+      "relacion": "afina"
+    },
+    {
+      "origen": "PEND-11",
+      "destino": "DEC-72",
+      "relacion": "afina"
+    },
+    {
+      "origen": "PEND-12",
+      "destino": "DEC-28",
+      "relacion": "afina"
+    },
+    {
+      "origen": "PEND-12",
+      "destino": "DEC-68",
+      "relacion": "afina"
+    },
+    {
+      "origen": "PEND-13",
+      "destino": "DEC-75",
+      "relacion": "afina"
+    },
+    {
+      "origen": "HUE-31",
+      "destino": "DEC-70",
+      "relacion": "resuelto_por"
+    },
+    {
+      "origen": "HUE-31",
+      "destino": "DEC-51",
+      "relacion": "resuelto_por"
+    },
+    {
+      "origen": "HUE-32",
+      "destino": "DEC-75",
+      "relacion": "resuelto_por"
+    },
+    {
+      "origen": "HUE-33",
+      "destino": "DEC-74",
+      "relacion": "resuelto_por"
+    },
+    {
+      "origen": "RSG-09",
+      "destino": "DEC-70",
+      "relacion": "residual_de"
+    },
+    {
+      "origen": "DEC-75",
+      "destino": "FDA-18",
+      "relacion": "excluye"
+    },
+    {
+      "origen": "DEC-73",
+      "destino": "FDA-19",
+      "relacion": "excluye"
+    },
+    {
+      "origen": "DEC-74",
+      "destino": "FDA-20",
+      "relacion": "excluye"
+    },
+    {
+      "origen": "FDA-20",
+      "destino": "RES-11",
+      "relacion": "excluido_por"
     }
   ]
 }
