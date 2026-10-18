@@ -1,7 +1,7 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "actualizado": "2026-10-18",
     "fase": "Modelo de datos y reporte técnico completos; stack, dimensionamiento, respaldos, accesibilidad y cierre del proyecto decididos (sin pendientes bloqueantes). Siguiente: inicializar NestJS + Prisma 7.10.1, primera migración y diseño de las 17 vistas.",
     "historial": [
@@ -34,6 +34,11 @@
         "version": "1.1.0",
         "fecha": "2026-10-18",
         "cambio": "PEND-01..10 resueltos: Next.js + NestJS (DEC-64), Prisma 7.10.1 fijado (DEC-65), Resend (DEC-66), grafo como fuente de verdad (DEC-67), LFPDPPP (DEC-68), respaldo manual cifrado (DEC-69), dimensionamiento Hobby con supuesto de 100 estudiantes (DEC-70), WCAG 2.2 AA (DEC-71), Railway Cron (DEC-63), Argon2id (DEC-72), cierre del proyecto (DEC-74), datos sensibles fuera de la app (DEC-75). Nuevos INV-22..26, OP-37/38, PEND-11..13."
+      },
+      {
+        "version": "1.1.1",
+        "fecha": "2026-10-18",
+        "cambio": "Todo el código en español (DEC-76, INV-27) y CLAUDE.md en la raíz."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -47,6 +52,7 @@
       "Los nodos con estado «propuesto» o «pendiente» NO son definitivos: preguntar antes de asumir (ver «pregunta_abierta»).",
       "Nada de lo que esté en «fuera_de_alcance» se implementa sin aprobación.",
       "No pidas ni leas el documento de requerimientos original: este grafo lo sustituye (DEC-67). Los nodos «requerimiento» con estado «parchado» o «descartado» ya no se implementan tal como decía el documento.",
+      "Escribe todo el código en español (DEC-76); las instrucciones de trabajo están en CLAUDE.md.",
       "Las cifras de DEC-70 son estimaciones sobre un supuesto ilustrativo de 100 estudiantes; no las presentes como mediciones.",
       "Al tomar una decisión nueva, agregar el nodo y sus aristas, subir la versión, actualizar «actualizado» y registrar el cambio en «historial»."
     ],
@@ -135,16 +141,16 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 421,
-      "aristas": 1065,
+      "nodos": 423,
+      "aristas": 1069,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 5,
         "tecnologia": 29,
-        "decision": 75,
-        "invariante": 26,
+        "decision": 76,
+        "invariante": 27,
         "requerimiento": 83,
         "hueco": 33,
         "modulo": 8,
@@ -186,6 +192,7 @@
         },
         "documentos": {
           "grafo": "ai/context/grafo-conocimiento.json (este archivo)",
+          "instrucciones_ia": "CLAUDE.md (raíz del repositorio)",
           "diagrama_er_oficial": "docs/echo_db.drawio (19 tablas, 28 relaciones)",
           "reporte_tecnico_bd": "Reporte_Tecnico_BD_Echo.docx (fuera del repositorio), actualizado el 18/10 con Prisma 7.10.1, dimensionamiento estimado sobre el supuesto de 100 estudiantes, respaldos, datos sensibles y cierre del proyecto.",
           "decisiones_y_parches": "https://claude.ai/code/artifact/3abb8826-9ae1-4c4d-9c43-8f46a4689b06 (documento «Echo — Parches y decisiones de datos»)",
@@ -5391,6 +5398,23 @@
       "nombre": "Operación después de diciembre de 2026",
       "descripcion": "Excluido de la versión 1; no se implementa sin aprobación.",
       "estado": "fuera_de_alcance"
+    },
+    {
+      "id": "DEC-76",
+      "tipo": "decision",
+      "nombre": "Todo el código en español",
+      "descripcion": "Identificadores (variables, funciones, clases, tipos, archivos y carpetas), comentarios, documentación, textos de la interfaz y mensajes de commit en español, sin acentos ni ñ en identificadores ni nombres de archivo (igual que la BD, DEC-37): IntentoService, calcularAvance, leccion.controller.ts. Excepciones: los sufijos y archivos que exige el framework (Module, Service, Controller, Guard, Dto; page.tsx, layout.tsx, route.ts) y las APIs de librerías, que se usan tal cual.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Respuesta del equipo (18/10)"
+      }
+    },
+    {
+      "id": "INV-27",
+      "tipo": "invariante",
+      "nombre": "Código en español",
+      "descripcion": "No introducir identificadores en inglés salvo los que exige el framework o una librería; sin acentos ni ñ en identificadores ni nombres de archivo.",
+      "estado": "obligatorio"
     }
   ],
   "aristas": [
@@ -10794,6 +10818,26 @@
       "origen": "FDA-20",
       "destino": "RES-11",
       "relacion": "excluido_por"
+    },
+    {
+      "origen": "DEC-76",
+      "destino": "TEC-NEST",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-76",
+      "destino": "TEC-NEXT",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-76",
+      "destino": "DEC-37",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "INV-27",
+      "destino": "DEC-76",
+      "relacion": "deriva_de"
     }
   ]
 }
