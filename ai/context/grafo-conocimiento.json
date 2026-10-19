@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "actualizado": "2026-10-18",
-    "fase": "Modelo de datos y reporte técnico completos; stack, dimensionamiento, respaldos, accesibilidad y cierre del proyecto decididos (sin pendientes bloqueantes). Siguiente: inicializar NestJS + Prisma 7.10.1, primera migración y diseño de las 17 vistas.",
+    "fase": "Modelo de datos y reporte técnico completos; stack, dimensionamiento, respaldos, accesibilidad, cierre del proyecto y dirección visual decididos (sin pendientes bloqueantes). Siguiente: maquetar las 18 vistas en Figma (DEC-82), inicializar NestJS + Prisma 7.10.1 y primera migración.",
     "historial": [
       {
         "version": "0.1.0",
@@ -39,6 +39,11 @@
         "version": "1.1.1",
         "fecha": "2026-10-18",
         "cambio": "Todo el código en español (DEC-76, INV-27) y CLAUDE.md en la raíz."
+      },
+      {
+        "version": "1.2.0",
+        "fecha": "2026-10-18",
+        "cambio": "Página pública SCR-18 como piloto académico y su apagado en OP-38 (DEC-78); mensajes que no delatan cuentas (DEC-77, INV-28, HUE-34) con estados corregidos de SCR-01, SCR-02, SCR-04 y SCR-16, OP-01/04/06/11 y RF-ACC-03 parchado; correo «ya tienes cuenta» y plantilla única (DEC-79); OP-33 con Resend; barra inferior móvil (DEC-80); sellos de insignia con Moris (DEC-81); dirección visual «Tierra» (DEC-82); Ayuda con la sección del cierre."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -141,22 +146,22 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 423,
-      "aristas": 1069,
+      "nodos": 432,
+      "aristas": 1150,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 5,
         "tecnologia": 29,
-        "decision": 76,
-        "invariante": 27,
+        "decision": 82,
+        "invariante": 28,
         "requerimiento": 83,
-        "hueco": 33,
+        "hueco": 34,
         "modulo": 8,
         "operacion": 38,
         "consulta": 13,
-        "pantalla": 17,
+        "pantalla": 18,
         "tabla": 19,
         "funcion_bd": 5,
         "disparador": 2,
@@ -3080,7 +3085,7 @@
       "id": "OP-01",
       "tipo": "operacion",
       "nombre": "Registrarse con correo",
-      "descripcion": "Correo válido y único (normalizado); contraseña 8+ con letra y número; hash Argon2id; crea enlace de verificación de 24 h; texto «Al registrarte aceptas el aviso de privacidad» con enlace.",
+      "descripcion": "Correo válido y normalizado; contraseña 8+ con letra y número; hash Argon2id; crea enlace de verificación de 24 h; texto «Al registrarte aceptas el aviso de privacidad» con enlace. Si el correo ya tiene cuenta no se crea otra: la respuesta es la misma y se envía el correo «ya tienes cuenta» (DEC-77).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-01 de la tabla de operaciones corregida",
@@ -3122,7 +3127,7 @@
       "id": "OP-04",
       "tipo": "operacion",
       "nombre": "Iniciar sesión con correo",
-      "descripcion": "Cuenta activa y verificada; bloqueo 15 min tras 5 fallos; mensaje genérico ante credenciales incorrectas.",
+      "descripcion": "Cuenta activa y verificada; bloqueo 15 min tras 5 fallos; mensaje genérico ante credenciales incorrectas; «sin verificar» y «bloqueada» solo con contraseña correcta (DEC-77).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-04 de la tabla de operaciones corregida",
@@ -3150,7 +3155,7 @@
       "id": "OP-06",
       "tipo": "operacion",
       "nombre": "Solicitar recuperación de contraseña",
-      "descripcion": "Solo cuentas con contraseña; enlace de 30 min y un uso.",
+      "descripcion": "Solo cuentas con contraseña; enlace de 30 min y un uso; la respuesta es siempre el mismo mensaje genérico (DEC-77).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-06 de la tabla de operaciones corregida",
@@ -3220,7 +3225,7 @@
       "id": "OP-11",
       "tipo": "operacion",
       "nombre": "Cambiar correo",
-      "descripcion": "Solo cuentas sin Google; correo único.",
+      "descripcion": "Solo cuentas sin Google; si el correo nuevo ya tiene cuenta, la respuesta es la misma y se avisa a esa dirección (DEC-77).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-11 de la tabla de operaciones corregida",
@@ -3514,13 +3519,13 @@
       "id": "OP-33",
       "tipo": "operacion",
       "nombre": "Enviar correos",
-      "descripcion": "Verificación, recuperación y cambio de correo vía SMTP.",
+      "descripcion": "Verificación, recuperación, cambio de correo y «ya tienes cuenta», enviados con Resend desde una sola plantilla (DEC-66, DEC-79).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-33 de la tabla de operaciones corregida",
         "tipo_acceso": "L",
         "frecuencia": "Baja",
-        "recibe": "Tipo de enlace, correo destino",
+        "recibe": "Tipo de correo, correo destino y, si aplica, código del enlace",
         "devuelve": "—"
       }
     },
@@ -3584,7 +3589,7 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-01",
-        "estados_a_disenar": "Credenciales incorrectas, correo sin verificar, cuenta bloqueada 15 min",
+        "estados_a_disenar": "Mensaje único ante credenciales incorrectas; correo sin verificar (con «Reenviar enlace») y cuenta bloqueada 15 min (con la hora de desbloqueo) solo si la contraseña es correcta (DEC-77)",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
       }
@@ -3597,7 +3602,7 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-02",
-        "estados_a_disenar": "Correo ya registrado, contraseña débil",
+        "estados_a_disenar": "Contraseña débil; registro enviado: siempre «Revisa tu correo», exista o no una cuenta con ese correo (DEC-77)",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
       }
@@ -3623,7 +3628,7 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-04",
-        "estados_a_disenar": "Enlace vencido o usado; cuenta solo de Google",
+        "estados_a_disenar": "Enlace vencido o usado; solicitud enviada: siempre el mensaje genérico, que incluye «Si entras con Google, no necesitas contraseña» (DEC-77)",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
       }
@@ -3632,7 +3637,7 @@
       "id": "SCR-05",
       "tipo": "pantalla",
       "nombre": "Aviso de privacidad (página fija)",
-      "descripcion": "Página fija con el aviso de privacidad: el equipo como responsable (LFPDPPP), finalidades, datos recabados (nombre, apellidos, correo), derechos ARCO y correo de contacto (PEND-12).",
+      "descripcion": "Página fija con el aviso de privacidad: el equipo como responsable (LFPDPPP), finalidades, datos recabados (nombre, apellidos, correo), derechos ARCO y correo de contacto (PEND-12). Se redacta con el correo ARCO como espacio reservado mientras PEND-12 siga pendiente.",
       "estado": "decidido",
       "detalles": {
         "origen": "V-05",
@@ -3651,7 +3656,7 @@
         "origen": "V-06",
         "estados_a_disenar": "Primer ingreso con 0%; módulo bloqueado con su requisito; búsqueda sin resultados",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3664,7 +3669,7 @@
         "origen": "V-07",
         "estados_a_disenar": "Curso bloqueado con su requisito",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3677,7 +3682,7 @@
         "origen": "V-08",
         "estados_a_disenar": "Lección «nueva» en curso completado; examen bloqueado, en espera o aprobado",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3690,7 +3695,7 @@
         "origen": "V-09",
         "estados_a_disenar": "Retomar en la última sección vista; lección ya terminada",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3703,7 +3708,7 @@
         "origen": "V-10",
         "estados_a_disenar": "Preguntas sin responder; etiqueta de decisión en casos; reintento; relación de columnas operable sin arrastrar (lista desplegable o clics)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3716,7 +3721,7 @@
         "origen": "V-11",
         "estados_a_disenar": "Disponible, intento a medias («Continuar»), en espera con cuenta regresiva, aprobado",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3729,7 +3734,7 @@
         "origen": "V-12",
         "estados_a_disenar": "Sin conexión (respuestas a salvo hasta el último guardado); preguntas pendientes al enviar; relación de columnas operable sin arrastrar (lista desplegable o clics)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3742,7 +3747,7 @@
         "origen": "V-13",
         "estados_a_disenar": "Reprobado con lecciones a repasar y espera; aprobado con insignia nueva",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3755,7 +3760,7 @@
         "origen": "V-14",
         "estados_a_disenar": "Sin avance todavía",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3768,7 +3773,7 @@
         "origen": "V-15",
         "estados_a_disenar": "Sin resultados; filtros sin coincidencias",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3779,22 +3784,37 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-16",
-        "estados_a_disenar": "Cuenta de Google (sin contraseña, correo no editable); confirmación de eliminar",
+        "estados_a_disenar": "Cuenta de Google (sin contraseña, correo no editable); confirmación de eliminar; cambio de correo enviado: siempre «Revisa tu correo nuevo» (DEC-77)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
       "id": "SCR-17",
       "tipo": "pantalla",
       "nombre": "Ayuda",
-      "descripcion": "Guía de uso accesible desde cualquier pantalla (RNF-11). Contenido fijo.",
+      "descripcion": "Guía de uso accesible desde cualquier pantalla (RNF-11). Contenido fijo redactado con lo ya decidido, incluida la sección «¿Qué pasa con mis datos en diciembre?», que explica el cierre del piloto y la anonimización o el borrado de los datos (OP-38, DEC-74).",
       "estado": "decidido",
       "detalles": {
         "origen": "V-17",
         "estados_a_disenar": "—",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
+      }
+    },
+    {
+      "id": "SCR-18",
+      "tipo": "pantalla",
+      "nombre": "Inicio público",
+      "descripcion": "Página pública que presenta Echo: qué es, para quién es, qué encontrarás, en qué se distingue y quiénes somos (equipo y UP Chiapas), con el aviso de que es un piloto académico vigente hasta diciembre de 2026. Botones a Iniciar sesión, Crear cuenta, Aviso de privacidad y Ayuda.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva (18/10)",
+        "estados_a_disenar": "Con sesión activa: redirige a Módulos",
+        "requiere_sesion": false,
+        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad",
+        "contenido": "Fijo; no invoca operaciones ni lee tablas",
+        "diseno": "Propuesta B «Tierra» en Figma (DEC-82)"
       }
     },
     {
@@ -3821,8 +3841,8 @@
       "id": "RF-ACC-03",
       "tipo": "requerimiento",
       "nombre": "Correo con formato válido y no registrado",
-      "descripcion": "Requerimiento original del documento de Echo (vigente).",
-      "estado": "decidido",
+      "descripcion": "Requerimiento original del documento de Echo (vigente). Se valida en el servidor, pero no se revela al usuario si el correo ya tiene cuenta (DEC-77).",
+      "estado": "parchado",
       "detalles": {
         "estado_en_documento": "vigente"
       }
@@ -5256,7 +5276,7 @@
       "id": "DEC-74",
       "tipo": "decision",
       "nombre": "Cierre del proyecto",
-      "descripcion": "Después de recibir las calificaciones: (1) se anonimiza o elimina la base de datos; (2) se detienen los servicios de Railway; (3) se borran los respaldos de Railway y todas las copias manuales cifradas. La LFPDPPP pide no conservar datos personales sin una finalidad vigente y Railway seguiría cobrando.",
+      "descripcion": "Después de recibir las calificaciones: (1) se anonimiza o elimina la base de datos; (2) se detienen los servicios de Railway; (3) se borran los respaldos de Railway y todas las copias manuales cifradas. La LFPDPPP pide no conservar datos personales sin una finalidad vigente y Railway seguiría cobrando. La detención de servicios incluye el frontend completo, con la página pública SCR-18.",
       "estado": "decidido"
     },
     {
@@ -5319,7 +5339,7 @@
       "id": "OP-38",
       "tipo": "operacion",
       "nombre": "Cierre del proyecto",
-      "descripcion": "Anonimizar o eliminar la base, detener servicios y borrar respaldos y copias (DEC-74).",
+      "descripcion": "Anonimizar o eliminar la base, detener servicios (incluido el frontend con la página pública SCR-18 y su dominio) y borrar respaldos y copias (DEC-74, DEC-78).",
       "estado": "decidido",
       "detalles": {
         "origen": "Nueva (18/10)",
@@ -5372,6 +5392,13 @@
       "estado": "parchado"
     },
     {
+      "id": "HUE-34",
+      "tipo": "hueco",
+      "nombre": "Estados que delatan cuentas",
+      "descripcion": "Las pantallas de inicio de sesión, registro y recuperación pedían estados («correo ya registrado», «cuenta solo de Google», «correo sin verificar», «cuenta bloqueada») que confirman si un correo tiene cuenta, en contra del mensaje genérico de OP-04 y OP-06.",
+      "estado": "parchado"
+    },
+    {
       "id": "RSG-09",
       "tipo": "riesgo_aceptado",
       "nombre": "RAM estimada, no medida en Railway",
@@ -5410,10 +5437,96 @@
       }
     },
     {
+      "id": "DEC-77",
+      "tipo": "decision",
+      "nombre": "Mensajes que no delatan cuentas",
+      "descripcion": "Ninguna respuesta revela si un correo tiene cuenta. Inicio de sesión (OP-04): un solo mensaje para correo inexistente o contraseña incorrecta; «correo sin verificar» y «cuenta bloqueada 15 min» solo se muestran si la contraseña es correcta (durante el bloqueo, una contraseña incorrecta sigue recibiendo el mensaje genérico). Registro (OP-01): siempre «Revisa tu correo»; si el correo ya tiene cuenta no se crea otra y se le envía el correo «ya tienes cuenta». Recuperación (OP-06): siempre el mismo mensaje genérico, que incluye «Si entras con Google, no necesitas contraseña»; se elimina el estado «cuenta solo de Google». Cambio de correo (OP-11): siempre «Revisa tu correo nuevo»; si el correo nuevo ya tiene cuenta, se avisa a esa dirección. El abuso de estos envíos lo frena el límite de peticiones por IP (RSG-04). No cambia el esquema: el correo «ya tienes cuenta» no lleva enlace de un solo uso, así que token_correo.tipo no cambia.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de pantallas con el equipo (18/10)",
+        "textos_sugeridos": {
+          "credenciales_incorrectas": "El correo o la contraseña no son correctos.",
+          "correo_sin_verificar": "Aún no verificas tu correo. Te podemos enviar un enlace nuevo.",
+          "cuenta_bloqueada": "Por seguridad, tu cuenta está en pausa. Podrás intentarlo de nuevo a las HH:MM.",
+          "registro_enviado": "Revisa tu correo. Te enviamos un mensaje para continuar.",
+          "recuperacion_enviada": "Si hay una cuenta con contraseña para ese correo, te enviamos un enlace que vence en 30 minutos. Si entras con Google, no necesitas contraseña.",
+          "cambio_de_correo_enviado": "Revisa tu correo nuevo para confirmar el cambio. El enlace vence en 30 minutos."
+        },
+        "sin_cambio_de_esquema": true
+      }
+    },
+    {
+      "id": "DEC-78",
+      "tipo": "decision",
+      "nombre": "Página pública de inicio como piloto académico",
+      "descripcion": "SCR-18 presenta Echo sin sesión: qué es, para quién es, qué encontrarás, en qué se distingue, el equipo y la UP Chiapas, con enlaces a Iniciar sesión, Registro, Aviso de privacidad y Ayuda. Dice sin rodeos que Echo es un piloto académico vigente hasta diciembre de 2026 (RES-11, FDA-20). Con sesión activa redirige a Módulos (SCR-06). Su contenido es fijo: no invoca operaciones ni lee tablas. Se apaga con todo lo demás en el cierre (OP-38, DEC-74).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de pantallas con el equipo (18/10)",
+        "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026."
+      }
+    },
+    {
+      "id": "DEC-79",
+      "tipo": "decision",
+      "nombre": "Plantilla única de correo",
+      "descripcion": "Los correos salen de una sola plantilla HTML con versión de texto plano, idioma español, logo con texto alternativo, la vigencia del enlace escrita y sin píxeles de rastreo. Cambia solo el texto variable: verificación (enlace de 24 h), recuperación (enlace de 30 min), cambio de correo (enlace de 30 min, enviado al correo nuevo) y «ya tienes cuenta» (sin enlace de un solo uso; si la cuenta tiene contraseña, enlaza a Recuperar contraseña; si entra con Google, indica entrar con Google). Se envían con Resend (DEC-66).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de pantallas con el equipo (18/10)",
+        "variantes": [
+          "verificacion",
+          "recuperacion",
+          "cambio_correo",
+          "ya_tienes_cuenta"
+        ]
+      }
+    },
+    {
+      "id": "DEC-80",
+      "tipo": "decision",
+      "nombre": "Navegación móvil con barra inferior",
+      "descripcion": "En las pantallas con sesión, en anchos menores a 768 px, el menú Módulos / Mi progreso / Mis resultados pasa a una barra inferior fija con ícono y texto, áreas táctiles de 48 px y el destino actual marcado con aria-current y con algo más que el color. Ayuda, Perfil (nombre del alumno) y Cerrar sesión quedan en el encabezado móvil. Las pantallas sin sesión no tienen barra inferior.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de pantallas con el equipo (18/10)",
+        "punto_de_quiebre": "768 px"
+      }
+    },
+    {
+      "id": "DEC-81",
+      "tipo": "decision",
+      "nombre": "Sellos de insignia con Moris",
+      "descripcion": "Cada módulo tiene un sello: una imagen sobria con Moris, sin aspecto de videojuego (sin brillos, rayos, puntos ni niveles), cargada en la tabla imagen con su texto alternativo (INV-13). Hay una sola imagen por insignia: el estado pendiente se dibuja en la interfaz con el sello atenuado, un candado y el texto «Pendiente: te faltan N cursos», nunca solo con gris. Las insignias son informativas (RN-07, DEC-53).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de pantallas con el equipo (18/10)"
+      }
+    },
+    {
+      "id": "DEC-82",
+      "tipo": "decision",
+      "nombre": "Dirección visual «Tierra»",
+      "descripcion": "Se adopta la propuesta B «Tierra»: Marrón Negro #3D2213 como fondo principal y crema #FBF3E9 en secciones claras, sin degradados; Turquesa Encendido #67EEC9 solo para íconos y acentos sobre fondo oscuro; botón principal crema con texto café (13.3:1) y secundario de contorno crema; hero como tarjeta redondeada (32 px) sobre una franja crema; vidrio sutil (crema al 5–8 % con desenfoque); Nunito para títulos y botones y Nunito Sans para lectura; Moris según el manual de identidad. Solo se usan los colores de la página Identidad y las variables «Echo · Color».",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Elección del equipo (18/10)",
+        "figma": "https://www.figma.com/design/1zggHPVnKEPlt7khBbtWTt/Echo?node-id=40-2",
+        "componentes": "Botón/Crema, Botón/Contorno sobre oscuro e íconos de trazo 1.75 en la página «Propuestas · Landing»"
+      }
+    },
+    {
       "id": "INV-27",
       "tipo": "invariante",
       "nombre": "Código en español",
       "descripcion": "No introducir identificadores en inglés salvo los que exige el framework o una librería; sin acentos ni ñ en identificadores ni nombres de archivo.",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "INV-28",
+      "tipo": "invariante",
+      "nombre": "Mensajes que no delatan cuentas",
+      "descripcion": "Ninguna respuesta de la API ni texto de la interfaz confirma si un correo tiene cuenta; los estados de una cuenta (sin verificar, bloqueada) solo se muestran tras una contraseña correcta (DEC-77).",
       "estado": "obligatorio"
     }
   ],
@@ -10838,6 +10951,421 @@
       "origen": "INV-27",
       "destino": "DEC-76",
       "relacion": "deriva_de"
+    },
+    {
+      "origen": "DEC-77",
+      "destino": "DEC-13",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-77",
+      "destino": "DEC-24",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-77",
+      "destino": "DEC-25",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-77",
+      "destino": "DEC-26",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-04",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-06",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-11",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-01",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-04",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-16",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "RF-ACC-03",
+      "destino": "DEC-77",
+      "relacion": "ajustado_por"
+    },
+    {
+      "origen": "HUE-34",
+      "destino": "DEC-77",
+      "relacion": "resuelto_por"
+    },
+    {
+      "origen": "INV-28",
+      "destino": "DEC-77",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "RSG-04",
+      "destino": "DEC-77",
+      "relacion": "residual_de",
+      "nota": "El límite por IP frena el abuso del correo «ya tienes cuenta»"
+    },
+    {
+      "origen": "RES-11",
+      "destino": "DEC-78",
+      "relacion": "motiva"
+    },
+    {
+      "origen": "DEC-78",
+      "destino": "DEC-74",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-78",
+      "destino": "DEC-28",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-78",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-78",
+      "destino": "DEC-82",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-38",
+      "destino": "DEC-78",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "MOD-CUENTA",
+      "relacion": "parte_de"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "DEC-78",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "DEC-74",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "SCR-01",
+      "relacion": "navega_a",
+      "nota": "Iniciar sesión"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "SCR-02",
+      "relacion": "navega_a",
+      "nota": "Crear cuenta"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "SCR-05",
+      "relacion": "navega_a",
+      "nota": "Aviso de privacidad"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "SCR-17",
+      "relacion": "navega_a",
+      "nota": "Ayuda"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "SCR-06",
+      "relacion": "navega_a",
+      "nota": "Con sesión activa: redirección"
+    },
+    {
+      "origen": "SCR-01",
+      "destino": "SCR-18",
+      "relacion": "navega_a",
+      "nota": "Logo de Echo (sin sesión)"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "SCR-18",
+      "relacion": "navega_a",
+      "nota": "Logo de Echo (sin sesión)"
+    },
+    {
+      "origen": "SCR-05",
+      "destino": "SCR-18",
+      "relacion": "navega_a",
+      "nota": "Logo de Echo (sin sesión)"
+    },
+    {
+      "origen": "SCR-17",
+      "destino": "SCR-18",
+      "relacion": "navega_a",
+      "nota": "Logo de Echo (sin sesión)"
+    },
+    {
+      "origen": "SCR-17",
+      "destino": "DEC-74",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-05",
+      "destino": "DEC-74",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-79",
+      "destino": "DEC-66",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-79",
+      "destino": "DEC-77",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-79",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-79",
+      "destino": "TEC-RESEND",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-33",
+      "destino": "DEC-79",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-80",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "SCR-06",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-07",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-08",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-09",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-10",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-11",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-12",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-13",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-14",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-15",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-16",
+      "destino": "DEC-80",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-81",
+      "destino": "DEC-31",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-81",
+      "destino": "DEC-53",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-81",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-81",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "DEC-81",
+      "destino": "TBL-IMAGEN",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "SCR-06",
+      "destino": "DEC-81",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-13",
+      "destino": "DEC-81",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-14",
+      "destino": "DEC-81",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-82",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "SCR-01",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-03",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-04",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-05",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-06",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-07",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-08",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-09",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-10",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-11",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-12",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-13",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-14",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-15",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-16",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-17",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
     }
   ]
 }
