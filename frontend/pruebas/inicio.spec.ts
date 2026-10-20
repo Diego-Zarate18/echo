@@ -70,9 +70,6 @@ test.describe("SCR-18 · Inicio público", () => {
     expect(await hrefsPorTexto("Ayuda")).toEqual(["/ayuda"]);
     expect(await hrefsPorTexto("Aviso de privacidad")).toEqual(["/aviso-de-privacidad"]);
     expect(await hrefsPorTexto("Ver cómo funciona")).toEqual(["#que-encontraras"]);
-    await expect(
-      page.getByRole("link", { name: "Saber más sobre el cierre del piloto", includeHidden: true }).first(),
-    ).toHaveAttribute("href", "/ayuda#cierre-del-piloto");
   });
 
   test("las imágenes tienen texto alternativo", async ({ page }) => {

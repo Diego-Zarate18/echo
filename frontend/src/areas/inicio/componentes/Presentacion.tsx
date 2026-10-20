@@ -1,7 +1,6 @@
 import { Moris } from "@/componentes/marca/Moris";
 import { Boton } from "@/componentes/ui/Boton";
 import { IconoCandado, IconoCirculoCheck, IconoCirculoPunto } from "@/componentes/ui/iconos/iconos";
-import { AvisoPiloto } from "./AvisoPiloto";
 import { MorisVivo } from "./MorisVivo";
 import { Ondas } from "./Ondas";
 
@@ -110,8 +109,6 @@ export function Presentacion() {
           >
             ÉTICA
           </span>
-
-          <AvisoPiloto variante="tarjeta" className="animate-aparecer [animation-delay:100ms] lg:hidden" />
 
           {/*
             Ancho de Moris: 26 % del contenedor, sin pasar del 42 % del alto del hero y, cuando se ve la

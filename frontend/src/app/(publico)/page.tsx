@@ -1,4 +1,3 @@
-import { AvisoPiloto } from "@/areas/inicio/componentes/AvisoPiloto";
 import { DibujoDeIconos } from "@/areas/inicio/componentes/DibujoDeIconos";
 import { EncabezadoPublico } from "@/areas/inicio/componentes/EncabezadoPublico";
 import { Llamado } from "@/areas/inicio/componentes/Llamado";
@@ -15,7 +14,6 @@ export default function Inicio() {
       <EncabezadoPublico />
       <main id="contenido" tabIndex={-1} className="outline-none">
         <Presentacion />
-        <AvisoPiloto variante="franja" className="hidden lg:flex" />
         <QueEsEcho />
         <QueEncontraras />
         <PorQueEcho />

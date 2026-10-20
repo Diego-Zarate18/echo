@@ -56,7 +56,7 @@ export function QuienesSomos() {
           ))}
         </ul>
 
-        <div className="mt-12 flex flex-col gap-8 lg:mt-14 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-12 lg:mt-14">
           <div className="flex shrink-0 flex-wrap gap-5">
             <div className="rounded-logo bg-blanco px-[18px] py-3">
               <Image
@@ -75,9 +75,6 @@ export function QuienesSomos() {
               />
             </div>
           </div>
-          <p className="text-base font-semibold">
-            Echo 1.0 se prueba con un grupo reducido de estudiantes hasta diciembre de 2026.
-          </p>
         </div>
       </div>
     </section>
