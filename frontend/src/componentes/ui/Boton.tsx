@@ -33,7 +33,7 @@ type PropsBoton = PropsComunes &
   };
 
 const base =
-  "group inline-flex shrink-0 items-center rounded-full font-titulo text-base font-bold whitespace-nowrap transition-colors duration-150 motion-safe:active:scale-[0.98]";
+  "group inline-flex shrink-0 items-center rounded-full font-titulo text-base font-bold whitespace-nowrap transition-[color,background-color,scale] duration-150 ease-(--ease-respuesta) motion-safe:active:scale-[0.97]";
 
 const variantes: Record<VarianteBoton, string> = {
   crema: "bg-marca-crema text-marca-cafe hover:bg-superficie-elevada",
