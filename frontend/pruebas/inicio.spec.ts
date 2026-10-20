@@ -189,6 +189,31 @@ test.describe("SCR-18 · Encabezado fijo", () => {
   });
 });
 
+test.describe("SCR-18 · Barra fija al leer", () => {
+  test("se esconde al bajar y vuelve al subir, sin tapar el contenido", async ({ page }) => {
+    await page.goto("/");
+    const encabezado = page.getByRole("banner");
+    await page.mouse.move(200, 400);
+
+    // Al bajar desde el hero la barra se fija escondida.
+    await page.mouse.wheel(0, 900);
+    await expect(encabezado).toHaveAttribute("data-flotante", "true");
+    await expect(encabezado).toHaveAttribute("data-oculto", "true");
+    await page.mouse.wheel(0, 600);
+    await expect(encabezado).toHaveAttribute("data-oculto", "true");
+
+    // Al subir un poco vuelve.
+    await page.mouse.wheel(0, -200);
+    await expect(encabezado).toHaveAttribute("data-oculto", "false");
+    await expect(encabezado.getByRole("link", { name: "Echo, inicio" })).toBeInViewport();
+
+    // Con el foco del teclado dentro, no se esconde al bajar.
+    await encabezado.getByRole("link", { name: "Echo, inicio" }).focus();
+    await page.mouse.wheel(0, 400);
+    await expect(encabezado).toHaveAttribute("data-oculto", "false");
+  });
+});
+
 test.describe("SCR-18 · Menú móvil", () => {
   test.beforeEach(async ({ page }, info) => {
     test.skip(info.project.name !== "movil", "El menú solo existe por debajo de 1280 px");

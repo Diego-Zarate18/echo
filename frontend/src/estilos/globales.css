@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* Transparencia reducida del sistema: las superficies de vidrio se vuelven sólidas. */
-@custom-variant transparencia-reducida (@media (prefers-reduced-transparency: reduce));
-
 /*
  * Sistema visual «Tierra» (DEC-82, DEC-84).
  * Los colores son las variables de Figma con el mismo nombre. No se agregan otros:

@@ -51,6 +51,62 @@ function useEstadoDelEncabezado() {
   return { flotante, actual: flotante ? actual : null };
 }
 
+/** Desplazamiento mínimo, en píxeles, para decidir si se baja o se sube (evita parpadeos con el trackpad). */
+const UMBRAL_DESPLAZAMIENTO = 6;
+
+/**
+ * La barra fija se esconde mientras se baja leyendo y vuelve en cuanto se sube un poco, para no tapar
+ * el contenido. Como solo se fija al bajar desde el hero, empieza escondida: así no aparece encima del
+ * contenido para irse un instante después. No se esconde si tiene el foco del teclado o si el menú
+ * móvil está abierto.
+ */
+function useOcultarAlBajar(flotante: boolean) {
+  const encabezado = useRef<HTMLElement>(null);
+  const [oculto, setOculto] = useState(true);
+  // Cada vez que la barra deja de estar fija, la próxima vez vuelve a empezar escondida
+  // (estado derivado durante el render, como recomienda React).
+  const [flotanteAnterior, setFlotanteAnterior] = useState(flotante);
+  if (flotante !== flotanteAnterior) {
+    setFlotanteAnterior(flotante);
+    if (flotante) setOculto(true);
+  }
+
+  useEffect(() => {
+    // Sin barra fija no hay nada que esconder; el valor devuelto ya depende de `flotante`.
+    if (!flotante) return;
+    const elemento = encabezado.current;
+    let ultimo = window.scrollY;
+    let cuadro = 0;
+
+    function alDesplazar() {
+      cancelAnimationFrame(cuadro);
+      cuadro = requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const diferencia = y - ultimo;
+        if (Math.abs(diferencia) < UMBRAL_DESPLAZAMIENTO) return;
+        ultimo = y;
+        const ocupado =
+          elemento?.contains(document.activeElement) || elemento?.querySelector("#menu-movil:not([hidden])");
+        setOculto(diferencia > 0 && !ocupado);
+      });
+    }
+
+    function alEnfocar() {
+      setOculto(false);
+    }
+
+    window.addEventListener("scroll", alDesplazar, { passive: true });
+    elemento?.addEventListener("focusin", alEnfocar);
+    return () => {
+      cancelAnimationFrame(cuadro);
+      window.removeEventListener("scroll", alDesplazar);
+      elemento?.removeEventListener("focusin", alEnfocar);
+    };
+  }, [flotante]);
+
+  return { encabezado, oculto: flotante && oculto };
+}
+
 type Recorte = { izquierda: number; derecha: number };
 
 /**
@@ -87,12 +143,13 @@ function useIndicador(actual: string | null) {
 /**
  * Encabezado del inicio público (84:490 escritorio, 84:719 móvil).
  * Sobre el hero se dibuja dentro de la tarjeta, alineado a la retícula de 1424 px. Al salir del hero
- * se materializa fijo arriba como una barra de vidrio café (sólida con transparencia reducida), para que
- * las anclas y «Crear cuenta» sigan a la mano en toda la página. En el DOM va antes de `<main>`.
+ * se materializa fijo arriba como una barra café sólida (el vidrio dejaba ver el texto que pasaba por
+ * debajo), se esconde al bajar leyendo y vuelve al subir. En el DOM va antes de `<main>`.
  */
 export function EncabezadoPublico() {
   const { flotante, actual } = useEstadoDelEncabezado();
   const { lista, recorte, deslizar } = useIndicador(actual);
+  const { encabezado, oculto } = useOcultarAlBajar(flotante);
 
   const estiloIndicador: CSSProperties = {
     clipPath: recorte ? `inset(0 ${recorte.derecha}px 0 ${recorte.izquierda}px round 999px)` : undefined,
@@ -101,20 +158,23 @@ export function EncabezadoPublico() {
 
   return (
     <header
+      ref={encabezado}
       data-fondo="oscuro"
       data-flotante={flotante}
+      data-oculto={oculto}
       className={[
         "inset-x-2 top-2 z-30",
         flotante
-          ? "fixed mx-auto max-w-[1180px] animate-materializar"
+          ? "fixed mx-auto max-w-[1180px] animate-materializar transition-[translate] duration-250 ease-(--ease-respuesta) motion-reduce:transition-none"
           : "absolute px-5 pt-2 md:px-8 md:pt-5 xl:pt-7",
+        oculto ? "-translate-y-[calc(100%+1rem)]" : "",
       ].join(" ")}
     >
       <div
         className={[
           "relative flex items-center justify-between gap-6",
           flotante
-            ? "rounded-full border border-blanco/12 bg-marca-cafe/85 py-1.5 pr-1.5 pl-5 shadow-vidrio backdrop-blur-vidrio backdrop-saturate-150 transparencia-reducida:bg-marca-cafe transparencia-reducida:backdrop-blur-none"
+            ? "rounded-full border border-blanco/12 bg-marca-cafe py-1.5 pr-1.5 pl-5 shadow-vidrio"
             : "mx-auto max-w-[1360px]",
         ].join(" ")}
       >
