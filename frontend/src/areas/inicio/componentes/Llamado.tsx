@@ -6,8 +6,9 @@ export function Llamado() {
   return (
     <section
       aria-labelledby="titulo-llamado"
+      // `llamado` y `boton-llamado`: Moris se inclina hacia «Crear cuenta» (globales.css).
       data-fondo="oscuro"
-      className="bg-marca-cafe px-5 py-20 text-marca-crema md:px-10 md:py-28 lg:px-[72px] lg:py-[110px]"
+      className="llamado bg-marca-cafe px-5 py-20 text-marca-crema md:px-10 md:py-28 lg:px-[72px] lg:py-[110px]"
     >
       <div className="mx-auto grid w-full max-w-[1296px] items-center gap-12 xl:grid-cols-[minmax(0,600px)_560px] xl:justify-between">
         <div className="flex flex-col gap-6">
@@ -18,7 +19,7 @@ export function Llamado() {
             Crea tu cuenta con tu correo o con Google. Solo te pedimos tu nombre, tus apellidos y tu correo.
           </p>
           <div className="flex flex-col gap-2.5 md:flex-row md:gap-4">
-            <Boton variante="crema" conFlecha href="/registro" className="w-full md:w-[200px]">
+            <Boton variante="crema" conFlecha href="/registro" className="boton-llamado w-full md:w-[200px]">
               Crear cuenta
             </Boton>
             <Boton variante="contorno" href="/iniciar-sesion" className="w-full md:w-[200px]">
@@ -36,7 +37,7 @@ export function Llamado() {
             expresion="feliz"
             alt=""
             sizes="260px"
-            className="brotar-al-ver w-[200px] self-end sm:absolute sm:right-0 sm:bottom-0 sm:w-[260px]"
+            className="brotar-al-ver moris-cierre w-[200px] self-end sm:absolute sm:right-0 sm:bottom-0 sm:w-[260px]"
           />
         </div>
       </div>

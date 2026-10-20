@@ -2,6 +2,7 @@ import { Moris } from "@/componentes/marca/Moris";
 import { Boton } from "@/componentes/ui/Boton";
 import { IconoCandado, IconoCirculoCheck, IconoCirculoPunto } from "@/componentes/ui/iconos/iconos";
 import { AvisoPiloto } from "./AvisoPiloto";
+import { MorisVivo } from "./MorisVivo";
 import { Ondas } from "./Ondas";
 
 /** Filamentos de circuito (84:481 / 84:710), decorativos. Rutas exportadas de Figma. */
@@ -117,15 +118,17 @@ export function Presentacion() {
             tarjeta de ejemplo, sin acercarse a ella (316 px + 40 px de margen + 16 px de aire y de puntero).
           */}
           <div className="moris-portada relative mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(26%,calc(var(--alto-hero)*0.42))] min-[85rem]:w-[min(26%,calc(var(--alto-hero)*0.42),calc(52.1%-23.25rem))]">
-            <Ondas />
-            <Moris
-              expresion="principal"
-              alt="Moris, la mascota de Echo: una semilla redonda color terracota con dos hojas verdes, ojos grandes y una sonrisa."
-              sizes="(min-width: 1024px) min(26vw, 370px), (min-width: 768px) 300px, 220px"
-              preload
-              className="w-full animate-brotar [animation-delay:150ms]"
-            />
-            <Filamentos className="top-[31.5%] left-[93%] w-1/2 text-marca-menta lg:top-[7.6%] lg:left-[94%] lg:w-[30%]" />
+            <MorisVivo>
+              <Ondas />
+              <Moris
+                expresion="principal"
+                alt="Moris, la mascota de Echo: una semilla redonda color terracota con dos hojas verdes, ojos grandes y una sonrisa."
+                sizes="(min-width: 1024px) min(26vw, 370px), (min-width: 768px) 300px, 220px"
+                preload
+                className="w-full animate-brotar [animation-delay:150ms]"
+              />
+              <Filamentos className="top-[31.5%] left-[93%] w-1/2 text-marca-menta lg:top-[7.6%] lg:left-[94%] lg:w-[30%]" />
+            </MorisVivo>
           </div>
 
           <div className="relative mt-[30px] max-w-[640px] lg:mt-0 lg:w-[46%]">

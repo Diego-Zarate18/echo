@@ -89,6 +89,9 @@
    */
   --ease-llegada: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Curvas de `animate`: respuesta inmediata de la interfaz y desplazamiento dentro de la pantalla. */
+  --ease-respuesta: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-desplazar: cubic-bezier(0.77, 0, 0.175, 1);
   --animate-eco: eco 1200ms var(--ease-llegada) both;
   --animate-brotar: brotar 1000ms var(--ease-llegada) both;
   --animate-aparecer: aparecer 800ms var(--ease-llegada) both;
@@ -220,6 +223,21 @@
   }
 }
 
+/* Saludo de Moris al terminar la entrada: un solo salto corto, solo vertical. */
+@keyframes saludo {
+  0% {
+    translate: 0 0;
+    animation-timing-function: var(--ease-respuesta);
+  }
+  40% {
+    translate: 0 -4%;
+    animation-timing-function: var(--ease-desplazar);
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+
 @keyframes desvanecer {
   from {
     opacity: 0;
@@ -310,6 +328,26 @@
   }
 }
 
+/* El saludo llega justo cuando Moris termina de brotar (150 ms + 1000 ms). */
+.saludo {
+  animation: saludo 560ms 1200ms both;
+}
+
+/* El cierre: Moris se inclina hacia «Crear cuenta» cuando el botón recibe el puntero o el foco. */
+.moris-cierre {
+  transition: translate 250ms var(--ease-respuesta);
+}
+
+.llamado:has(.boton-llamado:focus-visible) .moris-cierre {
+  translate: -12px 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .llamado:has(.boton-llamado:hover) .moris-cierre {
+    translate: -12px 0;
+  }
+}
+
 /* Movimiento reducido: la secuencia del hero se vuelve un fundido corto, sin desplazamientos. */
 @media (prefers-reduced-motion: reduce) {
   [class*="animate-"] {
@@ -322,6 +360,15 @@
   .eco-rastro::before,
   .eco-rastro::after {
     display: none;
+  }
+
+  .saludo {
+    animation: none;
+  }
+
+  .moris-cierre {
+    transition: none;
+    translate: none !important;
   }
 }
 
