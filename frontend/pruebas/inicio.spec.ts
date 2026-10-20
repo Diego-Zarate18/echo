@@ -104,6 +104,29 @@ test.describe("SCR-18 · Movimiento", () => {
   });
 });
 
+test.describe("SCR-18 · Encabezado fijo", () => {
+  test("se queda fijo al salir del hero y marca la sección actual", async ({ page }, info) => {
+    test.skip(info.project.name !== "escritorio", "Las anclas del encabezado solo se ven desde 1280 px");
+    await page.goto("/");
+    const encabezado = page.getByRole("banner");
+    await expect(encabezado).toHaveAttribute("data-flotante", "false");
+
+    await page.evaluate(() => document.getElementById("por-que-echo")!.scrollIntoView({ block: "start" }));
+    await expect(encabezado).toHaveAttribute("data-flotante", "true");
+    await expect(encabezado).toHaveCSS("position", "fixed");
+    await expect(encabezado.getByRole("link", { name: "Por qué Echo" })).toHaveAttribute("aria-current", "location");
+    await expect(encabezado.getByRole("link", { name: "Crear cuenta" })).toBeVisible();
+
+    // En el cierre no hay sección del menú: no queda marcada la anterior.
+    await page.evaluate(() => document.getElementById("titulo-llamado")!.scrollIntoView({ block: "center" }));
+    await expect(encabezado.locator("[aria-current]")).toHaveCount(0);
+
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+    await expect(encabezado).toHaveAttribute("data-flotante", "false");
+    await expect(encabezado.locator("[aria-current]")).toHaveCount(0);
+  });
+});
+
 test.describe("SCR-18 · Menú móvil", () => {
   test.beforeEach(async ({ page }, info) => {
     test.skip(info.project.name !== "movil", "El menú solo existe por debajo de 1280 px");

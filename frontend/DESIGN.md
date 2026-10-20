@@ -94,6 +94,7 @@ Nada se repite en bucle: el movimiento automático dura menos de 5 s (WCAG 2.2.2
 | Moris habla | `.revelar-globo` | Los globos de Moris aparecen al entrar en la ventana |
 | Declaración | `QueEsEcho` (`.declaracion`) | Se ilumina palabra por palabra al leerla (empieza al 42 %, ya cumple 3:1 para texto grande) |
 | El cierre regresa | `Llamado` (`.brotar-al-ver`) | Moris vuelve a brotar como en el hero |
+| Encabezado fijo | `EncabezadoPublico` | Al salir del hero baja una barra café con las anclas, la sección actual (`aria-current`) y «Crear cuenta» |
 | Botón con flecha | `Boton` `conFlecha` | La flecha sale por arriba y otra entra desde abajo |
 
 Con movimiento reducido, la entrada es un fundido de 250 ms y lo demás no se mueve. Los títulos, filas y tarjetas

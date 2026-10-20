@@ -96,6 +96,7 @@ export function Presentacion() {
   return (
     <div className="p-2">
       <section
+        id="portada"
         aria-labelledby="titulo-portada"
         data-fondo="oscuro"
         className="relative isolate mx-auto max-w-[1424px] overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero lg:rounded-hero lg:[--alto-hero:clamp(38rem,calc(100svh-1rem),57.5rem)]"
