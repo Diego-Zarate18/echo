@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "tipos": "tsc --noEmit",
+    "prueba:e2e": "playwright test"
   },
   "dependencies": {
     "next": "16.4.2",
@@ -26,6 +28,6 @@
     "typescript": "5.9.3"
   },
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=22.12 <23"
   }
 }
