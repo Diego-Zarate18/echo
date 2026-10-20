@@ -29,7 +29,7 @@ export function QuienesSomos() {
           proporcion="entrada-amplia"
         />
 
-        <ul className="mt-12 grid items-start gap-6 sm:grid-cols-2 lg:mt-14 xl:grid-cols-4">
+        <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:mt-14 xl:grid-cols-4">
           {personas.map((persona) => (
             <li
               key={persona.nombre}
