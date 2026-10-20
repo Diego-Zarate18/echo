@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.2.0",
-    "actualizado": "2026-10-18",
-    "fase": "Modelo de datos y reporte técnico completos; stack, dimensionamiento, respaldos, accesibilidad, cierre del proyecto y dirección visual decididos (sin pendientes bloqueantes). Siguiente: maquetar las 18 vistas en Figma (DEC-82), inicializar NestJS + Prisma 7.10.1 y primera migración.",
+    "version": "1.3.0",
+    "actualizado": "2026-10-19",
+    "fase": "Modelo de datos, 18 vistas en Figma (DEC-82) y dirección visual decididos. Siguiente: crear el frontend Next.js 16.4.2 empezando por el sitio público (ai/handoff/siguiente.md) y definir el backend.",
     "historial": [
       {
         "version": "0.1.0",
@@ -44,6 +44,11 @@
         "version": "1.2.0",
         "fecha": "2026-10-18",
         "cambio": "Página pública SCR-18 como piloto académico y su apagado en OP-38 (DEC-78); mensajes que no delatan cuentas (DEC-77, INV-28, HUE-34) con estados corregidos de SCR-01, SCR-02, SCR-04 y SCR-16, OP-01/04/06/11 y RF-ACC-03 parchado; correo «ya tienes cuenta» y plantilla única (DEC-79); OP-33 con Resend; barra inferior móvil (DEC-80); sellos de insignia con Moris (DEC-81); dirección visual «Tierra» (DEC-82); Ayuda con la sección del cierre."
+      },
+      {
+        "version": "1.3.0",
+        "fecha": "2026-10-19",
+        "cambio": "Apellidos en un solo campo, sin segundo_apellido (DEC-22 revisada, DEC-59, TBL-USUARIO, OP-01/03, SCR-02/16); bloqueo sin oráculo de contraseña (DEC-77 revisada, DEC-26, OP-04, SCR-01); OP-33 sin SMTP; sitio público dentro de la app de Next.js (DEC-83, SCR-18 con ruta «/») y paso del diseño «Tierra» de Figma a Next.js (DEC-84)."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -146,27 +151,27 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 432,
-      "aristas": 1150,
+      "nodos": 434,
+      "aristas": 1161,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 5,
         "tecnologia": 29,
-        "decision": 82,
+        "decision": 84,
         "invariante": 28,
-        "requerimiento": 83,
-        "hueco": 34,
-        "modulo": 8,
-        "operacion": 38,
-        "consulta": 13,
-        "pantalla": 18,
         "tabla": 19,
+        "rol_bd": 5,
         "funcion_bd": 5,
         "disparador": 2,
         "vista_bd": 2,
-        "rol_bd": 5,
+        "consulta": 13,
+        "modulo": 8,
+        "operacion": 38,
+        "pantalla": 18,
+        "requerimiento": 83,
+        "hueco": 34,
         "fuera_de_alcance": 20,
         "riesgo_aceptado": 9,
         "pregunta_abierta": 13
@@ -362,7 +367,7 @@
       "id": "ACT-05",
       "tipo": "actor",
       "nombre": "Resend",
-      "descripcion": "Servicio de envío de correos: enlaces de verificación, recuperación de contraseña y cambio de correo.",
+      "descripcion": "Servicio de envío de correos: verificación, recuperación de contraseña, cambio de correo y «ya tienes cuenta».",
       "estado": "decidido"
     },
     {
@@ -741,11 +746,12 @@
     {
       "id": "DEC-22",
       "tipo": "decision",
-      "nombre": "Nombre en tres campos",
-      "descripcion": "nombre (obligatorio), primer_apellido y segundo_apellido (opcional). En cuentas de Google el nombre y el apellido que entrega Google van a los dos primeros y el alumno puede corregirlos.",
+      "nombre": "Nombre y apellidos en dos campos",
+      "descripcion": "nombre (obligatorio) y apellidos: al menos el primer apellido; el segundo es opcional y va en el mismo campo. En el registro con correo ambos son obligatorios. En cuentas de Google el nombre y el apellido que entrega Google van a nombre y apellidos; si Google no entrega apellido, el campo queda vacío y el alumno puede completarlo en Perfil. La etiqueta en la interfaz es «Apellidos» con la ayuda «Al menos el primero».",
       "estado": "decidido",
       "detalles": {
-        "origen": "P-16; corrige RF-ACC-01 y la tabla de operaciones"
+        "origen": "P-16; corrige RF-ACC-01 y la tabla de operaciones",
+        "revision": "19/10 (v1.3.0): antes eran tres campos (nombre, primer_apellido, segundo_apellido). Se quita segundo_apellido por minimización (DEC-59) y para no pedir datos que ninguna vista necesita."
       }
     },
     {
@@ -782,7 +788,7 @@
       "id": "DEC-26",
       "tipo": "decision",
       "nombre": "Bloqueo por inicios de sesión fallidos",
-      "descripcion": "Tras 5 fallos seguidos la cuenta queda bloqueada 15 minutos (usuario.intentos_fallidos, usuario.bloqueado_hasta). El contador se reinicia al entrar bien o al vencer el bloqueo. Los intentos contra correos inexistentes los frena un límite de peticiones por IP en la memoria del servidor.",
+      "descripcion": "Tras 5 fallos seguidos la cuenta queda bloqueada 15 minutos (usuario.intentos_fallidos, usuario.bloqueado_hasta). El contador se reinicia al entrar bien o al vencer el bloqueo. Los intentos contra correos inexistentes los frena un límite de peticiones por IP en la memoria del servidor. Durante el bloqueo no se evalúa la contraseña ni se reinicia ni extiende el plazo; la respuesta es la genérica (DEC-77).",
       "estado": "decidido",
       "detalles": {
         "origen": "P-22 (versión final: columnas en usuario, sin tabla intento_acceso)"
@@ -1050,7 +1056,7 @@
       "id": "DEC-59",
       "tipo": "decision",
       "nombre": "Minimización de datos personales",
-      "descripcion": "Solo se recaban nombre(s), apellidos y correo. No se guardan fecha de nacimiento, teléfono, matrícula ni direcciones IP. Ninguna tabla ni columna sin uso en una vista.",
+      "descripcion": "Solo se recaban nombre(s), apellidos (al menos el primero, en un solo campo) y correo. No se guardan fecha de nacimiento, teléfono, matrícula ni direcciones IP. Ninguna tabla ni columna sin uso en una vista.",
       "estado": "decidido"
     },
     {
@@ -1265,20 +1271,12 @@
             "descripcion": "Nombre(s). *Solo nulo en cuentas anonimizadas"
           },
           {
-            "campo": "primer_apellido",
+            "campo": "apellidos",
             "tipo": "TEXT",
             "nulo": "Sí",
             "por_defecto": "—",
-            "restricciones": "CHECK longitud máxima 100",
-            "descripcion": "Puede faltar en cuentas creadas con Google"
-          },
-          {
-            "campo": "segundo_apellido",
-            "tipo": "TEXT",
-            "nulo": "Sí",
-            "por_defecto": "—",
-            "restricciones": "CHECK longitud máxima 100",
-            "descripcion": "Opcional"
+            "restricciones": "CHECK longitud 1 a 100",
+            "descripcion": "Al menos el primer apellido (DEC-22). Obligatorio en el registro con correo (lo valida el backend); puede faltar en cuentas creadas con Google y es nulo en cuentas anonimizadas"
           },
           {
             "campo": "correo",
@@ -3091,7 +3089,7 @@
         "origen": "O-01 de la tabla de operaciones corregida",
         "tipo_acceso": "E",
         "frecuencia": "Baja",
-        "recibe": "Nombre(s), primer apellido, segundo apellido (opcional), correo, contraseña",
+        "recibe": "Nombre(s), apellidos (al menos el primero), correo, contraseña",
         "devuelve": "Aviso de «revisa tu correo»"
       }
     },
@@ -3113,7 +3111,7 @@
       "id": "OP-03",
       "tipo": "operacion",
       "nombre": "Entrar con Google",
-      "descripcion": "Busca por google_sub; si no existe, vincula con cuenta verificada del mismo correo o crea una activa; actualiza el correo desde Google.",
+      "descripcion": "Busca por google_sub; si no existe, vincula con cuenta verificada del mismo correo o crea una activa; actualiza el correo desde Google. El apellido de Google va a apellidos; si no viene, queda vacío (DEC-22).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-03 de la tabla de operaciones corregida",
@@ -3127,7 +3125,7 @@
       "id": "OP-04",
       "tipo": "operacion",
       "nombre": "Iniciar sesión con correo",
-      "descripcion": "Cuenta activa y verificada; bloqueo 15 min tras 5 fallos; mensaje genérico ante credenciales incorrectas; «sin verificar» y «bloqueada» solo con contraseña correcta (DEC-77).",
+      "descripcion": "Cuenta activa y verificada; bloqueo 15 min tras 5 fallos; mensaje genérico ante cualquier fallo, incluida la cuenta bloqueada; «sin verificar» solo con contraseña correcta y sin bloqueo; hash de relleno si el correo no existe (DEC-77).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-04 de la tabla de operaciones corregida",
@@ -3589,7 +3587,7 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-01",
-        "estados_a_disenar": "Mensaje único ante credenciales incorrectas; correo sin verificar (con «Reenviar enlace») y cuenta bloqueada 15 min (con la hora de desbloqueo) solo si la contraseña es correcta (DEC-77)",
+        "estados_a_disenar": "Mensaje único ante cualquier fallo, que menciona la pausa de 15 min tras 5 intentos y cubre también la cuenta bloqueada; correo sin verificar (con «Reenviar enlace») solo si la contraseña es correcta (DEC-77). No existe un estado «cuenta bloqueada» con la hora de desbloqueo.",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
       }
@@ -3598,11 +3596,11 @@
       "id": "SCR-02",
       "tipo": "pantalla",
       "nombre": "Registro",
-      "descripcion": "Nombre(s), primer y segundo apellido, correo, contraseña, enlace al aviso de privacidad, botón de Google.",
+      "descripcion": "Nombre(s), apellidos (al menos el primero), correo, contraseña, enlace al aviso de privacidad, botón de Google.",
       "estado": "decidido",
       "detalles": {
         "origen": "V-02",
-        "estados_a_disenar": "Contraseña débil; registro enviado: siempre «Revisa tu correo», exista o no una cuenta con ese correo (DEC-77)",
+        "estados_a_disenar": "Apellidos vacíos; Contraseña débil; registro enviado: siempre «Revisa tu correo», exista o no una cuenta con ese correo (DEC-77)",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
       }
@@ -3784,7 +3782,7 @@
       "estado": "decidido",
       "detalles": {
         "origen": "V-16",
-        "estados_a_disenar": "Cuenta de Google (sin contraseña, correo no editable); confirmación de eliminar; cambio de correo enviado: siempre «Revisa tu correo nuevo» (DEC-77)",
+        "estados_a_disenar": "Cuenta de Google (sin contraseña, correo no editable); cuenta de Google sin apellido (invitación a completarlo); confirmación de eliminar; cambio de correo enviado: siempre «Revisa tu correo nuevo» (DEC-77)",
         "requiere_sesion": true,
         "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
@@ -3814,7 +3812,9 @@
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad",
         "contenido": "Fijo; no invoca operaciones ni lee tablas",
-        "diseno": "Propuesta B «Tierra» en Figma (DEC-82)"
+        "diseno": "Propuesta B «Tierra» en Figma (DEC-82)",
+        "ruta": "/",
+        "render": "Estático; la redirección con sesión la hace proxy.ts (DEC-83)"
       }
     },
     {
@@ -5189,7 +5189,7 @@
       "id": "DEC-66",
       "tipo": "decision",
       "nombre": "Correo con Resend",
-      "descripcion": "Los correos de verificación, recuperación y cambio de correo se envían con Resend desde el backend. La llave de API vive en variables de entorno de Railway.",
+      "descripcion": "Los correos de verificación, recuperación, cambio de correo y «ya tienes cuenta» se envían con Resend desde el backend. La llave de API vive en variables de entorno de Railway.",
       "estado": "decidido",
       "detalles": {
         "origen": "PEND-07 (18/10)"
@@ -5440,19 +5440,19 @@
       "id": "DEC-77",
       "tipo": "decision",
       "nombre": "Mensajes que no delatan cuentas",
-      "descripcion": "Ninguna respuesta revela si un correo tiene cuenta. Inicio de sesión (OP-04): un solo mensaje para correo inexistente o contraseña incorrecta; «correo sin verificar» y «cuenta bloqueada 15 min» solo se muestran si la contraseña es correcta (durante el bloqueo, una contraseña incorrecta sigue recibiendo el mensaje genérico). Registro (OP-01): siempre «Revisa tu correo»; si el correo ya tiene cuenta no se crea otra y se le envía el correo «ya tienes cuenta». Recuperación (OP-06): siempre el mismo mensaje genérico, que incluye «Si entras con Google, no necesitas contraseña»; se elimina el estado «cuenta solo de Google». Cambio de correo (OP-11): siempre «Revisa tu correo nuevo»; si el correo nuevo ya tiene cuenta, se avisa a esa dirección. El abuso de estos envíos lo frena el límite de peticiones por IP (RSG-04). No cambia el esquema: el correo «ya tienes cuenta» no lleva enlace de un solo uso, así que token_correo.tipo no cambia.",
+      "descripcion": "Ninguna respuesta revela si un correo tiene cuenta. Inicio de sesión (OP-04): un solo mensaje para correo inexistente o contraseña incorrecta; el mensaje genérico menciona la pausa («Tras 5 intentos fallidos, el acceso se pausa 15 minutos.») y cubre también la cuenta bloqueada: durante el bloqueo no se evalúa la contraseña, porque mostrar «bloqueada» solo con la contraseña correcta le confirmaría a un atacante que acertó; «correo sin verificar» sí se muestra, solo con la contraseña correcta y sin bloqueo. Siempre se calcula un hash Argon2id, aunque el correo no exista, para que el tiempo de respuesta no lo delate. Registro (OP-01): siempre «Revisa tu correo»; si el correo ya tiene cuenta no se crea otra y se le envía el correo «ya tienes cuenta». Recuperación (OP-06): siempre el mismo mensaje genérico, que incluye «Si entras con Google, no necesitas contraseña»; se elimina el estado «cuenta solo de Google». Cambio de correo (OP-11): siempre «Revisa tu correo nuevo»; si el correo nuevo ya tiene cuenta, se avisa a esa dirección. El abuso de estos envíos lo frena el límite de peticiones por IP (RSG-04). No cambia el esquema: el correo «ya tienes cuenta» no lleva enlace de un solo uso, así que token_correo.tipo no cambia.",
       "estado": "decidido",
       "detalles": {
         "origen": "Revisión de pantallas con el equipo (18/10)",
         "textos_sugeridos": {
-          "credenciales_incorrectas": "El correo o la contraseña no son correctos.",
+          "credenciales_incorrectas": "El correo o la contraseña no son correctos. Tras 5 intentos fallidos, el acceso se pausa 15 minutos.",
           "correo_sin_verificar": "Aún no verificas tu correo. Te podemos enviar un enlace nuevo.",
-          "cuenta_bloqueada": "Por seguridad, tu cuenta está en pausa. Podrás intentarlo de nuevo a las HH:MM.",
           "registro_enviado": "Revisa tu correo. Te enviamos un mensaje para continuar.",
           "recuperacion_enviada": "Si hay una cuenta con contraseña para ese correo, te enviamos un enlace que vence en 30 minutos. Si entras con Google, no necesitas contraseña.",
           "cambio_de_correo_enviado": "Revisa tu correo nuevo para confirmar el cambio. El enlace vence en 30 minutos."
         },
-        "sin_cambio_de_esquema": true
+        "sin_cambio_de_esquema": true,
+        "revision": "19/10 (v1.3.0): se quita el estado «cuenta bloqueada» con contraseña correcta, que funcionaba como oráculo durante el bloqueo; el aviso de la pausa va dentro del mensaje genérico."
       }
     },
     {
@@ -5528,6 +5528,28 @@
       "nombre": "Mensajes que no delatan cuentas",
       "descripcion": "Ninguna respuesta de la API ni texto de la interfaz confirma si un correo tiene cuenta; los estados de una cuenta (sin verificar, bloqueada) solo se muestran tras una contraseña correcta (DEC-77).",
       "estado": "obligatorio"
+    },
+    {
+      "id": "DEC-83",
+      "tipo": "decision",
+      "nombre": "Sitio público dentro de la app de Next.js",
+      "descripcion": "La página de inicio pública (SCR-18) vive en la misma aplicación y el mismo servicio de Railway que el resto del frontend, en la ruta «/» del grupo de rutas (publico), junto con el aviso de privacidad (SCR-05) y la ayuda (SCR-17). No es un servicio aparte: otro servicio costaría otros 512 MB (DEC-70) y duplicaría dominio, fuentes y tokens. La página se genera estática al compilar y no consulta al backend; la redirección a Módulos con sesión activa (DEC-78) la hace proxy.ts al ver la cookie de sesión. Sus secciones son componentes en src/areas/inicio/componentes/ y app/(publico)/page.tsx solo las acomoda.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de la arquitectura del frontend (19/10)",
+        "ruta": "/"
+      }
+    },
+    {
+      "id": "DEC-84",
+      "tipo": "decision",
+      "nombre": "Paso del diseño «Tierra» de Figma a Next.js",
+      "descripcion": "Las vistas se construyen a partir de la página «Vistas de la app» de Figma (DEC-82), no de los prototipos HTML anteriores, que quedan descartados. (1) Las variables de Figma («marca/*», «texto/*», «superficie/*») se vuelven tokens de Tailwind 4 en @theme con el mismo nombre, y no se usan colores fuera de ellas ni de la página Identidad; (2) los componentes de Figma («Componentes · Acceso» y «Componentes · App») se vuelven componentes de React en src/componentes/; (3) logo, Moris, logos institucionales e íconos se exportan de Figma a public/marca/ y public/imagenes/ (SVG cuando se pueda), sin redibujarlos; (4) Nunito y Nunito Sans se cargan con next/font, servidas desde el propio dominio; (5) el texto de las vistas marcadas «contenido de ejemplo» no se copia como contenido real (DEC-33). Si una vista de Figma contradice al grafo, manda el grafo y la diferencia se anota en el reporte de la tarea.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de la arquitectura del frontend (19/10)",
+        "figma": "https://www.figma.com/design/1zggHPVnKEPlt7khBbtWTt/Echo?node-id=66-2"
+      }
     }
   ],
   "aristas": [
@@ -8845,11 +8867,6 @@
       "relacion": "usa"
     },
     {
-      "origen": "OP-33",
-      "destino": "TEC-SMTP",
-      "relacion": "usa"
-    },
-    {
       "origen": "SCR-01",
       "destino": "MOD-CUENTA",
       "relacion": "parte_de"
@@ -10673,11 +10690,6 @@
       "relacion": "usa"
     },
     {
-      "origen": "OP-33",
-      "destino": "DEC-66",
-      "relacion": "usa"
-    },
-    {
       "origen": "OP-34",
       "destino": "TEC-RAILWAY-CRON",
       "relacion": "usa"
@@ -11365,6 +11377,71 @@
     {
       "origen": "SCR-18",
       "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-22",
+      "destino": "DEC-59",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-33",
+      "destino": "DEC-66",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-83",
+      "destino": "DEC-78",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-83",
+      "destino": "DEC-64",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-83",
+      "destino": "DEC-70",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-83",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-83",
+      "destino": "TEC-NEXT",
+      "relacion": "usa"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "DEC-83",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-84",
+      "destino": "DEC-82",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-84",
+      "destino": "DEC-83",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-84",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-84",
+      "destino": "DEC-33",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "DEC-84",
       "relacion": "regida_por"
     }
   ]
