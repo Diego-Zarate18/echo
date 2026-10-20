@@ -172,7 +172,7 @@ Cada grupo tiene sus propios `loading.tsx`, `error.tsx` y `not-found.tsx` en esp
 **Datos y caché:**
 - Todo lo del alumno es dinámico (`cache: 'no-store'`), porque depende de la sesión.
 - Las páginas públicas (`/`, aviso, ayuda) son estáticas.
-- No se activa `cacheComponents` en esta versión: no hace falta para la carga de la prueba.
+- Se conserva `cacheComponents: true`, que trae la plantilla de Next 16.4.2. Las páginas públicas quedan estáticas; las lecturas que dependen de la sesión (`cookies()`, datos del alumno) van dentro de `<Suspense>` y **nunca** se marcan con `'use cache'`. Antes de usarlo, leer `node_modules/next/dist/docs/01-app/02-guides/authentication-with-cache-components.md`.
 
 **Mutaciones:** desde el cliente con `navegador.ts` (`fetch` a `/api`). Después se llama a `router.refresh()` para que los componentes de servidor vuelvan a leer. **[por aprobar]** No se usan Server Actions. Así hay un solo camino hacia la API, y el `Set-Cookie` del backend llega intacto al navegador.
 
