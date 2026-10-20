@@ -59,14 +59,17 @@ const elementos: readonly Elemento[] = [
   },
 ];
 
-/** Sección «Qué encontrarás» (84:560): cinco filas con su globo de Moris. */
+/**
+ * Sección «Qué encontrarás» (84:560): cinco filas con su globo de Moris.
+ * En escritorio va compacta para que el título y las cinco filas quepan en la ventana al llegar desde el menú.
+ */
 export function QueEncontraras() {
   return (
     <section
       id="que-encontraras"
       aria-labelledby="titulo-que-encontraras"
       data-fondo="claro"
-      className="bg-marca-crema px-5 py-20 text-marca-cafe md:px-10 md:py-28 lg:px-[72px] lg:pt-[130px] lg:pb-[140px]"
+      className="bg-marca-crema px-5 py-20 text-marca-cafe md:px-10 md:py-28 lg:px-[72px] lg:pt-[130px] lg:pb-[140px] xl:pt-6 xl:pb-24"
     >
       <div className="mx-auto w-full max-w-[1296px]">
         <EncabezadoSeccion
@@ -77,11 +80,11 @@ export function QueEncontraras() {
           proporcion="titulo-amplio"
         />
 
-        <ul className="mt-12 lg:mt-14">
+        <ul className="mt-12 lg:mt-14 xl:mt-6">
           {elementos.map(({ titulo, descripcion, Icono, expresion, mensajeMoris }) => (
             <li
               key={titulo}
-              className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-5 gap-y-3 border-t border-marca-cafe/14 py-[30px] md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_300px_minmax(0,420px)_384px] xl:items-center xl:justify-between"
+              className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-5 gap-y-3 border-t border-marca-cafe/14 py-[30px] xl:py-2 md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_300px_minmax(0,420px)_384px] xl:items-center xl:justify-between"
             >
               <span data-dibujar className="row-span-3 flex size-14 items-center justify-center rounded-full bg-marca-cafe text-marca-menta md:size-16 xl:row-span-1">
                 <Icono className="size-6 md:size-7" />
