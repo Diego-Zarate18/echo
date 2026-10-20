@@ -408,7 +408,7 @@
    * `scroll-padding` también lo usa el navegador al llevar a la vista el elemento enfocado.
    */
   html {
-    scroll-padding-top: 4.75rem;
+    scroll-padding-top: 5rem;
   }
 
   body {
