@@ -58,10 +58,13 @@ const cursosEjemplo = [
   },
 ] as const;
 
-/** Tarjeta ilustrativa «Ejemplo de ruta» (84:510). No es contenido real: así lo dice su título. */
+/**
+ * Tarjeta ilustrativa «Ejemplo de ruta» (84:510). No es contenido real: así lo dice su título.
+ * Solo aparece desde 1360 px: por debajo tapaba a Moris, y el manual no lo permite.
+ */
 function EjemploRuta() {
   return (
-    <figure className="absolute right-12 bottom-14 z-20 hidden animate-aparecer [animation-delay:900ms] w-[340px] flex-col gap-3.5 rounded-panel border border-blanco/16 bg-marca-crema/8 p-[22px] text-marca-crema shadow-vidrio backdrop-blur-vidrio xl:flex">
+    <figure className="absolute right-10 bottom-10 z-20 hidden animate-aparecer [animation-delay:900ms] w-[316px] flex-col gap-3.5 rounded-panel border border-blanco/16 bg-marca-crema/8 p-[22px] text-marca-crema shadow-vidrio backdrop-blur-vidrio min-[85rem]:flex">
       <figcaption className="flex items-center justify-between">
         <span className="font-titulo text-menor font-bold">Ejemplo de ruta</span>
         <span className="text-nota text-marca-menta">Módulo 1</span>
@@ -106,15 +109,15 @@ export function Presentacion() {
         <div className="relative flex flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-(--alto-hero) lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
           <AvisoPiloto variante="tarjeta" className="animate-aparecer [animation-delay:100ms] lg:hidden" />
 
-          <div className="relative mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(30.1%,calc(var(--alto-hero)*0.46))]">
+          <div className="relative mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(26%,calc(var(--alto-hero)*0.42))]">
             <Moris
               expresion="principal"
               alt="Moris, la mascota de Echo: una semilla redonda color terracota con dos hojas verdes, ojos grandes y una sonrisa."
-              sizes="(min-width: 1024px) 30vw, (min-width: 768px) 300px, 220px"
+              sizes="(min-width: 1024px) 26vw, (min-width: 768px) 300px, 220px"
               preload
               className="w-full animate-brotar [animation-delay:150ms]"
             />
-            <Filamentos className="top-[31.5%] left-[93%] w-1/2 text-marca-menta lg:top-[7.6%] lg:left-[94%] lg:w-[52%]" />
+            <Filamentos className="top-[31.5%] left-[93%] w-1/2 text-marca-menta lg:top-[7.6%] lg:left-[94%] lg:w-[40%]" />
           </div>
 
           <div className="relative mt-[30px] max-w-[640px] lg:mt-0 lg:w-[46%]">
