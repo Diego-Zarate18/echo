@@ -214,7 +214,7 @@ test.describe("SCR-18 · Barra fija siempre visible", () => {
 
   for (const reducido of [false, true]) {
     test(`después del hero la barra no desaparece y no tapa anclas ni foco${reducido ? " · movimiento reducido" : ""}`, async ({ page }, info) => {
-      test.setTimeout(180_000);
+      test.setTimeout(360_000);
       if (reducido) await page.emulateMedia({ reducedMotion: "reduce" });
       const tamanos = info.project.name === "movil" ? [[390, 844]] : [[1536, 705], [1440, 900]];
 
@@ -268,7 +268,23 @@ test.describe("SCR-18 · Barra fija siempre visible", () => {
         await page.locator("body").focus();
         for (let paso = 0; paso < 60; paso++) {
           await page.keyboard.press("Tab");
-          await page.waitForTimeout(reducido ? 60 : 450);
+          // Se mide con la página quieta: el control puede cruzar la barra mientras el navegador lo lleva a la vista.
+          await page.evaluate(
+            () =>
+              new Promise<void>((resolver) => {
+                let anterior = -1;
+                let quieto = 0;
+                const inicio = performance.now();
+                const mirar = () => {
+                  const y = window.scrollY;
+                  quieto = y === anterior ? quieto + 1 : 0;
+                  anterior = y;
+                  if (quieto >= 12 || performance.now() - inicio > 2000) resolver();
+                  else requestAnimationFrame(mirar);
+                };
+                requestAnimationFrame(mirar);
+              }),
+          );
           const choque = await page.evaluate(() => {
             const activo = document.activeElement as HTMLElement | null;
             const encabezado = document.querySelector("header")!;
@@ -284,6 +300,50 @@ test.describe("SCR-18 · Barra fija siempre visible", () => {
       }
     });
   }
+});
+
+test.describe("SCR-18 · Aire de las secciones", () => {
+  test("cada sección deja aire arriba y su título queda completo bajo la barra al bajar", async ({ page }, info) => {
+    test.skip(info.project.name !== "escritorio", "Se revisa en 1536 × 705 y 1440 × 900");
+    for (const [ancho, alto] of [[1536, 705], [1440, 900]]) {
+      const medida = `${ancho}×${alto}`;
+      await page.setViewportSize({ width: ancho, height: alto });
+      await page.goto("/");
+      const ids = await page.locator("main section[id]:has(h2)").evaluateAll((secciones) => secciones.map((s) => s.id));
+      expect(ids.length).toBeGreaterThanOrEqual(4);
+
+      // Aire entre el borde de arriba de la sección y su título.
+      for (const id of ids) {
+        const aire = await page.evaluate((idSeccion) => {
+          const seccion = document.getElementById(idSeccion)!;
+          return seccion.querySelector("h2")!.getBoundingClientRect().top - seccion.getBoundingClientRect().top;
+        }, id);
+        expect(aire, `${medida}, #${id}`).toBeGreaterThanOrEqual(64);
+      }
+
+      // Bajar con la rueda hasta que cada sección toca el borde inferior de la barra: su título queda completo debajo.
+      await page.mouse.move(ancho / 2, alto * 0.6);
+      await page.mouse.wheel(0, 400);
+      await expect(page.getByRole("banner")).toHaveAttribute("data-flotante", "true");
+      for (const id of ids) {
+        const { distancia } = await page.evaluate((idSeccion) => {
+          const barra = document.querySelector("header > div")!.getBoundingClientRect();
+          return { distancia: Math.round(document.getElementById(idSeccion)!.getBoundingClientRect().top - barra.bottom) };
+        }, id);
+        await page.mouse.wheel(0, distancia);
+        await page.waitForTimeout(400);
+        const medidas = await page.evaluate((idSeccion) => {
+          const barra = document.querySelector("header > div")!.getBoundingClientRect();
+          const seccion = document.getElementById(idSeccion)!.getBoundingClientRect();
+          const titulo = document.querySelector(`#${idSeccion} h2`)!.getBoundingClientRect();
+          return { bordeSeccion: seccion.top - barra.bottom, tituloArriba: titulo.top - barra.bottom, tituloAbajo: titulo.bottom };
+        }, id);
+        expect(Math.abs(medidas.bordeSeccion), `${medida}, #${id}: la sección toca la barra`).toBeLessThanOrEqual(2);
+        expect(medidas.tituloArriba, `${medida}, #${id}: título bajo la barra`).toBeGreaterThanOrEqual(0);
+        expect(medidas.tituloAbajo, `${medida}, #${id}: título completo`).toBeLessThanOrEqual(alto);
+      }
+    }
+  });
 });
 
 test.describe("SCR-18 · Menú móvil", () => {
