@@ -90,6 +90,38 @@ function useFaseDeLaBarra(flotante: boolean) {
   return { fija: fase !== "hero", visible: fase === "fija" };
 }
 
+/** Aire mínimo entre la barra fija y el control que recibe el foco. */
+const AIRE_FOCO = 16;
+
+/**
+ * El control con foco nunca queda debajo de la barra fija (WCAG 2.4.11). El navegador solo desplaza la
+ * página si el control está fuera de la ventana; si está a la vista pero debajo de la barra, no lo mueve.
+ * Aquí se desplaza al instante lo justo para dejarlo `AIRE_FOCO` px por debajo de ella.
+ */
+function useFocoSinTapar(visible: boolean) {
+  const encabezado = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!visible) return;
+    function alEnfocar(evento: FocusEvent) {
+      const elemento = encabezado.current;
+      const objetivo = evento.target as HTMLElement | null;
+      if (!elemento || !objetivo || elemento.contains(objetivo)) return;
+      const barra = elemento.querySelector(":scope > div")?.getBoundingClientRect();
+      if (!barra) return;
+      const caja = objetivo.getBoundingClientRect();
+      const tope = barra.bottom + AIRE_FOCO;
+      if (caja.top < tope && caja.bottom > 0) {
+        window.scrollBy({ top: caja.top - tope, behavior: "instant" });
+      }
+    }
+    document.addEventListener("focusin", alEnfocar);
+    return () => document.removeEventListener("focusin", alEnfocar);
+  }, [visible]);
+
+  return encabezado;
+}
+
 type Recorte = { izquierda: number; derecha: number };
 
 /**
@@ -134,6 +166,7 @@ export function EncabezadoPublico() {
   const { flotante, actual } = useEstadoDelEncabezado();
   const { lista, recorte, deslizar } = useIndicador(actual);
   const { fija, visible } = useFaseDeLaBarra(flotante);
+  const encabezado = useFocoSinTapar(visible);
 
   const estiloIndicador: CSSProperties = {
     clipPath: recorte ? `inset(0 ${recorte.derecha}px 0 ${recorte.izquierda}px round 999px)` : undefined,
@@ -142,6 +175,7 @@ export function EncabezadoPublico() {
 
   return (
     <header
+      ref={encabezado}
       data-fondo="oscuro"
       data-flotante={flotante}
       className={[
