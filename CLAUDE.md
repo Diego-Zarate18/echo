@@ -31,7 +31,20 @@ Nada de lo que esté en `fuera_de_alcance` se implementa sin aprobación.
 - Accesibilidad: WCAG 2.2 nivel AA en todas las pantallas (DEC-71).
 
 ## Comandos
-Los proyectos de backend y frontend aún no existen. Al crearlos, agrega aquí los comandos reales
+
+### Frontend (`frontend/`, Node 22 LTS)
+Se corren desde `frontend/`:
+- `npm install`: instala las dependencias exactas del `package-lock.json` (`.npmrc` con `save-exact=true`).
+- `npm run dev`: servidor de desarrollo (Turbopack) en `http://localhost:3000`.
+- `npm run build`: compila para producción; muestra la tabla de rutas (`○` estática, `ƒ` dinámica).
+- `npm run start`: sirve la compilación de producción.
+- `npm run lint`: ESLint (`next lint` ya no existe en Next 16).
+- `npm run tipos`: revisión de tipos con `tsc --noEmit`.
+- `npm run prueba:e2e`: Playwright + axe en escritorio y móvil; compila y levanta la app por su cuenta.
+- `npx playwright install chromium`: descarga el navegador de las pruebas (solo la primera vez).
+
+### Backend
+El proyecto de backend aún no existe. Al crearlo, agrega aquí los comandos reales
 (compilar, pruebas, lint, migraciones) y usa siempre el Prisma instalado en el proyecto:
 - **Nunca** `npx prisma@latest` ni `npx prisma` fuera del proyecto: descargaría la última versión.
 - Migraciones de desarrollo: `npx prisma migrate dev --create-only` y luego edita el SQL si hace falta (CHECK, índices parciales,
