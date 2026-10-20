@@ -101,6 +101,11 @@ export function Presentacion() {
         data-fondo="oscuro"
         className="relative isolate overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero lg:rounded-hero lg:[--alto-hero:clamp(38rem,calc(100svh-1rem),57.5rem)]"
       >
+        {/*
+          Borde de arriba del hero: en cuanto sale de la ventana, el encabezado se vuelve barra fija, y al subir
+          solo se suelta cuando el encabezado del hero se ve completo. Así nunca hay un momento sin navegación.
+        */}
+        <span id="centinela-encabezado" aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-2" />
         {/* El contenido sigue la retícula de 1424 px aunque la tarjeta llegue a 8 px del borde. */}
         <div className="relative mx-auto flex w-full max-w-[1424px] flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-(--alto-hero) lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
           <span

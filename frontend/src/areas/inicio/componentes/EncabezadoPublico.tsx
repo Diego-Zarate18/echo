@@ -9,7 +9,9 @@ import { MenuMovil } from "./MenuMovil";
 
 /**
  * Observa el hero y las secciones:
- * - `flotante`: el hero ya salió de la ventana y el encabezado se queda fijo arriba;
+ * - `flotante`: el borde de arriba del hero ya salió de la ventana (`#centinela-encabezado`).
+ *   Se mide ese borde y no el hero completo: la barra fija aparece en cuanto el encabezado del hero empieza
+ *   a irse, y al subir solo se quita cuando ese encabezado vuelve a verse completo;
  * - `actual`: la sección que cruza el centro de la ventana (resaltada en el menú, como en Figma 84:493).
  */
 function useEstadoDelEncabezado() {
@@ -17,13 +19,10 @@ function useEstadoDelEncabezado() {
   const [actual, setActual] = useState<string | null>(null);
 
   useEffect(() => {
-    const portada = document.getElementById("portada");
-    if (!portada) return;
-    const observadorPortada = new IntersectionObserver(
-      ([entrada]) => setFlotante(!entrada.isIntersecting),
-      { rootMargin: "-96px 0px 0px 0px" },
-    );
-    observadorPortada.observe(portada);
+    const centinela = document.getElementById("centinela-encabezado");
+    if (!centinela) return;
+    const observadorPortada = new IntersectionObserver(([entrada]) => setFlotante(!entrada.isIntersecting));
+    observadorPortada.observe(centinela);
 
     const secciones = seccionesInicio
       .map((seccion) => document.getElementById(seccion.id))
