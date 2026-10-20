@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 /** Página 404 en español con el estilo de «Tierra». */
 export default function NoEncontrada() {
   return (
-    <div className="flex min-h-dvh flex-col p-3 lg:p-4">
+    <div className="flex min-h-dvh flex-col p-2">
       <main
         id="contenido"
         data-fondo="oscuro"

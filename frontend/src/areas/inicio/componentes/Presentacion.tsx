@@ -13,12 +13,22 @@ function Filamentos({ className }: { className: string }) {
       focusable="false"
       className={`pointer-events-none absolute opacity-60 ${className}`}
     >
-      <g stroke="currentColor" strokeWidth={5} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M0 65H150" />
-        <path d="M0 45H58L88 15H140" />
-        <path d="M0 85H58L88 115H140" />
+      <g
+        stroke="currentColor"
+        strokeWidth={5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="1"
+        className="animate-trazar [animation-delay:750ms]"
+      >
+        <path pathLength={1} d="M0 65H150" />
+        <path pathLength={1} d="M0 45H58L88 15H140" />
+        <path pathLength={1} d="M0 85H58L88 115H140" />
       </g>
-      <g fill="currentColor">
+      <g
+        fill="currentColor"
+        className="animate-encender origin-center [transform-box:fill-box] [animation-delay:1350ms]"
+      >
         <path d="M162 76C168.075 76 173 71.0751 173 65C173 58.9249 168.075 54 162 54C155.925 54 151 58.9249 151 65C151 71.0751 155.925 76 162 76Z" />
         <path d="M150 24C154.971 24 159 19.9706 159 15C159 10.0294 154.971 6 150 6C145.029 6 141 10.0294 141 15C141 19.9706 145.029 24 150 24Z" />
         <path d="M150 124C154.971 124 159 119.971 159 115C159 110.029 154.971 106 150 106C145.029 106 141 110.029 141 115C141 119.971 145.029 124 150 124Z" />
@@ -51,7 +61,7 @@ const cursosEjemplo = [
 /** Tarjeta ilustrativa «Ejemplo de ruta» (84:510). No es contenido real: así lo dice su título. */
 function EjemploRuta() {
   return (
-    <figure className="absolute right-12 bottom-14 z-20 hidden w-[340px] flex-col gap-3.5 rounded-panel border border-blanco/16 bg-marca-crema/8 p-[22px] text-marca-crema shadow-vidrio backdrop-blur-vidrio xl:flex">
+    <figure className="absolute right-12 bottom-14 z-20 hidden animate-aparecer [animation-delay:900ms] w-[340px] flex-col gap-3.5 rounded-panel border border-blanco/16 bg-marca-crema/8 p-[22px] text-marca-crema shadow-vidrio backdrop-blur-vidrio xl:flex">
       <figcaption className="flex items-center justify-between">
         <span className="font-titulo text-menor font-bold">Ejemplo de ruta</span>
         <span className="text-nota text-marca-menta">Módulo 1</span>
@@ -80,42 +90,43 @@ function EjemploRuta() {
 /** Hero del inicio público (84:477 escritorio, 84:706 móvil). */
 export function Presentacion() {
   return (
-    <div className="px-3 pt-3 pb-3 lg:px-4 lg:pt-4 lg:pb-4">
+    <div className="p-2">
       <section
         aria-labelledby="titulo-portada"
         data-fondo="oscuro"
-        className="relative isolate mx-auto max-w-[1408px] overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero lg:rounded-hero"
+        className="relative isolate mx-auto max-w-[1424px] overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero lg:rounded-hero lg:[--alto-hero:clamp(38rem,calc(100svh-1rem),57.5rem)]"
       >
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute top-[92px] left-[3.3%] -z-10 font-titulo text-[calc((100vw-1.5rem)*0.322)] leading-none font-black tracking-[-0.03em] whitespace-nowrap opacity-[0.08] select-none lg:top-[11.3%] lg:left-[15%] lg:text-[min(calc((100vw-2rem)*0.2415),340px)]"
+          className="pointer-events-none absolute top-[92px] left-[3.3%] -z-10 animate-eco font-titulo text-[calc((100vw-1rem)*0.322)] leading-none font-black tracking-[-0.03em] whitespace-nowrap text-marca-crema/8 select-none lg:top-[11.3%] lg:left-[15%] lg:text-[min(calc((100vw-1rem)*0.2415),340px,calc(var(--alto-hero)*0.37))]"
         >
           ÉTICA
         </span>
 
-        <div className="relative flex flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-[57.5rem] lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
-          <AvisoPiloto variante="tarjeta" className="lg:hidden" />
+        <div className="relative flex flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-(--alto-hero) lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
+          <AvisoPiloto variante="tarjeta" className="animate-aparecer [animation-delay:100ms] lg:hidden" />
 
-          <div className="relative mx-auto w-[220px] md:w-[300px] lg:absolute lg:top-[28.5%] lg:left-[47.9%] lg:mx-0 lg:w-[30.1%]">
+          <div className="relative mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(30.1%,calc(var(--alto-hero)*0.46))]">
             <Moris
               expresion="principal"
               alt="Moris, la mascota de Echo: una semilla redonda color terracota con dos hojas verdes, ojos grandes y una sonrisa."
               sizes="(min-width: 1024px) 30vw, (min-width: 768px) 300px, 220px"
               preload
-              className="w-full"
+              className="w-full animate-brotar [animation-delay:150ms]"
             />
             <Filamentos className="top-[31.5%] left-[93%] w-1/2 text-marca-menta lg:top-[7.6%] lg:left-[94%] lg:w-[52%]" />
           </div>
 
           <div className="relative mt-[30px] max-w-[640px] lg:mt-0 lg:w-[46%]">
             <h1 id="titulo-portada" className="font-titulo text-portada font-black text-balance">
-              Lo que construyes, <span className="block">regresa.</span>
+              <span className="block animate-aparecer [animation-delay:300ms]">Lo que construyes,</span>{" "}
+              <span className="block animate-regresar [animation-delay:520ms]">regresa.</span>
             </h1>
-            <p className="mt-[18px] max-w-[560px] text-base leading-[1.55] lg:mt-[26px] lg:text-destacado">
+            <p className="mt-[18px] max-w-[560px] animate-aparecer text-base leading-[1.55] [animation-delay:650ms] lg:mt-[26px] lg:text-destacado">
               «Echo» viene del griego ēchō: sonido que regresa. Toda decisión en tecnología tiene
               consecuencias que alcanzan a otras personas. Aquí aprendes a anticiparlas.
             </p>
-            <div className="mt-[18px] flex flex-col gap-2.5 md:flex-row md:gap-4 lg:mt-[26px]">
+            <div className="mt-[18px] flex animate-aparecer flex-col gap-2.5 [animation-delay:780ms] md:flex-row md:gap-4 lg:mt-[26px]">
               <Boton variante="crema" conFlecha href="/registro" className="w-full md:w-[200px]">
                 Crear cuenta
               </Boton>

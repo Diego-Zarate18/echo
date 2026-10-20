@@ -28,7 +28,7 @@ export function QueEsEcho() {
             Echo es una plataforma para aprender ética, principios, leyes y normas del desarrollo de
             software.
           </h2>
-          <div className="flex max-w-[560px] items-center gap-4 rounded-burbuja border border-blanco/16 bg-marca-crema/8 px-[22px] py-[18px] backdrop-blur-vidrio">
+          <div className="revelar-globo flex max-w-[560px] items-center gap-4 rounded-burbuja border border-blanco/16 bg-marca-crema/8 px-[22px] py-[18px] backdrop-blur-vidrio">
             <Moris expresion="sorprendido" alt="" sizes="52px" className="w-[52px]" />
             <p className="flex flex-col gap-0.5 text-menor">
               <strong className="font-titulo font-bold text-marca-menta">¿Sabías que…?</strong>
@@ -46,7 +46,7 @@ export function QueEsEcho() {
             la privacidad de los datos, los derechos de autor, la seguridad y los códigos de ética
             profesional.
           </p>
-          <ul className="flex flex-col gap-7">
+          <ul className="revelar flex flex-col gap-7">
             {puntos.map((punto) => (
               <li key={punto} className="flex items-center gap-3 text-cuerpo font-semibold">
                 <IconoCirculoCheck className="size-[22px] text-marca-menta" />
@@ -55,7 +55,7 @@ export function QueEsEcho() {
             ))}
           </ul>
           <h3 className="font-titulo text-base font-bold">Fundamentos que vas a conocer</h3>
-          <ul className="flex flex-wrap gap-2.5">
+          <ul className="revelar flex flex-wrap gap-2.5">
             {fundamentos.map(({ texto, Icono }) => (
               <li
                 key={texto}

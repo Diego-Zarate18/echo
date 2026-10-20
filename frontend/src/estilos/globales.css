@@ -48,7 +48,8 @@
   --blur-vidrio: 14px;
 
   /* Escala tipográfica. Los títulos grandes escalan entre 390 y 1440 px. */
-  --text-portada: clamp(2.75rem, 1.6rem + 3.8vw, 4.875rem);
+  /* En escritorio también depende del alto de la ventana para que el hero quepa completo. */
+  --text-portada: clamp(2.75rem, min(1.6rem + 3.8vw, 9svh), 4.875rem);
   --text-portada--line-height: 1.02;
   --text-portada--letter-spacing: -0.025em;
   --text-cierre: clamp(2.5rem, 1.6rem + 2.9vw, 4rem);
@@ -79,6 +80,141 @@
   --text-detalle--line-height: 1.5;
   --text-nota: 0.8125rem;
   --text-nota--line-height: 1.5;
+
+  /*
+   * Movimiento: «el eco que regresa». Una sola secuencia de entrada en el hero
+   * y apariciones suaves al desplazarse. Desaceleración natural, sin rebotes.
+   */
+  --ease-llegada: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-eco: eco 1200ms var(--ease-llegada) both;
+  --animate-brotar: brotar 1000ms var(--ease-llegada) both;
+  --animate-aparecer: aparecer 800ms var(--ease-llegada) both;
+  --animate-regresar: regresar 900ms var(--ease-llegada) both;
+  --animate-trazar: trazar 900ms var(--ease-llegada) both;
+  --animate-encender: encender 500ms var(--ease-llegada) both;
+}
+
+/* Fotogramas de las animaciones (fuera de @theme para que siempre se emitan). */
+/* «ÉTICA» llega como un sonido lejano: desenfocada y grande, luego nítida. */
+@keyframes eco {
+  from {
+    opacity: 0;
+    filter: blur(18px);
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+/* Moris brota de la tierra: se descubre de abajo hacia arriba mientras sube. */
+@keyframes brotar {
+  from {
+    clip-path: inset(100% 0 0 0);
+    transform: translateY(14%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* «regresa.» llega desde la derecha, como el eco que vuelve. */
+@keyframes regresar {
+  from {
+    opacity: 0;
+    transform: translateX(0.6em);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* Los filamentos se trazan desde Moris hacia afuera (rutas con pathLength="1"). */
+@keyframes trazar {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes encender {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes desvanecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes globo {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/*
+ * Apariciones al desplazarse (solo navegadores con scroll-driven animations).
+ * Sin soporte, o con movimiento reducido, el contenido está visible desde el inicio.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .revelar,
+    .revelar-globo {
+      animation: aparecer linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 70%;
+    }
+
+    .revelar-globo {
+      animation-name: globo;
+      animation-range: entry 20% entry 90%;
+    }
+  }
+}
+
+/* Movimiento reducido: la secuencia del hero se vuelve un fundido corto, sin desplazamientos. */
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-"] {
+    animation-name: desvanecer !important;
+    animation-duration: 250ms !important;
+    animation-delay: 0ms !important;
+  }
 }
 
 @layer base {

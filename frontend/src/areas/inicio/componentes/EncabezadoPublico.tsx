@@ -12,7 +12,7 @@ export function EncabezadoPublico() {
   return (
     <header
       data-fondo="oscuro"
-      className="absolute inset-x-3 top-3 z-30 mx-auto max-w-[1408px] px-5 pt-2 md:px-8 md:pt-5 lg:inset-x-4 lg:top-4 xl:pt-7"
+      className="absolute inset-x-2 top-2 z-30 mx-auto max-w-[1424px] px-5 pt-2 md:px-8 md:pt-5 xl:pt-7"
     >
       <div className="relative flex items-center justify-between gap-6">
         <Logo fondo="oscuro" preload className="w-[118px] xl:w-[152px]" />

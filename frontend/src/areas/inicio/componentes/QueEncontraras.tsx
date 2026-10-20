@@ -81,7 +81,7 @@ export function QueEncontraras() {
           {elementos.map(({ titulo, descripcion, Icono, expresion, mensajeMoris }) => (
             <li
               key={titulo}
-              className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-5 gap-y-3 border-t border-marca-cafe/14 py-[30px] md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_300px_minmax(0,420px)_384px] xl:items-center xl:justify-between"
+              className="revelar grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-5 gap-y-3 border-t border-marca-cafe/14 py-[30px] md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_300px_minmax(0,420px)_384px] xl:items-center xl:justify-between"
             >
               <span className="row-span-3 flex size-14 items-center justify-center rounded-full bg-marca-cafe text-marca-menta md:size-16 xl:row-span-1">
                 <Icono className="size-6 md:size-7" />
@@ -90,7 +90,7 @@ export function QueEncontraras() {
               <p className="col-start-2 max-w-[60ch] text-cuerpo text-texto-secundario xl:col-start-auto">
                 {descripcion}
               </p>
-              <p className="col-start-2 flex max-w-[384px] items-center gap-3.5 rounded-globo bg-superficie-hundida py-3 pr-5 pl-3 text-menor leading-[1.45] font-semibold xl:col-start-auto">
+              <p className="revelar-globo col-start-2 flex max-w-[384px] items-center gap-3.5 rounded-globo bg-superficie-hundida py-3 pr-5 pl-3 text-menor leading-[1.45] font-semibold xl:col-start-auto">
                 <Moris expresion={expresion} alt="" sizes="42px" className="w-[42px] shrink-0" />
                 <span>
                   <span className="sr-only">Moris dice: </span>
