@@ -99,28 +99,33 @@ export function Presentacion() {
         id="portada"
         aria-labelledby="titulo-portada"
         data-fondo="oscuro"
-        className="relative isolate mx-auto max-w-[1424px] overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero lg:rounded-hero lg:[--alto-hero:clamp(38rem,calc(100svh-1rem),57.5rem)]"
+        className="relative isolate overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero lg:rounded-hero lg:[--alto-hero:clamp(38rem,calc(100svh-1rem),57.5rem)]"
       >
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute top-[92px] left-[3.3%] -z-10 animate-eco font-titulo text-[calc((100vw-1rem)*0.322)] leading-none font-black tracking-[-0.03em] whitespace-nowrap text-marca-crema/8 select-none lg:top-[11.3%] lg:left-[15%] lg:text-[min(calc((100vw-1rem)*0.2415),340px,calc(var(--alto-hero)*0.37))]"
-        >
-          ÉTICA
-        </span>
+        {/* El contenido sigue la retícula de 1424 px aunque la tarjeta llegue a 8 px del borde. */}
+        <div className="relative mx-auto flex w-full max-w-[1424px] flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-(--alto-hero) lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute top-[92px] left-[3.3%] -z-10 animate-eco font-titulo text-[calc((100vw-1rem)*0.322)] leading-none font-black tracking-[-0.03em] whitespace-nowrap text-marca-crema/8 select-none lg:top-[11.3%] lg:left-[15%] lg:text-[min(calc((100vw-1rem)*0.2415),340px,calc(var(--alto-hero)*0.37))]"
+          >
+            ÉTICA
+          </span>
 
-        <div className="relative flex flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-(--alto-hero) lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
           <AvisoPiloto variante="tarjeta" className="animate-aparecer [animation-delay:100ms] lg:hidden" />
 
-          <div className="moris-portada relative isolate mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(26%,calc(var(--alto-hero)*0.42))]">
+          {/*
+            Ancho de Moris: 26 % del contenedor, sin pasar del 42 % del alto del hero y, cuando se ve la
+            tarjeta de ejemplo, sin acercarse a ella (316 px + 40 px de margen + 16 px de aire y de puntero).
+          */}
+          <div className="moris-portada relative mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(26%,calc(var(--alto-hero)*0.42))] min-[85rem]:w-[min(26%,calc(var(--alto-hero)*0.42),calc(52.1%-23.25rem))]">
             <Ondas />
             <Moris
               expresion="principal"
               alt="Moris, la mascota de Echo: una semilla redonda color terracota con dos hojas verdes, ojos grandes y una sonrisa."
-              sizes="(min-width: 1024px) 26vw, (min-width: 768px) 300px, 220px"
+              sizes="(min-width: 1024px) min(26vw, 370px), (min-width: 768px) 300px, 220px"
               preload
               className="w-full animate-brotar [animation-delay:150ms]"
             />
-            <Filamentos className="top-[31.5%] left-[93%] w-1/2 text-marca-menta lg:top-[7.6%] lg:left-[94%] lg:w-[40%]" />
+            <Filamentos className="top-[31.5%] left-[93%] w-1/2 text-marca-menta lg:top-[7.6%] lg:left-[94%] lg:w-[30%]" />
           </div>
 
           <div className="relative mt-[30px] max-w-[640px] lg:mt-0 lg:w-[46%]">
@@ -145,9 +150,9 @@ export function Presentacion() {
               </Boton>
             </div>
           </div>
-        </div>
 
-        <EjemploRuta />
+          <EjemploRuta />
+        </div>
       </section>
     </div>
   );

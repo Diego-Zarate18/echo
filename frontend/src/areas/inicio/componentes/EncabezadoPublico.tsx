@@ -54,7 +54,7 @@ function useEstadoDelEncabezado() {
 
 /**
  * Encabezado del inicio público (84:490 escritorio, 84:719 móvil).
- * Sobre el hero se dibuja dentro de la tarjeta; al salir del hero se queda fijo arriba como una
+ * Sobre el hero se dibuja dentro de la tarjeta, alineado a la retícula de 1424 px; al salir del hero se queda fijo arriba como una
  * barra de vidrio café, para que las anclas y «Crear cuenta» sigan a la mano en toda la página.
  * En el DOM va antes de `<main>`.
  */
@@ -66,10 +66,10 @@ export function EncabezadoPublico() {
       data-fondo="oscuro"
       data-flotante={flotante}
       className={[
-        "group/encabezado inset-x-2 z-30 mx-auto",
+        "group/encabezado inset-x-2 top-2 z-30",
         flotante
-          ? "fixed top-2 max-w-[1180px] motion-safe:animate-bajar"
-          : "absolute top-2 max-w-[1424px] px-5 pt-2 md:px-8 md:pt-5 xl:pt-7",
+          ? "fixed mx-auto max-w-[1180px] motion-safe:animate-bajar"
+          : "absolute px-5 pt-2 md:px-8 md:pt-5 xl:pt-7",
       ].join(" ")}
     >
       <div
@@ -77,7 +77,7 @@ export function EncabezadoPublico() {
           "relative flex items-center justify-between gap-6",
           flotante
             ? "rounded-full border border-blanco/12 bg-marca-cafe py-1.5 pr-1.5 pl-5 shadow-vidrio"
-            : "",
+            : "mx-auto max-w-[1360px]",
         ].join(" ")}
       >
         <Link href="/" aria-label="Echo, inicio" className="rounded-logo">
