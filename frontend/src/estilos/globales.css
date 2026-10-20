@@ -389,11 +389,11 @@
   }
 
   /*
-   * Ni las anclas ni el control con foco quedan bajo el encabezado fijo (WCAG 2.4.11).
-   * `scroll-padding` también lo usa el navegador al llevar a la vista el elemento enfocado.
+   * Ni las anclas ni el control con foco quedan bajo la barra fija (WCAG 2.4.11): 70 px de barra y
+   * margen más 24 px de aire. `scroll-padding` también lo usa el navegador al enfocar con el teclado.
    */
   html {
-    scroll-padding-top: 5rem;
+    scroll-padding-top: 6rem;
   }
 
   body {
