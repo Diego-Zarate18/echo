@@ -51,76 +51,43 @@ function useEstadoDelEncabezado() {
   return { flotante, actual: flotante ? actual : null };
 }
 
-/** Desplazamiento mínimo, en píxeles, para decidir si se baja o se sube (evita parpadeos con el trackpad). */
-const UMBRAL_DESPLAZAMIENTO = 8;
+/** Duración de la materialización de la barra, igual a `duration-220` de su transición. */
+const DURACION_MATERIALIZAR_MS = 220;
+
+type Fase = "hero" | "entrando" | "fija" | "saliendo";
 
 /**
- * La barra fija se esconde mientras se baja leyendo y vuelve en cuanto se sube, para que nunca tape
- * lo que se está leyendo. Como solo se fija al bajar desde el hero, empieza escondida: así no aparece
- * encima del contenido para irse un instante después. Se queda visible con el foco del teclado dentro,
- * con el menú móvil abierto o con el puntero encima. La posición se lee una vez por cuadro.
+ * Fases de la barra fija. Siempre está a la vista después del hero; solo cambia al cruzar su borde:
+ * - `entrando`: se monta como píldora todavía invisible y al siguiente cuadro pasa a `fija`, así la
+ *   transición la materializa (opacidad, escala 0.98 y desenfoque);
+ * - `saliendo`: al volver al hero hace la inversa y, al terminar, regresa a su lugar dentro del hero.
+ * Si se cambia de dirección a medio camino, la transición se invierte desde donde va.
  */
-function useOcultarAlBajar(flotante: boolean) {
-  const encabezado = useRef<HTMLElement>(null);
-  const [oculto, setOculto] = useState(true);
-  // Cada vez que la barra deja de estar fija, la próxima vez vuelve a empezar escondida
-  // (estado derivado durante el render, como recomienda React).
-  const [flotanteAnterior, setFlotanteAnterior] = useState(flotante);
-  if (flotante !== flotanteAnterior) {
-    setFlotanteAnterior(flotante);
-    if (flotante) setOculto(true);
-  }
+function useFaseDeLaBarra(flotante: boolean) {
+  const [fase, setFase] = useState<Fase>("hero");
+  // Estado derivado durante el render, como recomienda React.
+  if (flotante && fase === "hero") setFase("entrando");
+  if (flotante && fase === "saliendo") setFase("fija");
+  if (!flotante && (fase === "entrando" || fase === "fija")) setFase("saliendo");
 
   useEffect(() => {
-    // Sin barra fija no hay nada que esconder; el valor devuelto ya depende de `flotante`.
-    if (!flotante) return;
-    const elemento = encabezado.current;
-    let ultimo = window.scrollY;
-    let cuadro = 0;
-    let punteroEncima = false;
-
-    function alDesplazar() {
-      cancelAnimationFrame(cuadro);
-      cuadro = requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const diferencia = y - ultimo;
-        if (Math.abs(diferencia) < UMBRAL_DESPLAZAMIENTO) return;
-        ultimo = y;
-        const ocupado =
-          punteroEncima ||
-          elemento?.contains(document.activeElement) ||
-          elemento?.querySelector("#menu-movil:not([hidden])");
-        setOculto(diferencia > 0 && !ocupado);
+    if (fase === "entrando") {
+      let segundo = 0;
+      const primero = requestAnimationFrame(() => {
+        segundo = requestAnimationFrame(() => setFase("fija"));
       });
+      return () => {
+        cancelAnimationFrame(primero);
+        cancelAnimationFrame(segundo);
+      };
     }
-
-    function mostrar() {
-      setOculto(false);
+    if (fase === "saliendo") {
+      const espera = setTimeout(() => setFase("hero"), DURACION_MATERIALIZAR_MS);
+      return () => clearTimeout(espera);
     }
+  }, [fase]);
 
-    function alEntrarPuntero() {
-      punteroEncima = true;
-      setOculto(false);
-    }
-
-    function alSalirPuntero() {
-      punteroEncima = false;
-    }
-
-    window.addEventListener("scroll", alDesplazar, { passive: true });
-    elemento?.addEventListener("focusin", mostrar);
-    elemento?.addEventListener("pointerenter", alEntrarPuntero);
-    elemento?.addEventListener("pointerleave", alSalirPuntero);
-    return () => {
-      cancelAnimationFrame(cuadro);
-      window.removeEventListener("scroll", alDesplazar);
-      elemento?.removeEventListener("focusin", mostrar);
-      elemento?.removeEventListener("pointerenter", alEntrarPuntero);
-      elemento?.removeEventListener("pointerleave", alSalirPuntero);
-    };
-  }, [flotante]);
-
-  return { encabezado, oculto: flotante && oculto };
+  return { fija: fase !== "hero", visible: fase === "fija" };
 }
 
 type Recorte = { izquierda: number; derecha: number };
@@ -159,14 +126,14 @@ function useIndicador(actual: string | null) {
 /**
  * Encabezado del inicio público (84:490 escritorio, 84:719 móvil).
  * Sobre el hero se dibuja dentro de la tarjeta, alineado a la retícula de 1424 px. Al salir del hero
- * se vuelve una píldora café sólida que flota a 8 px del borde (respeta el marco): se esconde al bajar
- * leyendo y se materializa al subir (opacidad, escala 0.98 y desenfoque), con una transición que se
- * puede invertir a medio camino. Con movimiento reducido solo cambia la opacidad. En el DOM va antes de `<main>`.
+ * se vuelve una píldora café sólida que flota a 8 px del borde (respeta el marco) y se queda siempre a la
+ * vista. Se materializa una vez al aparecer y hace la inversa al volver al hero (opacidad, escala 0.98 y
+ * desenfoque, transición interrumpible de 220 ms). Con movimiento reducido solo hay un fundido. En el DOM va antes de `<main>`.
  */
 export function EncabezadoPublico() {
   const { flotante, actual } = useEstadoDelEncabezado();
   const { lista, recorte, deslizar } = useIndicador(actual);
-  const { encabezado, oculto } = useOcultarAlBajar(flotante);
+  const { fija, visible } = useFaseDeLaBarra(flotante);
 
   const estiloIndicador: CSSProperties = {
     clipPath: recorte ? `inset(0 ${recorte.derecha}px 0 ${recorte.izquierda}px round 999px)` : undefined,
@@ -175,24 +142,22 @@ export function EncabezadoPublico() {
 
   return (
     <header
-      ref={encabezado}
       data-fondo="oscuro"
       data-flotante={flotante}
-      data-oculto={oculto}
       className={[
         "inset-x-2 top-2 z-30",
-        flotante
-          ? "fixed mx-auto max-w-[1180px] transition-[translate,scale,opacity,filter] duration-220 ease-(--ease-respuesta)"
+        fija
+          ? "fixed mx-auto max-w-[1180px] transition-[scale,opacity,filter] duration-220 ease-(--ease-respuesta)"
           : "absolute px-5 pt-2 md:px-8 md:pt-5 xl:pt-7",
-        oculto
-          ? "pointer-events-none -translate-y-[calc(100%+8px)] scale-[0.98] opacity-0 blur-[6px] motion-reduce:translate-y-0 motion-reduce:scale-100 motion-reduce:blur-none"
+        fija && !visible
+          ? "pointer-events-none scale-[0.98] opacity-0 blur-[6px] motion-reduce:scale-100 motion-reduce:blur-none"
           : "",
       ].join(" ")}
     >
       <div
         className={[
           "relative flex items-center justify-between gap-6",
-          flotante
+          fija
             ? "rounded-full border border-blanco/12 bg-marca-cafe py-1.5 pr-1.5 pl-5 shadow-vidrio"
             : "mx-auto max-w-[1360px]",
         ].join(" ")}
@@ -201,7 +166,7 @@ export function EncabezadoPublico() {
           <Logo
             fondo="oscuro"
             preload
-            className={flotante ? "w-[96px]" : "w-[118px] xl:w-[152px]"}
+            className={fija ? "w-[96px]" : "w-[118px] xl:w-[152px]"}
           />
         </Link>
 
@@ -213,7 +178,7 @@ export function EncabezadoPublico() {
             ref={lista}
             className={[
               "relative isolate rounded-full",
-              flotante ? "" : "border border-blanco/16 bg-marca-crema/8 backdrop-blur-vidrio",
+              fija ? "" : "border border-blanco/16 bg-marca-crema/8 backdrop-blur-vidrio",
             ].join(" ")}
           >
             <span
