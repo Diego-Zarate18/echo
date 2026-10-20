@@ -4,6 +4,17 @@ import { expect, test, type Page } from "@playwright/test";
 const ETIQUETAS_WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 async function revisarAccesibilidad(pagina: Page) {
+  // Con movimiento reducido no hay apariciones al desplazarse: todo el contenido está visible
+  // y axe puede revisar el contraste de cada elemento. Luego espera a que terminen los fundidos.
+  await pagina.emulateMedia({ reducedMotion: "reduce" });
+  await pagina.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animacion) => animacion.timeline instanceof DocumentTimeline)
+        .map((animacion) => animacion.finished),
+    ),
+  );
   const resultado = await new AxeBuilder({ page: pagina }).withTags(ETIQUETAS_WCAG).analyze();
   const resumen = resultado.violations.map((v) => ({
     regla: v.id,
@@ -73,6 +84,23 @@ test.describe("SCR-18 · Inicio público", () => {
 
   test("axe no encuentra violaciones de WCAG 2.2 AA", async ({ page }) => {
     await revisarAccesibilidad(page);
+  });
+});
+
+test.describe("SCR-18 · Movimiento", () => {
+  test("con movimiento reducido la entrada es un fundido corto, sin desplazamientos", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const animaciones = await page.evaluate(() =>
+      document.getAnimations().map((animacion) => ({
+        nombre: (animacion as CSSAnimation).animationName,
+        duracion: animacion.effect?.getTiming().duration,
+      })),
+    );
+    expect(animaciones.length).toBeGreaterThan(0);
+    for (const animacion of animaciones) {
+      expect(animacion).toEqual({ nombre: "desvanecer", duracion: 250 });
+    }
   });
 });
 
