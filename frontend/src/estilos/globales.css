@@ -1,26 +1,128 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * Sistema visual «Tierra» (DEC-82, DEC-84).
+ * Los colores son las variables de Figma con el mismo nombre. No se agregan otros:
+ * por eso se vacía la paleta de Tailwind con --color-*: initial.
+ * La referencia completa está en frontend/DESIGN.md.
+ */
+@theme {
+  --color-*: initial;
+
+  /* marca/* */
+  --color-marca-cafe: #3d2213;
+  --color-marca-crema: #fbf3e9;
+  --color-marca-menta: #67eec9;
+  --color-marca-bosque: #3e6a59;
+  --color-marca-terracota: #aa5f2f;
+  /* texto/* */
+  --color-texto-secundario: #6b4a36;
+  /* superficie/* */
+  --color-superficie-hundida: #f1e6d7;
+  --color-superficie-elevada: #fffbf5;
+  /* estado/* */
+  --color-estado-riesgosa: #9e2b25;
+  /* Valor literal de Figma: fondo del logo de la UP Chiapas y bordes del vidrio (blanco al 10–18 %). */
+  --color-blanco: #ffffff;
+
+  /* Tipografía: Nunito para títulos y botones, Nunito Sans para lectura (variables de next/font). */
+  --font-titulo: var(--fuente-nunito), ui-rounded, system-ui, sans-serif;
+  --font-lectura: var(--fuente-nunito-sans), system-ui, sans-serif;
+  --font-sans: var(--font-lectura);
+
+  /* Radios de Figma */
+  --radius-fila: 14px;
+  --radius-aviso: 16px;
+  --radius-logo: 18px;
+  --radius-globo: 20px;
+  --radius-burbuja: 22px;
+  --radius-tarjeta: 24px;
+  --radius-panel: 26px;
+  --radius-hero: 32px;
+
+  /* Sombras de Figma */
+  --shadow-hero: 0 24px 48px -8px rgb(61 34 19 / 0.28);
+  --shadow-vidrio: 0 24px 24px rgb(42 23 13 / 0.5);
+
+  /* Desenfoque del vidrio sutil */
+  --blur-vidrio: 14px;
+
+  /* Escala tipográfica. Los títulos grandes escalan entre 390 y 1440 px. */
+  --text-portada: clamp(2.75rem, 1.6rem + 3.8vw, 4.875rem);
+  --text-portada--line-height: 1.02;
+  --text-portada--letter-spacing: -0.025em;
+  --text-cierre: clamp(2.5rem, 1.6rem + 2.9vw, 4rem);
+  --text-cierre--line-height: 1.02;
+  --text-cierre--letter-spacing: -0.025em;
+  --text-seccion: clamp(2.125rem, 1.45rem + 2.2vw, 3.25rem);
+  --text-seccion--line-height: 1.1;
+  --text-seccion--letter-spacing: -0.015em;
+  --text-entrada: clamp(1.875rem, 1.35rem + 1.7vw, 2.75rem);
+  --text-entrada--line-height: 1.15;
+  --text-entrada--letter-spacing: -0.015em;
+  --text-elemento: clamp(1.375rem, 1.15rem + 0.75vw, 1.75rem);
+  --text-elemento--line-height: 1.1;
+  --text-elemento--letter-spacing: -0.01em;
+  --text-tarjeta: 1.25rem;
+  --text-tarjeta--line-height: 1.25;
+  --text-destacado: 1.1875rem;
+  --text-destacado--line-height: 1.6;
+  --text-amplio: 1.125rem;
+  --text-amplio--line-height: 1.6;
+  --text-cuerpo: 1.0625rem;
+  --text-cuerpo--line-height: 1.6;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-menor: 0.9375rem;
+  --text-menor--line-height: 1.5;
+  --text-detalle: 0.875rem;
+  --text-detalle--line-height: 1.5;
+  --text-nota: 0.8125rem;
+  --text-nota--line-height: 1.5;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-texto-secundario) var(--color-marca-crema);
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background-color: var(--color-marca-crema);
+    color: var(--color-marca-cafe);
+    font-family: var(--font-lectura);
+  }
+
+  ::selection {
+    background-color: var(--color-marca-menta);
+    color: var(--color-marca-cafe);
+  }
+
+  /*
+   * Foco visible (DEC-71): anillo de 3 px separado 2 px.
+   * Bosque sobre fondos claros (5.7:1 sobre crema) y menta sobre fondos oscuros (10:1 sobre café).
+   */
+  :focus-visible {
+    outline: 3px solid var(--color-marca-bosque);
+    outline-offset: 2px;
+  }
+
+  [data-fondo="oscuro"] :focus-visible {
+    outline-color: var(--color-marca-menta);
+  }
+
+  [data-fondo="claro"] :focus-visible {
+    outline-color: var(--color-marca-bosque);
+  }
+
+  /* Los íconos conservan el trazo de 1.75 en cualquier tamaño. */
+  .icono * {
+    vector-effect: non-scaling-stroke;
+  }
 }
