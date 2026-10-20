@@ -61,8 +61,8 @@ const elementos: readonly Elemento[] = [
 
 /**
  * Sección «Qué encontrarás» (84:560): cinco filas con su globo de Moris.
- * En escritorio va compacta para que el título y las cinco filas quepan en la ventana al llegar desde el menú;
- * al anclar se descuenta su propio aire de arriba (`-scroll-mt-5`), y el título queda igual a 24 px bajo la barra.
+ * Tiene el mismo aire arriba y abajo que las demás secciones: se lee bajando y el título nunca queda bajo la barra fija.
+ * En escritorio las filas son compactas.
  */
 export function QueEncontraras() {
   return (
@@ -70,7 +70,7 @@ export function QueEncontraras() {
       id="que-encontraras"
       aria-labelledby="titulo-que-encontraras"
       data-fondo="claro"
-      className="bg-marca-crema px-5 py-20 text-marca-cafe md:px-10 md:py-28 lg:px-[72px] lg:pt-[130px] lg:pb-[140px] xl:-scroll-mt-5 xl:pt-5 xl:pb-24"
+      className="bg-marca-crema px-5 py-20 text-marca-cafe md:px-10 md:py-28 lg:px-[72px] lg:pt-[130px] lg:pb-[140px]"
     >
       <div className="mx-auto w-full max-w-[1296px]">
         <EncabezadoSeccion
