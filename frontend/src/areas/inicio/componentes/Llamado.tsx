@@ -10,7 +10,7 @@ export function Llamado() {
       className="bg-marca-cafe px-5 py-20 text-marca-crema md:px-10 md:py-28 lg:px-[72px] lg:py-[110px]"
     >
       <div className="mx-auto grid w-full max-w-[1296px] items-center gap-12 xl:grid-cols-[minmax(0,600px)_560px] xl:justify-between">
-        <div className="revelar flex flex-col gap-6">
+        <div className="flex flex-col gap-6">
           <h2 id="titulo-llamado" className="font-titulo text-cierre font-black text-balance">
             Tu primera lección <span className="sm:block">te espera.</span>
           </h2>
@@ -36,7 +36,7 @@ export function Llamado() {
             expresion="feliz"
             alt=""
             sizes="260px"
-            className="revelar w-[200px] self-end sm:absolute sm:right-0 sm:bottom-0 sm:w-[260px]"
+            className="brotar-al-ver w-[200px] self-end sm:absolute sm:right-0 sm:bottom-0 sm:w-[260px]"
           />
         </div>
       </div>

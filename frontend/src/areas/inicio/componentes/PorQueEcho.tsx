@@ -67,7 +67,7 @@ export function PorQueEcho() {
 
         <ul className="mt-12 grid gap-x-16 md:grid-cols-2 lg:mt-14">
           {diferencias.map(({ titulo, texto, Icono }) => (
-            <li key={titulo} className="revelar flex items-start gap-5 border-t border-marca-menta/22 py-8">
+            <li key={titulo} className="flex items-start gap-5 border-t border-marca-menta/22 py-8">
               <Icono className="size-[30px] text-marca-menta" />
               <div className="flex flex-col gap-2.5">
                 <h3 className="font-titulo text-elemento font-extrabold">{titulo}</h3>

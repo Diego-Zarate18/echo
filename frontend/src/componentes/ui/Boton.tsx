@@ -58,8 +58,10 @@ function Contenido({ variante, conFlecha, children }: PropsComunes) {
     <>
       <span>{children}</span>
       {variante === "crema" && conFlecha ? (
-        <span className="flex size-10 items-center justify-center rounded-full bg-marca-cafe text-marca-crema">
-          <IconoFlechaDiagonal className="size-5 transition-transform duration-200 motion-safe:group-hover:translate-x-0.5 motion-safe:group-hover:-translate-y-0.5" />
+        // Al pasar el puntero, la flecha sale por arriba a la derecha y otra entra desde abajo a la izquierda.
+        <span className="relative flex size-10 items-center justify-center overflow-hidden rounded-full bg-marca-cafe text-marca-crema">
+          <IconoFlechaDiagonal className="size-5 transition-transform duration-300 ease-(--ease-llegada) motion-safe:group-hover:translate-x-7 motion-safe:group-hover:-translate-y-7 motion-safe:group-focus-visible:translate-x-7 motion-safe:group-focus-visible:-translate-y-7" />
+          <IconoFlechaDiagonal className="absolute inset-0 m-auto size-5 -translate-x-7 translate-y-7 transition-transform duration-300 ease-(--ease-llegada) motion-reduce:hidden motion-safe:group-hover:translate-x-0 motion-safe:group-hover:translate-y-0 motion-safe:group-focus-visible:translate-x-0 motion-safe:group-focus-visible:translate-y-0" />
         </span>
       ) : null}
     </>

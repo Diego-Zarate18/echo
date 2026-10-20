@@ -81,7 +81,7 @@ export function QueEncontraras() {
           {elementos.map(({ titulo, descripcion, Icono, expresion, mensajeMoris }) => (
             <li
               key={titulo}
-              className="revelar grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-5 gap-y-3 border-t border-marca-cafe/14 py-[30px] md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_300px_minmax(0,420px)_384px] xl:items-center xl:justify-between"
+              className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-5 gap-y-3 border-t border-marca-cafe/14 py-[30px] md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_300px_minmax(0,420px)_384px] xl:items-center xl:justify-between"
             >
               <span className="row-span-3 flex size-14 items-center justify-center rounded-full bg-marca-cafe text-marca-menta md:size-16 xl:row-span-1">
                 <Icono className="size-6 md:size-7" />

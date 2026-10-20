@@ -30,7 +30,7 @@ y sobre superficie hundida 6.3:1; menta sobre café 10:1.
 - Café como fondo principal y crema en secciones claras. **Sin degradados.**
 - Menta solo para íconos y acentos sobre fondo oscuro; **nunca** como color de texto sobre crema.
 - **Vidrio sutil:** `bg-marca-crema/8` + `border-blanco/16` + `backdrop-blur-vidrio` (14 px). Solo sobre café.
-- Hero como tarjeta de 32 px de radio (`rounded-hero`, `shadow-hero`) sobre una franja crema de 16 px (12 px en móvil).
+- Hero como tarjeta de 32 px de radio (`rounded-hero`, `shadow-hero`) sobre un marco crema de 8 px, a la altura de la ventana.
 - Separadores: `border-marca-menta/16` entre secciones oscuras, `border-marca-menta/22` en listas oscuras,
   `border-marca-cafe/14` en listas claras.
 - Los contenedores con fondo oscuro llevan `data-fondo="oscuro"` (el anillo de foco cambia a menta).
@@ -81,6 +81,23 @@ Con `href` es un enlace (`next/link`, o `<a>` para anclas); sin `href`, un `<but
 - Áreas táctiles de al menos 24 × 24 px (los botones miden 48–56 px).
 - Estados siempre con ícono **y** texto.
 - `prefers-reduced-motion`: sin desplazamiento suave ni animaciones (`motion-safe:`).
+
+## Movimiento: «el eco que regresa»
+
+Un momento de autor, no la misma entrada en cada sección. Curvas `--ease-llegada` y `--ease-salida`, sin rebotes.
+Nada se repite en bucle: el movimiento automático dura menos de 5 s (WCAG 2.2.2).
+
+| Momento | Dónde | Qué hace |
+|---|---|---|
+| Entrada del hero (≈1.4 s) | `Presentacion` | «ÉTICA» llega desenfocada; Moris brota; tres ondas crema salen de él; «regresa.» llega con dos ecos que se funden con la palabra |
+| Ondas al pasar el puntero | Moris del hero | Vuelven a salir las ondas (solo con puntero) |
+| Moris habla | `.revelar-globo` | Los globos de Moris aparecen al entrar en la ventana |
+| Declaración | `QueEsEcho` (`.declaracion`) | Se ilumina palabra por palabra al leerla (empieza al 42 %, ya cumple 3:1 para texto grande) |
+| El cierre regresa | `Llamado` (`.brotar-al-ver`) | Moris vuelve a brotar como en el hero |
+| Botón con flecha | `Boton` `conFlecha` | La flecha sale por arriba y otra entra desde abajo |
+
+Con movimiento reducido, la entrada es un fundido de 250 ms y lo demás no se mueve. Los títulos, filas y tarjetas
+están visibles desde el inicio: no se animan solo por aparecer.
 
 ## Íconos (`src/componentes/ui/iconos/`)
 

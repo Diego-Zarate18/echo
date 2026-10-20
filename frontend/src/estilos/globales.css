@@ -82,10 +82,13 @@
   --text-nota--line-height: 1.5;
 
   /*
-   * Movimiento: «el eco que regresa». Una sola secuencia de entrada en el hero
-   * y apariciones suaves al desplazarse. Desaceleración natural, sin rebotes.
+   * Movimiento: «el eco que regresa». Un momento de autor en el hero (Moris brota, emite ondas
+   * y la palabra «regresa.» deja su eco), Moris que habla al entrar cada globo, la declaración
+   * de «Qué es Echo» que se ilumina al leerla y Moris que vuelve a brotar en el cierre.
+   * Desaceleración natural, sin rebotes. Nada se repite en bucle (WCAG 2.2.2).
    */
   --ease-llegada: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
   --animate-eco: eco 1200ms var(--ease-llegada) both;
   --animate-brotar: brotar 1000ms var(--ease-llegada) both;
   --animate-aparecer: aparecer 800ms var(--ease-llegada) both;
@@ -167,6 +170,43 @@
   }
 }
 
+/* Ondas que salen de Moris: el sonido que se va y regresa. Usan `scale` para no pisar el centrado. */
+@keyframes onda {
+  0% {
+    scale: 0.55;
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    scale: 2.15;
+    opacity: 0;
+  }
+}
+
+/* Rastro del eco de «regresa.»: copias que llegan desde la derecha y se funden con la palabra. */
+@keyframes eco-rastro {
+  from {
+    opacity: var(--opacidad-rastro);
+    translate: var(--distancia-rastro) 0;
+  }
+  to {
+    opacity: 0;
+    translate: 0 0;
+  }
+}
+
+/* La declaración de «Qué es Echo» se ilumina palabra por palabra mientras se lee. */
+@keyframes iluminar {
+  from {
+    opacity: 0.42;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes desvanecer {
   from {
     opacity: 0;
@@ -188,22 +228,71 @@
 }
 
 
+/* Ondas del hero: tres anillos crema que salen de Moris al cargar la página. */
+.onda {
+  animation: onda 2600ms var(--ease-salida) both;
+  animation-delay: calc(450ms + var(--orden) * 260ms);
+}
+
+/* Al pasar el puntero sobre Moris, `Ondas.tsx` reinicia estas mismas animaciones. */
+
+/* Eco de «regresa.»: dos copias como contenido generado, fuera del texto y del lector de pantalla. */
+.eco-rastro {
+  position: relative;
+  display: inline-block;
+}
+
+.eco-rastro::before,
+.eco-rastro::after {
+  content: attr(data-texto) / "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  animation: eco-rastro 1100ms var(--ease-salida) both;
+}
+
+.eco-rastro::before {
+  --opacidad-rastro: 0.4;
+  --distancia-rastro: 0.55em;
+  animation-delay: 600ms;
+}
+
+.eco-rastro::after {
+  --opacidad-rastro: 0.2;
+  --distancia-rastro: 1.1em;
+  animation-delay: 680ms;
+}
+
 /*
- * Apariciones al desplazarse (solo navegadores con scroll-driven animations).
- * Sin soporte, o con movimiento reducido, el contenido está visible desde el inicio.
+ * Movimiento ligado al desplazamiento (solo navegadores con scroll-driven animations).
+ * Sin soporte, o con movimiento reducido, todo está visible y en su lugar desde el inicio.
  */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .revelar,
+    /* Moris habla: el globo aparece cuando entra en la ventana. */
     .revelar-globo {
-      animation: aparecer linear both;
+      animation: globo linear both;
       animation-timeline: view();
-      animation-range: entry 5% entry 70%;
+      animation-range: entry 20% entry 90%;
     }
 
-    .revelar-globo {
-      animation-name: globo;
-      animation-range: entry 20% entry 90%;
+    /* La declaración se ilumina mientras sube hacia el centro de la ventana. */
+    .declaracion {
+      view-timeline: --declaracion block;
+    }
+
+    .declaracion .palabra {
+      animation: iluminar linear both;
+      animation-timeline: --declaracion;
+      animation-range: cover calc(8% + var(--i) * 1.6%) cover calc(16% + var(--i) * 1.6%);
+    }
+
+    /* El cierre devuelve el principio: Moris vuelve a brotar. */
+    .brotar-al-ver {
+      animation: brotar linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 85%;
     }
   }
 }
@@ -214,6 +303,12 @@
     animation-name: desvanecer !important;
     animation-duration: 250ms !important;
     animation-delay: 0ms !important;
+  }
+
+  .onda,
+  .eco-rastro::before,
+  .eco-rastro::after {
+    display: none;
   }
 }
 

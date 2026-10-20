@@ -13,7 +13,7 @@ export function EncabezadoSeccion({ id, titulo, entrada, tono, proporcion }: Pro
   const oscuro = tono === "oscuro";
   const tituloAmplio = proporcion === "titulo-amplio";
   return (
-    <div className="revelar flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-12 xl:gap-24">
+    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-12 xl:gap-24">
       <h2
         id={id}
         className={[

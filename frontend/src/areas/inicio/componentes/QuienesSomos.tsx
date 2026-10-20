@@ -35,7 +35,7 @@ export function QuienesSomos() {
               key={persona.nombre}
               data-fondo={persona.docente ? "oscuro" : undefined}
               className={[
-                "revelar flex flex-col gap-4 rounded-tarjeta p-[26px]",
+                "flex flex-col gap-4 rounded-tarjeta p-[26px]",
                 persona.docente ? "bg-marca-cafe text-marca-crema" : "bg-superficie-hundida",
               ].join(" ")}
             >

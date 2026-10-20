@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Moris } from "@/componentes/marca/Moris";
 import { IconoBalanza, IconoCirculoCheck, IconoEscudo, IconoLey } from "@/componentes/ui/iconos/iconos";
 
@@ -13,7 +14,13 @@ const fundamentos = [
   { texto: "LFDA · derecho de autor", Icono: IconoLey },
 ] as const;
 
-/** Sección «Qué es Echo» (84:530). */
+const declaracion =
+  "Echo es una plataforma para aprender ética, principios, leyes y normas del desarrollo de software.";
+
+/**
+ * Sección «Qué es Echo» (84:530). La declaración se ilumina palabra por palabra mientras se lee
+ * (solo con movimiento permitido; empieza al 42 %, que ya cumple 3:1 para texto grande).
+ */
 export function QueEsEcho() {
   return (
     <section
@@ -24,9 +31,12 @@ export function QueEsEcho() {
     >
       <div className="mx-auto grid w-full max-w-[1296px] gap-12 lg:grid-cols-[minmax(0,640px)_minmax(0,528px)] lg:gap-x-12 xl:gap-x-24">
         <div className="flex flex-col gap-7">
-          <h2 id="titulo-que-es-echo" className="font-titulo text-entrada font-extrabold text-balance">
-            Echo es una plataforma para aprender ética, principios, leyes y normas del desarrollo de
-            software.
+          <h2 id="titulo-que-es-echo" className="declaracion font-titulo text-entrada font-extrabold text-balance">
+            {declaracion.split(" ").map((palabra, i) => (
+              <span key={i} className="palabra" style={{ "--i": i } as CSSProperties}>
+                {palabra}{" "}
+              </span>
+            ))}
           </h2>
           <div className="revelar-globo flex max-w-[560px] items-center gap-4 rounded-burbuja border border-blanco/16 bg-marca-crema/8 px-[22px] py-[18px] backdrop-blur-vidrio">
             <Moris expresion="sorprendido" alt="" sizes="52px" className="w-[52px]" />
@@ -46,7 +56,7 @@ export function QueEsEcho() {
             la privacidad de los datos, los derechos de autor, la seguridad y los códigos de ética
             profesional.
           </p>
-          <ul className="revelar flex flex-col gap-7">
+          <ul className="flex flex-col gap-7">
             {puntos.map((punto) => (
               <li key={punto} className="flex items-center gap-3 text-cuerpo font-semibold">
                 <IconoCirculoCheck className="size-[22px] text-marca-menta" />
@@ -55,7 +65,7 @@ export function QueEsEcho() {
             ))}
           </ul>
           <h3 className="font-titulo text-base font-bold">Fundamentos que vas a conocer</h3>
-          <ul className="revelar flex flex-wrap gap-2.5">
+          <ul className="flex flex-wrap gap-2.5">
             {fundamentos.map(({ texto, Icono }) => (
               <li
                 key={texto}

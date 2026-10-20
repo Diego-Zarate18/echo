@@ -2,6 +2,7 @@ import { Moris } from "@/componentes/marca/Moris";
 import { Boton } from "@/componentes/ui/Boton";
 import { IconoCandado, IconoCirculoCheck, IconoCirculoPunto } from "@/componentes/ui/iconos/iconos";
 import { AvisoPiloto } from "./AvisoPiloto";
+import { Ondas } from "./Ondas";
 
 /** Filamentos de circuito (84:481 / 84:710), decorativos. Rutas exportadas de Figma. */
 function Filamentos({ className }: { className: string }) {
@@ -109,7 +110,8 @@ export function Presentacion() {
         <div className="relative flex flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-(--alto-hero) lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
           <AvisoPiloto variante="tarjeta" className="animate-aparecer [animation-delay:100ms] lg:hidden" />
 
-          <div className="relative mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(26%,calc(var(--alto-hero)*0.42))]">
+          <div className="moris-portada relative isolate mx-auto w-[220px] md:w-[300px] lg:absolute lg:bottom-[17.2%] lg:left-[47.9%] lg:mx-0 lg:w-[min(26%,calc(var(--alto-hero)*0.42))]">
+            <Ondas />
             <Moris
               expresion="principal"
               alt="Moris, la mascota de Echo: una semilla redonda color terracota con dos hojas verdes, ojos grandes y una sonrisa."
@@ -123,7 +125,11 @@ export function Presentacion() {
           <div className="relative mt-[30px] max-w-[640px] lg:mt-0 lg:w-[46%]">
             <h1 id="titulo-portada" className="font-titulo text-portada font-black text-balance">
               <span className="block animate-aparecer [animation-delay:300ms]">Lo que construyes,</span>{" "}
-              <span className="block animate-regresar [animation-delay:520ms]">regresa.</span>
+              <span className="block animate-regresar [animation-delay:520ms]">
+                <span className="eco-rastro" data-texto="regresa.">
+                  regresa.
+                </span>
+              </span>
             </h1>
             <p className="mt-[18px] max-w-[560px] animate-aparecer text-base leading-[1.55] [animation-delay:650ms] lg:mt-[26px] lg:text-destacado">
               «Echo» viene del griego ēchō: sonido que regresa. Toda decisión en tecnología tiene
