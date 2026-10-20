@@ -119,7 +119,7 @@ export function EncabezadoPublico() {
             : "mx-auto max-w-[1360px]",
         ].join(" ")}
       >
-        <Link href="/" aria-label="Echo, inicio" className="rounded-logo">
+        <Link href="/" aria-label="Echo, inicio" className="flex min-h-11 items-center rounded-logo">
           <Logo
             fondo="oscuro"
             preload

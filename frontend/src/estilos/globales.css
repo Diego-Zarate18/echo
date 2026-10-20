@@ -406,9 +406,12 @@
     }
   }
 
-  /* Las anclas no quedan bajo el encabezado fijo. */
-  section[id] {
-    scroll-margin-top: 5.5rem;
+  /*
+   * Ni las anclas ni el control con foco quedan bajo el encabezado fijo (WCAG 2.4.11).
+   * `scroll-padding` también lo usa el navegador al llevar a la vista el elemento enfocado.
+   */
+  html {
+    scroll-padding-top: 5.5rem;
   }
 
   body {

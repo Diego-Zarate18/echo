@@ -29,7 +29,7 @@ export function PiePublico() {
               <li key={enlace.href}>
                 <Link
                   href={enlace.href}
-                  className="inline-flex min-h-6 items-center rounded-sm py-1 font-titulo text-menor font-bold underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center rounded-sm py-1 font-titulo text-menor font-bold underline-offset-4 hover:underline"
                 >
                   {enlace.texto}
                 </Link>
