@@ -39,7 +39,7 @@ Se corren desde `frontend/`:
 - `npm run build`: compila para producción; muestra la tabla de rutas (`○` estática, `ƒ` dinámica).
 - `npm run start`: sirve la compilación de producción.
 - `npm run lint`: ESLint (`next lint` ya no existe en Next 16).
-- `npm run tipos`: revisión de tipos con `tsc --noEmit`.
+- `npm run tipos`: genera los tipos de rutas (`next typegen`) y revisa tipos con `tsc --noEmit`.
 - `npm run prueba:e2e`: Playwright + axe en escritorio y móvil; compila y levanta la app por su cuenta.
 - `npx playwright install chromium`: descarga el navegador de las pruebas (solo la primera vez).
 

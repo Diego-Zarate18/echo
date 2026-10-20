@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "tipos": "tsc --noEmit",
+    "tipos": "next typegen && tsc --noEmit",
     "prueba:e2e": "playwright test"
   },
   "dependencies": {
