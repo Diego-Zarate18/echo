@@ -69,7 +69,7 @@ export function QueEncontraras() {
       id="que-encontraras"
       aria-labelledby="titulo-que-encontraras"
       data-fondo="claro"
-      className="bg-marca-crema px-5 py-20 text-marca-cafe md:px-10 md:py-28 lg:px-[72px] lg:pt-[130px] lg:pb-[140px] xl:pt-6 xl:pb-24"
+      className="bg-marca-crema px-5 py-20 text-marca-cafe md:px-10 md:py-28 lg:px-[72px] lg:pt-[130px] lg:pb-[140px] xl:pt-5 xl:pb-24"
     >
       <div className="mx-auto w-full max-w-[1296px]">
         <EncabezadoSeccion
@@ -77,10 +77,10 @@ export function QueEncontraras() {
           titulo="Lo que encontrarás en Echo"
           entrada="Un mismo camino para todos: módulos que agrupan cursos, cursos que agrupan lecciones y, al final de cada curso, un examen. Moris, la semilla que guía Echo, te acompaña con mensajes breves."
           tono="claro"
-          proporcion="titulo-amplio"
+          proporcion="apilada"
         />
 
-        <ul className="mt-12 lg:mt-14 xl:mt-6">
+        <ul className="mt-12 lg:mt-14 xl:mt-5">
           {elementos.map(({ titulo, descripcion, Icono, expresion, mensajeMoris }) => (
             <li
               key={titulo}
