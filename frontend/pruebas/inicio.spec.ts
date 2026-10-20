@@ -121,10 +121,15 @@ test.describe("SCR-18 · Movimiento", () => {
     // El encabezado fijo solo se funde.
     await page.evaluate(() => document.getElementById("por-que-echo")!.scrollIntoView({ block: "start", behavior: "instant" }));
     await expect(page.getByRole("banner")).toHaveAttribute("data-flotante", "true");
+    // Solo opacidad: el fundido de la entrada o la transición de opacidad de la barra.
     const animacionesEncabezado = await page
       .getByRole("banner")
-      .evaluate((encabezado) => encabezado.getAnimations().map((a) => (a as CSSAnimation).animationName));
-    expect(animacionesEncabezado.every((nombre) => nombre === "desvanecer")).toBe(true);
+      .evaluate((encabezado) =>
+        encabezado
+          .getAnimations()
+          .map((a) => (a as CSSAnimation).animationName || (a as CSSTransition).transitionProperty),
+      );
+    expect(animacionesEncabezado.every((nombre) => nombre === "desvanecer" || nombre === "opacity")).toBe(true);
   });
 });
 
@@ -189,7 +194,7 @@ test.describe("SCR-18 · Encabezado fijo", () => {
   });
 });
 
-test.describe("SCR-18 · Barra fija que no tapa", () => {
+test.describe("SCR-18 · Barra fija siempre visible", () => {
   const anclas = [
     { id: "que-es-echo", texto: "Qué es Echo" },
     { id: "que-encontraras", texto: "Qué encontrarás" },
@@ -197,57 +202,54 @@ test.describe("SCR-18 · Barra fija que no tapa", () => {
     { id: "quienes-somos", texto: "Quiénes somos" },
   ];
 
-  /** Textos de `main` que cruzan la barra visible; `null` si la barra está escondida o es el encabezado del hero. */
-  async function textosBajoLaBarra(page: Page) {
+  /** Rectángulo de la barra fija y su opacidad; `null` sobre el hero (ahí es el encabezado normal). */
+  async function barra(page: Page) {
     return page.evaluate(() => {
       const encabezado = document.querySelector("header")!;
       if (encabezado.dataset.flotante !== "true") return null;
-      const barra = encabezado.querySelector(":scope > div")!.getBoundingClientRect();
-      if (barra.bottom <= 0 || getComputedStyle(encabezado).opacity === "0") return null;
-      const cruzan = [...document.querySelectorAll("main h2, main h3, main p, main li")].filter((elemento) => {
-        const caja = elemento.getBoundingClientRect();
-        return caja.width > 0 && caja.bottom > barra.top && caja.top < barra.bottom && caja.right > barra.left && caja.left < barra.right;
-      });
-      return cruzan.length ? cruzan.map((elemento) => (elemento.textContent ?? "").trim().slice(0, 40)) : null;
+      const caja = encabezado.querySelector(":scope > div")!.getBoundingClientRect();
+      return { arriba: caja.top, abajo: caja.bottom, alto: caja.height, opacidad: getComputedStyle(encabezado).opacity };
     });
   }
 
-  async function bordeInferiorDeLaBarra(page: Page) {
-    return page.evaluate(() => 8 + document.querySelector<HTMLElement>("header > div")!.offsetHeight);
-  }
-
   for (const reducido of [false, true]) {
-    test(`al bajar nunca tapa el contenido y las anclas quedan con aire${reducido ? " · movimiento reducido" : ""}`, async ({ page }, info) => {
-      test.setTimeout(120_000);
+    test(`después del hero la barra no desaparece y no tapa anclas ni foco${reducido ? " · movimiento reducido" : ""}`, async ({ page }, info) => {
+      test.setTimeout(180_000);
       if (reducido) await page.emulateMedia({ reducedMotion: "reduce" });
       const tamanos = info.project.name === "movil" ? [[390, 844]] : [[1536, 705], [1440, 900]];
 
       for (const [ancho, alto] of tamanos) {
+        const medida = `${ancho}×${alto}`;
         await page.setViewportSize({ width: ancho, height: alto });
         await page.goto("/");
         const encabezado = page.getByRole("banner");
         await page.mouse.move(ancho / 2, alto * 0.6);
 
-        // 1. Bajar con la rueda hasta el pie: la barra está escondida o no cruza ningún texto.
+        // 1. Bajar con la rueda hasta el pie: fuera del hero, la barra siempre está visible y compacta.
         let anterior = -1;
+        let pasosConBarra = 0;
         while (true) {
           await page.mouse.wheel(0, 200);
           await page.waitForTimeout(320);
           const y = await page.evaluate(() => Math.round(window.scrollY));
-          expect(await textosBajoLaBarra(page), `${ancho}×${alto}, scrollY ${y}`).toBeNull();
+          const estado = await barra(page);
+          if (estado) {
+            pasosConBarra++;
+            expect(estado, `${medida}, scrollY ${y}`).toMatchObject({ arriba: 8, opacidad: "1" });
+            expect(estado.alto, `${medida}, scrollY ${y}`).toBeLessThanOrEqual(62);
+          }
           if (y === anterior) break;
           anterior = y;
         }
+        expect(pasosConBarra).toBeGreaterThan(3);
 
-        // 2. Al subir, la barra aparece.
+        // 2. Al subir sigue visible.
         await page.mouse.wheel(0, -300);
-        await expect(encabezado).toHaveAttribute("data-oculto", "false");
-        await expect(encabezado).toHaveCSS("opacity", "1");
+        await page.waitForTimeout(320);
+        expect(await barra(page)).toMatchObject({ arriba: 8, opacidad: "1" });
 
         // 3. Cada ancla deja el título completo y con aire debajo de la barra.
         for (const ancla of anclas) {
-          await page.mouse.wheel(0, -300);
-          await expect(encabezado).toHaveAttribute("data-oculto", "false");
           if (info.project.name === "movil") {
             await encabezado.getByRole("button", { name: "Abrir menú" }).click();
             await page.locator("#menu-movil").getByRole("link", { name: ancla.texto }).click();
@@ -256,7 +258,28 @@ test.describe("SCR-18 · Barra fija que no tapa", () => {
           }
           await page.waitForTimeout(reducido ? 300 : 1400);
           const titulo = await page.locator(`#${ancla.id} h2`).evaluate((h2) => h2.getBoundingClientRect().top);
-          expect(titulo, `${ancho}×${alto}, ${ancla.texto}`).toBeGreaterThanOrEqual((await bordeInferiorDeLaBarra(page)) + 16);
+          const estado = await barra(page);
+          expect(estado, `${medida}, ${ancla.texto}`).not.toBeNull();
+          expect(titulo, `${medida}, ${ancla.texto}`).toBeGreaterThanOrEqual(estado!.abajo + 16);
+        }
+
+        // 4. Con Tab, el control con foco nunca queda debajo de la barra.
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+        await page.locator("body").focus();
+        for (let paso = 0; paso < 60; paso++) {
+          await page.keyboard.press("Tab");
+          await page.waitForTimeout(reducido ? 60 : 450);
+          const choque = await page.evaluate(() => {
+            const activo = document.activeElement as HTMLElement | null;
+            const encabezado = document.querySelector("header")!;
+            if (!activo || activo === document.body || encabezado.contains(activo)) return null;
+            if (encabezado.dataset.flotante !== "true" || activo.closest(".sr-only")) return null;
+            const barra = encabezado.querySelector(":scope > div")!.getBoundingClientRect();
+            const caja = activo.getBoundingClientRect();
+            const debajo = caja.top < barra.bottom && caja.bottom > barra.top && caja.left < barra.right && caja.right > barra.left;
+            return debajo ? `${(activo.textContent ?? "").trim().slice(0, 40)} (top ${Math.round(caja.top)})` : null;
+          });
+          expect(choque, `${medida}, Tab ${paso + 1}`).toBeNull();
         }
       }
     });
