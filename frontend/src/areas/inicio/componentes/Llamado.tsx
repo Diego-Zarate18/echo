@@ -15,7 +15,7 @@ export function Llamado() {
             Tu primera lección <span className="sm:block">te espera.</span>
           </h2>
           <p className="max-w-[520px] text-amplio">
-            Crea tu cuenta con tu correo o con Google. Solo te pedimos tu nombre y tu correo.
+            Crea tu cuenta con tu correo o con Google. Solo te pedimos tu nombre, tus apellidos y tu correo.
           </p>
           <div className="flex flex-col gap-2.5 md:flex-row md:gap-4">
             <Boton variante="crema" conFlecha href="/registro" className="w-full md:w-[200px]">

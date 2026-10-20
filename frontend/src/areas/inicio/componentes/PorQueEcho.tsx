@@ -42,7 +42,7 @@ const diferencias: readonly { titulo: string; texto: string; Icono: ComponentTyp
   {
     titulo: "Solo los datos necesarios.",
     texto:
-      "Te pedimos nombre y correo. Tu historial es solo tuyo y puedes eliminar tu cuenta cuando quieras.",
+      "Te pedimos tu nombre, tus apellidos y tu correo. Tu historial es solo tuyo y puedes eliminar tu cuenta cuando quieras.",
     Icono: IconoEscudo,
   },
 ];
