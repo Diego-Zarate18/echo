@@ -58,7 +58,7 @@ export function QueEsEcho() {
           </p>
           <ul className="flex flex-col gap-7">
             {puntos.map((punto) => (
-              <li key={punto} className="flex items-center gap-3 text-cuerpo font-semibold">
+              <li key={punto} data-dibujar className="flex items-center gap-3 text-cuerpo font-semibold">
                 <IconoCirculoCheck className="size-[22px] text-marca-menta" />
                 {punto}
               </li>

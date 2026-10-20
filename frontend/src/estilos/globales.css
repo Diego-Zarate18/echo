@@ -333,6 +333,23 @@
   animation: saludo 560ms 1200ms both;
 }
 
+/*
+ * Íconos de trazo que se dibujan una vez al entrar en la ventana (`DibujoDeIconos.tsx` marca el estado).
+ * Sin JavaScript, sin IntersectionObserver o con movimiento reducido nunca se marcan: se ven completos.
+ */
+[data-dibujo] .icono * {
+  stroke-dasharray: 1;
+}
+
+[data-dibujo="pendiente"] .icono * {
+  stroke-dashoffset: 1;
+}
+
+[data-dibujo="dibujado"] .icono * {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 600ms var(--ease-respuesta) var(--retraso, 0ms);
+}
+
 /* El cierre: Moris se inclina hacia «Crear cuenta» cuando el botón recibe el puntero o el foco. */
 .moris-cierre {
   transition: translate 250ms var(--ease-respuesta);

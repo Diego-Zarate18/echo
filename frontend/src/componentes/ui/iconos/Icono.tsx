@@ -1,4 +1,4 @@
-import type { ReactNode, SVGProps } from "react";
+import { Children, cloneElement, isValidElement, type ReactNode, type SVGProps } from "react";
 
 export type PropsIcono = Omit<SVGProps<SVGSVGElement>, "children"> & {
   /** Texto para lectores de pantalla. Sin él, el ícono es decorativo (aria-hidden). */
@@ -32,7 +32,10 @@ export function Icono({ lienzo, titulo, className, children, ...resto }: PropsIc
       {...resto}
     >
       {titulo ? <title>{titulo}</title> : null}
-      {children}
+      {/* pathLength="1" deja dibujar el trazo de 0 a 1 sin medir cada ruta (ver `data-dibujar`). */}
+      {Children.map(children, (trazo) =>
+        isValidElement<SVGProps<SVGPathElement>>(trazo) ? cloneElement(trazo, { pathLength: 1 }) : trazo,
+      )}
     </svg>
   );
 }
