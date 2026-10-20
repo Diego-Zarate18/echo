@@ -93,20 +93,25 @@ function useFaseDeLaBarra(flotante: boolean) {
 /** Aire mínimo entre la barra fija y el control que recibe el foco. */
 const AIRE_FOCO = 16;
 
+/** Tiempo después del foco en que se vigila que el control no quede bajo la barra. */
+const VENTANA_REVISION_MS = 1000;
+
 /**
  * El control con foco nunca queda debajo de la barra fija (WCAG 2.4.11). El navegador solo desplaza la
  * página si el control está fuera de la ventana; si está a la vista pero debajo de la barra, no lo mueve.
  * Aquí se desplaza al instante lo justo para dejarlo `AIRE_FOCO` px por debajo de ella.
  */
-function useFocoSinTapar(visible: boolean) {
+function useFocoSinTapar() {
   const encabezado = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!visible) return;
-    function alEnfocar(evento: FocusEvent) {
+    let espera = 0;
+    let alTerminar: (() => void) | null = null;
+
+    function corregir(objetivo: HTMLElement) {
       const elemento = encabezado.current;
-      const objetivo = evento.target as HTMLElement | null;
-      if (!elemento || !objetivo || elemento.contains(objetivo)) return;
+      // Se mira en cada revisión: al enfocar algo lejano desde el hero, la barra aparece en el camino.
+      if (!elemento || elemento.dataset.flotante !== "true" || document.activeElement !== objetivo) return;
       const barra = elemento.querySelector(":scope > div")?.getBoundingClientRect();
       if (!barra) return;
       const caja = objetivo.getBoundingClientRect();
@@ -115,9 +120,36 @@ function useFocoSinTapar(visible: boolean) {
         window.scrollBy({ top: caja.top - tope, behavior: "instant" });
       }
     }
+
+    function dejarDeEsperar() {
+      window.clearTimeout(espera);
+      if (alTerminar) window.removeEventListener("scrollend", alTerminar);
+      alTerminar = null;
+    }
+
+    function alEnfocar(evento: FocusEvent) {
+      const objetivo = evento.target as HTMLElement | null;
+      if (!objetivo || encabezado.current?.contains(objetivo)) return;
+      corregir(objetivo);
+      // El navegador puede seguir llevando el control a la vista con desplazamiento suave y dejarlo de
+      // nuevo bajo la barra. Durante el segundo siguiente se revisa al terminar cada desplazamiento
+      // (incluido el propio, que no debe consumir la revisión) y una última vez al final.
+      dejarDeEsperar();
+      const revisar = () => corregir(objetivo);
+      alTerminar = revisar;
+      window.addEventListener("scrollend", revisar);
+      espera = window.setTimeout(() => {
+        dejarDeEsperar();
+        corregir(objetivo);
+      }, VENTANA_REVISION_MS);
+    }
+
     document.addEventListener("focusin", alEnfocar);
-    return () => document.removeEventListener("focusin", alEnfocar);
-  }, [visible]);
+    return () => {
+      dejarDeEsperar();
+      document.removeEventListener("focusin", alEnfocar);
+    };
+  }, []);
 
   return encabezado;
 }
@@ -166,7 +198,7 @@ export function EncabezadoPublico() {
   const { flotante, actual } = useEstadoDelEncabezado();
   const { lista, recorte, deslizar } = useIndicador(actual);
   const { fija, visible } = useFaseDeLaBarra(flotante);
-  const encabezado = useFocoSinTapar(visible);
+  const encabezado = useFocoSinTapar();
 
   const estiloIndicador: CSSProperties = {
     clipPath: recorte ? `inset(0 ${recorte.derecha}px 0 ${recorte.izquierda}px round 999px)` : undefined,
