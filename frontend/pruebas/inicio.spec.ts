@@ -119,7 +119,7 @@ test.describe("SCR-18 · Movimiento", () => {
     await expect(page.locator(".moris-cierre")).toHaveCSS("translate", "none");
 
     // El encabezado fijo solo se funde.
-    await page.evaluate(() => document.getElementById("por-que-echo")!.scrollIntoView({ block: "start" }));
+    await page.evaluate(() => document.getElementById("por-que-echo")!.scrollIntoView({ block: "start", behavior: "instant" }));
     await expect(page.getByRole("banner")).toHaveAttribute("data-flotante", "true");
     const animacionesEncabezado = await page
       .getByRole("banner")
@@ -168,7 +168,7 @@ test.describe("SCR-18 · Encabezado fijo", () => {
     const encabezado = page.getByRole("banner");
     await expect(encabezado).toHaveAttribute("data-flotante", "false");
 
-    await page.evaluate(() => document.getElementById("por-que-echo")!.scrollIntoView({ block: "start" }));
+    await page.evaluate(() => document.getElementById("por-que-echo")!.scrollIntoView({ block: "start", behavior: "instant" }));
     await expect(encabezado).toHaveAttribute("data-flotante", "true");
     await expect(encabezado).toHaveCSS("position", "fixed");
     await expect(encabezado.getByRole("link", { name: "Por qué Echo" })).toHaveAttribute("aria-current", "location");
@@ -180,7 +180,7 @@ test.describe("SCR-18 · Encabezado fijo", () => {
     await expect(encabezado.getByRole("link", { name: "Crear cuenta" })).toBeVisible();
 
     // En el cierre no hay sección del menú: no queda marcada la anterior.
-    await page.evaluate(() => document.getElementById("titulo-llamado")!.scrollIntoView({ block: "center" }));
+    await page.evaluate(() => document.getElementById("titulo-llamado")!.scrollIntoView({ block: "center", behavior: "instant" }));
     await expect(encabezado.locator("[aria-current]")).toHaveCount(0);
 
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
@@ -189,23 +189,78 @@ test.describe("SCR-18 · Encabezado fijo", () => {
   });
 });
 
-test.describe("SCR-18 · Barra fija al leer", () => {
-  test("sigue a la vista al bajar y al subir, y cubre lo que pasa por debajo de borde a borde", async ({ page }) => {
-    await page.goto("/");
-    const encabezado = page.getByRole("banner");
-    await page.mouse.move(200, 400);
-    for (const delta of [900, 600, -200]) {
-      await page.mouse.wheel(0, delta);
-      await expect(encabezado).toHaveAttribute("data-flotante", "true");
-      await expect(encabezado.getByRole("link", { name: "Echo, inicio" })).toBeInViewport();
-    }
-    // Franja opaca de borde a borde: nada asoma a los lados de la barra.
-    const franja = await encabezado.evaluate((elemento) => {
-      const caja = elemento.getBoundingClientRect();
-      return { izquierda: caja.left, derecha: window.innerWidth - caja.right, fondo: getComputedStyle(elemento).backgroundColor };
+test.describe("SCR-18 · Barra fija que no tapa", () => {
+  const anclas = [
+    { id: "que-es-echo", texto: "Qué es Echo" },
+    { id: "que-encontraras", texto: "Qué encontrarás" },
+    { id: "por-que-echo", texto: "Por qué Echo" },
+    { id: "quienes-somos", texto: "Quiénes somos" },
+  ];
+
+  /** Textos de `main` que cruzan la barra visible; `null` si la barra está escondida o es el encabezado del hero. */
+  async function textosBajoLaBarra(page: Page) {
+    return page.evaluate(() => {
+      const encabezado = document.querySelector("header")!;
+      if (encabezado.dataset.flotante !== "true") return null;
+      const barra = encabezado.querySelector(":scope > div")!.getBoundingClientRect();
+      if (barra.bottom <= 0 || getComputedStyle(encabezado).opacity === "0") return null;
+      const cruzan = [...document.querySelectorAll("main h2, main h3, main p, main li")].filter((elemento) => {
+        const caja = elemento.getBoundingClientRect();
+        return caja.width > 0 && caja.bottom > barra.top && caja.top < barra.bottom && caja.right > barra.left && caja.left < barra.right;
+      });
+      return cruzan.length ? cruzan.map((elemento) => (elemento.textContent ?? "").trim().slice(0, 40)) : null;
     });
-    expect(franja).toEqual({ izquierda: 0, derecha: 0, fondo: "rgb(251, 243, 233)" });
-  });
+  }
+
+  async function bordeInferiorDeLaBarra(page: Page) {
+    return page.evaluate(() => 8 + document.querySelector<HTMLElement>("header > div")!.offsetHeight);
+  }
+
+  for (const reducido of [false, true]) {
+    test(`al bajar nunca tapa el contenido y las anclas quedan con aire${reducido ? " · movimiento reducido" : ""}`, async ({ page }, info) => {
+      test.setTimeout(120_000);
+      if (reducido) await page.emulateMedia({ reducedMotion: "reduce" });
+      const tamanos = info.project.name === "movil" ? [[390, 844]] : [[1536, 705], [1440, 900]];
+
+      for (const [ancho, alto] of tamanos) {
+        await page.setViewportSize({ width: ancho, height: alto });
+        await page.goto("/");
+        const encabezado = page.getByRole("banner");
+        await page.mouse.move(ancho / 2, alto * 0.6);
+
+        // 1. Bajar con la rueda hasta el pie: la barra está escondida o no cruza ningún texto.
+        let anterior = -1;
+        while (true) {
+          await page.mouse.wheel(0, 200);
+          await page.waitForTimeout(320);
+          const y = await page.evaluate(() => Math.round(window.scrollY));
+          expect(await textosBajoLaBarra(page), `${ancho}×${alto}, scrollY ${y}`).toBeNull();
+          if (y === anterior) break;
+          anterior = y;
+        }
+
+        // 2. Al subir, la barra aparece.
+        await page.mouse.wheel(0, -300);
+        await expect(encabezado).toHaveAttribute("data-oculto", "false");
+        await expect(encabezado).toHaveCSS("opacity", "1");
+
+        // 3. Cada ancla deja el título completo y con aire debajo de la barra.
+        for (const ancla of anclas) {
+          await page.mouse.wheel(0, -300);
+          await expect(encabezado).toHaveAttribute("data-oculto", "false");
+          if (info.project.name === "movil") {
+            await encabezado.getByRole("button", { name: "Abrir menú" }).click();
+            await page.locator("#menu-movil").getByRole("link", { name: ancla.texto }).click();
+          } else {
+            await encabezado.getByRole("link", { name: ancla.texto }).click();
+          }
+          await page.waitForTimeout(reducido ? 300 : 1400);
+          const titulo = await page.locator(`#${ancla.id} h2`).evaluate((h2) => h2.getBoundingClientRect().top);
+          expect(titulo, `${ancho}×${alto}, ${ancla.texto}`).toBeGreaterThanOrEqual((await bordeInferiorDeLaBarra(page)) + 16);
+        }
+      }
+    });
+  }
 });
 
 test.describe("SCR-18 · Menú móvil", () => {
