@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Logo } from "@/componentes/marca/Logo";
 import { Boton } from "@/componentes/ui/Boton";
 import { seccionesInicio } from "@/areas/inicio/secciones";
@@ -52,23 +52,62 @@ function useEstadoDelEncabezado() {
   return { flotante, actual: flotante ? actual : null };
 }
 
+type Recorte = { izquierda: number; derecha: number };
+
+/**
+ * Indicador de la sección actual: una sola píldora que se desliza entre las anclas
+ * (receta «tab indicator» de `animate`: se recorta con `clip-path` en vez de mover el ancho).
+ * Al aparecer después de no haber sección actual no se desliza desde la última posición: solo se funde.
+ */
+function useIndicador(actual: string | null) {
+  const lista = useRef<HTMLDivElement>(null);
+  const [recorte, setRecorte] = useState<Recorte | null>(null);
+  const [deslizar, setDeslizar] = useState(false);
+  const anterior = useRef<string | null>(null);
+
+  useLayoutEffect(() => {
+    const ul = lista.current;
+    function medir() {
+      const enlace = actual && ul?.querySelector<HTMLElement>(`a[href="#${actual}"]`);
+      if (!ul || !enlace) return;
+      setRecorte({
+        izquierda: enlace.offsetLeft,
+        derecha: ul.clientWidth - enlace.offsetLeft - enlace.offsetWidth,
+      });
+    }
+    setDeslizar(anterior.current !== null && actual !== null);
+    anterior.current = actual;
+    medir();
+    window.addEventListener("resize", medir);
+    return () => window.removeEventListener("resize", medir);
+  }, [actual]);
+
+  return { lista, recorte, deslizar };
+}
+
 /**
  * Encabezado del inicio público (84:490 escritorio, 84:719 móvil).
- * Sobre el hero se dibuja dentro de la tarjeta, alineado a la retícula de 1424 px; al salir del hero se queda fijo arriba como una
- * barra de vidrio café, para que las anclas y «Crear cuenta» sigan a la mano en toda la página.
- * En el DOM va antes de `<main>`.
+ * Sobre el hero se dibuja dentro de la tarjeta, alineado a la retícula de 1424 px. Al salir del hero
+ * se materializa fijo arriba como una barra de vidrio café (sólida con transparencia reducida), para que
+ * las anclas y «Crear cuenta» sigan a la mano en toda la página. En el DOM va antes de `<main>`.
  */
 export function EncabezadoPublico() {
   const { flotante, actual } = useEstadoDelEncabezado();
+  const { lista, recorte, deslizar } = useIndicador(actual);
+
+  const estiloIndicador: CSSProperties = {
+    clipPath: recorte ? `inset(0 ${recorte.derecha}px 0 ${recorte.izquierda}px round 999px)` : undefined,
+    opacity: actual && recorte ? 1 : 0,
+  };
 
   return (
     <header
       data-fondo="oscuro"
       data-flotante={flotante}
       className={[
-        "group/encabezado inset-x-2 top-2 z-30",
+        "inset-x-2 top-2 z-30",
         flotante
-          ? "fixed mx-auto max-w-[1180px] motion-safe:animate-bajar"
+          ? "fixed mx-auto max-w-[1180px] animate-materializar"
           : "absolute px-5 pt-2 md:px-8 md:pt-5 xl:pt-7",
       ].join(" ")}
     >
@@ -76,7 +115,7 @@ export function EncabezadoPublico() {
         className={[
           "relative flex items-center justify-between gap-6",
           flotante
-            ? "rounded-full border border-blanco/12 bg-marca-cafe py-1.5 pr-1.5 pl-5 shadow-vidrio"
+            ? "rounded-full border border-blanco/12 bg-marca-cafe/85 py-1.5 pr-1.5 pl-5 shadow-vidrio backdrop-blur-vidrio backdrop-saturate-150 transparencia-reducida:bg-marca-cafe transparencia-reducida:backdrop-blur-none"
             : "mx-auto max-w-[1360px]",
         ].join(" ")}
       >
@@ -92,27 +131,38 @@ export function EncabezadoPublico() {
           aria-label="Secciones de la página"
           className="absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 xl:block"
         >
-          <ul
+          <div
+            ref={lista}
             className={[
-              "flex gap-0.5 rounded-full p-1.5",
+              "relative isolate rounded-full",
               flotante ? "" : "border border-blanco/16 bg-marca-crema/8 backdrop-blur-vidrio",
             ].join(" ")}
           >
-            {seccionesInicio.map((seccion) => {
-              const esActual = actual === seccion.id;
-              return (
+            <span
+              aria-hidden="true"
+              data-indicador
+              style={estiloIndicador}
+              className={[
+                "pointer-events-none absolute inset-0 -z-10 rounded-full bg-marca-crema/14 motion-reduce:transition-none",
+                deslizar
+                  ? "transition-[clip-path,opacity] duration-250 ease-(--ease-desplazar)"
+                  : "transition-opacity duration-200 ease-(--ease-respuesta)",
+              ].join(" ")}
+            />
+            <ul className="flex gap-0.5 p-1.5">
+              {seccionesInicio.map((seccion) => (
                 <li key={seccion.id}>
                   <a
                     href={`#${seccion.id}`}
-                    aria-current={esActual ? "location" : undefined}
-                    className="flex rounded-full px-[18px] py-2.5 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema transition-colors duration-200 hover:bg-marca-crema/10 aria-[current]:bg-marca-crema/14"
+                    aria-current={actual === seccion.id ? "location" : undefined}
+                    className="flex rounded-full px-[18px] py-2.5 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema transition-colors duration-200 hover:bg-marca-crema/10"
                   >
                     {seccion.texto}
                   </a>
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          </div>
         </nav>
 
         <div className="hidden items-center gap-6 xl:flex">

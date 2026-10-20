@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Transparencia reducida del sistema: las superficies de vidrio se vuelven sólidas. */
+@custom-variant transparencia-reducida (@media (prefers-reduced-transparency: reduce));
+
 /*
  * Sistema visual «Tierra» (DEC-82, DEC-84).
  * Los colores son las variables de Figma con el mismo nombre. No se agregan otros:
@@ -98,7 +101,7 @@
   --animate-regresar: regresar 900ms var(--ease-llegada) both;
   --animate-trazar: trazar 900ms var(--ease-llegada) both;
   --animate-encender: encender 500ms var(--ease-llegada) both;
-  --animate-bajar: bajar 420ms var(--ease-llegada) both;
+  --animate-materializar: materializar 260ms var(--ease-respuesta) both;
 }
 
 /* Fotogramas de las animaciones (fuera de @theme para que siempre se emitan). */
@@ -211,15 +214,17 @@
   }
 }
 
-/* El encabezado vuelve desde arriba cuando se queda fijo. */
-@keyframes bajar {
+/* El encabezado fijo se materializa: llega como una superficie de vidrio, no solo baja. */
+@keyframes materializar {
   from {
     opacity: 0;
-    translate: 0 -120%;
+    scale: 0.98;
+    filter: blur(6px);
   }
   to {
     opacity: 1;
-    translate: 0 0;
+    scale: 1;
+    filter: blur(0);
   }
 }
 
