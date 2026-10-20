@@ -94,7 +94,7 @@ Nada se repite en bucle: el movimiento automático dura menos de 5 s (WCAG 2.2.2
 | Moris habla | `.revelar-globo` | Los globos de Moris aparecen al entrar en la ventana |
 | Declaración | `QueEsEcho` (`.declaracion`) | Se ilumina palabra por palabra al leerla (empieza al 42 %, ya cumple 3:1 para texto grande) |
 | El cierre regresa | `Llamado` (`.brotar-al-ver`) | Moris vuelve a brotar como en el hero |
-| Encabezado fijo | `EncabezadoPublico` | Al salir del hero se fija arriba, siempre visible, como el encabezado de la app (Figma `82:463`): franja crema opaca de borde a borde con la barra café (16 px de radio) dentro, para que nada asome alrededor. Se materializa (opacidad, escala 0.98, desenfoque) y un solo indicador (`clip-path`) se desliza a la sección actual (`aria-current`) |
+| Encabezado fijo | `EncabezadoPublico` | Al salir del hero se vuelve una píldora café sólida que flota a 8 px del borde. Se esconde al bajar leyendo (sube −100 % − 8 px y se desvanece) y se materializa al subir (opacidad, escala 0.98, desenfoque) con una transición interrumpible de 220 ms. Visible con foco dentro, menú abierto o puntero encima. Un solo indicador (`clip-path`) se desliza a la sección actual (`aria-current`). Con movimiento reducido, solo opacidad |
 | Botón con flecha | `Boton` `conFlecha` | La flecha sale por arriba y otra entra desde abajo |
 
 Con movimiento reducido, la entrada es un fundido de 250 ms y lo demás no se mueve. Los títulos, filas y tarjetas

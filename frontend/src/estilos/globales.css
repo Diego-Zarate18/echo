@@ -98,7 +98,6 @@
   --animate-regresar: regresar 900ms var(--ease-llegada) both;
   --animate-trazar: trazar 900ms var(--ease-llegada) both;
   --animate-encender: encender 500ms var(--ease-llegada) both;
-  --animate-materializar: materializar 260ms var(--ease-respuesta) both;
 }
 
 /* Fotogramas de las animaciones (fuera de @theme para que siempre se emitan). */
@@ -208,20 +207,6 @@
   }
   to {
     opacity: 1;
-  }
-}
-
-/* El encabezado fijo se materializa: llega como una superficie de vidrio, no solo baja. */
-@keyframes materializar {
-  from {
-    opacity: 0;
-    scale: 0.98;
-    filter: blur(6px);
-  }
-  to {
-    opacity: 1;
-    scale: 1;
-    filter: blur(0);
   }
 }
 
