@@ -102,6 +102,66 @@ test.describe("SCR-18 · Movimiento", () => {
       expect(animacion).toEqual({ nombre: "desvanecer", duracion: 250 });
     }
   });
+
+  test("con movimiento reducido nada nuevo se mueve: Moris, íconos, cierre ni encabezado", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    const moris = page.locator(".saludo");
+    await expect(moris).toHaveCSS("animation-name", "none");
+
+    // Moris no sigue al puntero.
+    await page.mouse.move(1200, 200);
+    await page.mouse.move(1260, 240);
+    await expect(moris).not.toHaveAttribute("style", /translate/);
+
+    // Los íconos no se marcan para dibujarse: se ven completos.
+    await expect(page.locator("[data-dibujo]")).toHaveCount(0);
+
+    // Moris del cierre no se inclina.
+    await page.locator(".boton-llamado").focus();
+    await expect(page.locator(".moris-cierre")).toHaveCSS("translate", "none");
+
+    // El encabezado fijo solo se funde.
+    await page.evaluate(() => document.getElementById("por-que-echo")!.scrollIntoView({ block: "start" }));
+    await expect(page.getByRole("banner")).toHaveAttribute("data-flotante", "true");
+    const animacionesEncabezado = await page
+      .getByRole("banner")
+      .evaluate((encabezado) => encabezado.getAnimations().map((a) => (a as CSSAnimation).animationName));
+    expect(animacionesEncabezado.every((nombre) => nombre === "desvanecer")).toBe(true);
+  });
+});
+
+test.describe("SCR-18 · Retícula", () => {
+  test("el hero llega a 8 px del borde y el contenido no pasa de 1424 px", async ({ page }, info) => {
+    test.skip(info.project.name !== "escritorio", "Se revisa en anchos de escritorio");
+    for (const ancho of [1536, 2560]) {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      await page.goto("/");
+      const medidas = await page.evaluate(() => {
+        const tarjeta = document.getElementById("portada")!.getBoundingClientRect();
+        const contenido = document.querySelector("#portada > div")!.getBoundingClientRect();
+        return { izquierda: tarjeta.left, derecha: window.innerWidth - tarjeta.right, contenido: contenido.width };
+      });
+      expect(medidas, `${ancho} px`).toEqual({ izquierda: 8, derecha: 8, contenido: 1424 });
+    }
+  });
+
+  test("las tarjetas del equipo miden lo mismo en cada fila", async ({ page }) => {
+    await page.goto("/");
+    const filas = await page.locator("#quienes-somos ul > li").evaluateAll((tarjetas) => {
+      const porFila = new Map<number, number[]>();
+      for (const tarjeta of tarjetas) {
+        const caja = tarjeta.getBoundingClientRect();
+        const fila = Math.round(caja.top);
+        porFila.set(fila, [...(porFila.get(fila) ?? []), Math.round(caja.height)]);
+      }
+      return [...porFila.values()];
+    });
+    expect(filas.length).toBeGreaterThan(0);
+    for (const alturas of filas) {
+      expect(new Set(alturas).size, `alturas de una fila: ${alturas.join(", ")}`).toBe(1);
+    }
+  });
 });
 
 test.describe("SCR-18 · Encabezado fijo", () => {
@@ -115,6 +175,11 @@ test.describe("SCR-18 · Encabezado fijo", () => {
     await expect(encabezado).toHaveAttribute("data-flotante", "true");
     await expect(encabezado).toHaveCSS("position", "fixed");
     await expect(encabezado.getByRole("link", { name: "Por qué Echo" })).toHaveAttribute("aria-current", "location");
+    // Un solo indicador deslizante, visible, recortado sobre el ancla actual.
+    const indicador = encabezado.locator("[data-indicador]");
+    await expect(indicador).toHaveCount(1);
+    await expect(indicador).toHaveCSS("opacity", "1");
+    await expect(indicador).toHaveAttribute("style", /clip-path: inset\(/);
     await expect(encabezado.getByRole("link", { name: "Crear cuenta" })).toBeVisible();
 
     // En el cierre no hay sección del menú: no queda marcada la anterior.
