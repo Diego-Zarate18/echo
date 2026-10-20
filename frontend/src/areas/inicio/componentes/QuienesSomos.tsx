@@ -57,7 +57,7 @@ export function QuienesSomos() {
         </ul>
 
         <div className="mt-12 flex flex-col gap-8 lg:mt-14 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-5">
+          <div className="flex shrink-0 flex-wrap gap-5">
             <div className="rounded-logo bg-blanco px-[18px] py-3">
               <Image
                 src={upChiapas}
