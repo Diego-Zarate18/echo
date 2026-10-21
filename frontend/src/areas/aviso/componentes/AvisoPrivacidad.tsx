@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { IndicePagina } from "@/componentes/estructura/IndicePagina";
 import { IconoArchivo } from "@/componentes/ui/iconos/iconos";
 import {
   CORREO_ARCO,
@@ -8,7 +9,6 @@ import {
   apartadosAviso,
   type ApartadoAviso,
 } from "@/areas/aviso/contenido";
-import { IndiceAviso } from "./IndiceAviso";
 
 /** Párrafo de lectura: 18 px, interlineado 1.7 y medida de 65–75 caracteres reales (58ch de Nunito Sans). */
 function Parrafo({ children }: { children: ReactNode }) {
@@ -108,7 +108,7 @@ export function AvisoPrivacidad() {
       </header>
 
       <div className="grid gap-10 pb-24 lg:grid-cols-[300px_minmax(0,776px)] lg:gap-16">
-        <IndiceAviso apartados={apartadosAviso} />
+        <IndicePagina apartados={apartadosAviso} />
         <div className="flex flex-col gap-10">
           {apartadosAviso.map((apartado) => (
             <section key={apartado.id} id={apartado.id} aria-labelledby={`titulo-${apartado.id}`}>

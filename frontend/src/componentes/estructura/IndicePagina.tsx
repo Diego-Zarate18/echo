@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import type { ApartadoAviso } from "@/areas/aviso/contenido";
+
+/** Apartado de una página de lectura: su `id` es el ancla del índice. */
+export type ApartadoIndice = { readonly id: string; readonly titulo: string };
 
 type Recorte = { arriba: number; abajo: number };
 
@@ -17,7 +19,7 @@ const LINEA_DE_LECTURA = 0.2;
  * apartados no alcanzan a subir hasta la línea. Al usar el índice se respeta el elegido mientras la
  * página se desplaza hacia él. La posición se lee una vez por cuadro.
  */
-function useApartadoActual(apartados: readonly ApartadoAviso[]) {
+function useApartadoActual(apartados: readonly ApartadoIndice[]) {
   const [actual, setActual] = useState<string>(apartados[0].id);
   // Hasta cuándo manda la elección hecha en el índice sobre lo que se ve al desplazarse.
   const eleccionHasta = useRef(0);
@@ -67,12 +69,12 @@ function useApartadoActual(apartados: readonly ApartadoAviso[]) {
 }
 
 /**
- * Índice «En esta página» del Aviso de privacidad (84:789).
+ * Índice «En esta página» de las páginas de lectura: Aviso de privacidad (84:789) y Ayuda (84:880).
  * En escritorio queda fijo al bajar; en móvil es una lista compacta al inicio. Marca el apartado actual
  * con `aria-current="location"` y un solo indicador que se desliza entre enlaces (recortado con
  * `clip-path`, como el del encabezado del inicio). Con movimiento reducido cambia sin deslizarse.
  */
-export function IndiceAviso({ apartados }: { apartados: readonly ApartadoAviso[] }) {
+export function IndicePagina({ apartados }: { apartados: readonly ApartadoIndice[] }) {
   const { actual, elegir } = useApartadoActual(apartados);
   const lista = useRef<HTMLDivElement>(null);
   const [recorte, setRecorte] = useState<Recorte | null>(null);
