@@ -89,6 +89,7 @@ echo/                          ← repositorio Diego-Zarate18/echo
    └─ src/
       ├─ app/                  ← solo rutas (§5); cada page.tsx es delgada
       ├─ areas/                ← lógica por área, mismo nombre que los MOD-* del grafo
+      │  ├─ aviso/             ← Aviso de privacidad SCR-05: contenido fijo (contenido.ts) e índice «En esta página»
       │  ├─ inicio/            ← sitio público SCR-18 (DEC-83): Encabezado, Presentacion,
       │  │                        QueEsEcho, QueEncontraras, PorQueEcho, QuienesSomos, Llamado
       │  ├─ cuenta/            ← formularios de acceso, perfil, mensajes de DEC-77
