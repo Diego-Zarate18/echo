@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.3.1",
+    "version": "1.4.0",
     "actualizado": "2026-10-21",
-    "fase": "Modelo de datos, 18 vistas en Figma (DEC-82) y dirección visual decididos. Siguiente: crear el frontend Next.js 16.4.2 empezando por el sitio público (ai/handoff/siguiente.md) y definir el backend.",
+    "fase": "Sitio público hecho (inicio, aviso y ayuda). Aviso de privacidad integral y términos v1.0 redactados. Siguiente: contrato de la API y API simulada (Tarea 05), luego aviso y términos en el sitio y las vistas de cuenta.",
     "historial": [
       {
         "version": "0.1.0",
@@ -54,6 +54,11 @@
         "version": "1.3.1",
         "fecha": "2026-10-21",
         "cambio": "El aviso del piloto sale de SCR-18 y queda en el Aviso de privacidad (SCR-05) y la Ayuda (SCR-17, #cierre-del-piloto): DEC-78 revisada, texto_piloto movido a SCR-05 y SCR-17."
+      },
+      {
+        "version": "1.4.0",
+        "fecha": "2026-10-21",
+        "cambio": "Aviso de privacidad versionado con aceptación registrada: fecha, hora, IP y versión (DEC-28 revisada; FDA-15 descartado; OP-13 recuperada; tablas documento_legal y aceptacion_documento; INV-30). Responsable único Brian Luis Ruiz Pérez, ley de 2025 y autoridad garante (DEC-68 revisada); PEND-12 resuelto. Términos y condiciones (DEC-87, SCR-20), finalidades secundarias con negativa (DEC-88, OP-39), solo mayores de edad (DEC-89), pantalla de aceptación (SCR-19), consulta de documentos vigentes (OP-40). Arquitectura del frontend aprobada: mismo origen (DEC-85), convenciones (DEC-86), contrato OpenAPI y API simulada (DEC-90), INV-29. Modelo de 21 tablas y 30 relaciones."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -156,25 +161,25 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 434,
-      "aristas": 1163,
+      "nodos": 451,
+      "aristas": 1261,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 5,
-        "tecnologia": 29,
-        "decision": 84,
-        "invariante": 28,
-        "tabla": 19,
+        "tecnologia": 32,
+        "decision": 90,
+        "invariante": 30,
+        "tabla": 21,
         "rol_bd": 5,
         "funcion_bd": 5,
         "disparador": 2,
         "vista_bd": 2,
         "consulta": 13,
         "modulo": 8,
-        "operacion": 38,
-        "pantalla": 18,
+        "operacion": 40,
+        "pantalla": 20,
         "requerimiento": 83,
         "hueco": 34,
         "fuera_de_alcance": 20,
@@ -812,12 +817,16 @@
     {
       "id": "DEC-28",
       "tipo": "decision",
-      "nombre": "Aviso de privacidad como página fija",
-      "descripcion": "Basta el consentimiento tácito (LFPDPPP): el aviso es una página fija enlazada en el registro («Al registrarte aceptas el aviso de privacidad») y en el pie de página. Nombra al equipo de desarrollo como responsable e incluye un correo de contacto para solicitudes ARCO (PEND-12). No se guarda qué versión aceptó cada alumno.",
+      "nombre": "Aviso de privacidad versionado con aceptación registrada",
+      "descripcion": "El aviso de privacidad integral (y su versión simplificada en el registro) tiene número de versión. Antes de crear la cuenta, el estudiante marca la casilla obligatoria y sin marcar «He leído y acepto el Aviso de privacidad» (consentimiento expreso). Se registra cada aceptación: fecha y hora (now() del servidor de BD), dirección IP y versión aceptada, en la misma transacción que crea la cuenta (INV-30). Quien entra con Google por primera vez ve la pantalla de aceptación (SCR-19) antes de que se cree su cuenta. Si una versión nueva requiere consentimiento (nuevas finalidades, datos o transferencias, o cambio de responsable), el backend devuelve ACEPTACION_PENDIENTE y la app muestra SCR-19 hasta aceptarla. Al anonimizar una cuenta se borra la IP y se conservan fecha, hora y versión. El registro solo sirve como prueba del consentimiento.",
       "estado": "decidido",
       "detalles": {
-        "origen": "P-24 (revisado el 17/10); elimina las tablas aviso_privacidad y aceptacion_aviso, la ventana V-05 y la operación O-13",
-        "ley": "LFPDPPP (DEC-68)"
+        "origen": "Rúbrica del docente y aviso de privacidad integral v1.0 (21/10); revierte la versión del 17/10 (página fija con consentimiento tácito, sin registro)",
+        "revisada": "1.4.0 (21/10): el docente exige registrar fecha, hora, IP y versión aceptada",
+        "ley": "LFPDPPP (DEC-68)",
+        "texto_fuente": "docs/legal/ (aviso integral v1.0, 21/10/2026)",
+        "aviso_de_cambios": "Aviso en la interfaz 30 días, correo al registrado y nueva aceptación cuando se requiera",
+        "registro_con_google": "El callback de Google no crea la cuenta: guarda sub, nombre, apellido y correo en una cookie temporal cifrada y firmada (HttpOnly, 10 minutos, sin BD); la cuenta se crea al aceptar en SCR-19"
       }
     },
     {
@@ -1008,11 +1017,12 @@
     {
       "id": "DEC-52",
       "tipo": "decision",
-      "nombre": "Modelo simplificado a 19 tablas",
-      "descripcion": "Del borrador de 23 tablas: se eliminaron aviso_privacidad y aceptacion_aviso (aviso como página fija); credencial e intento_acceso se fusionaron en usuario (hash_contrasena, google_sub, intentos_fallidos, bloqueado_hasta). Se conservan imagen, insignia, seccion y fundamento como tablas. Criterio: toda tabla debe tener uso en al menos una vista.",
+      "nombre": "Modelo de 21 tablas",
+      "descripcion": "Del borrador de 23 tablas: credencial e intento_acceso se fusionaron en usuario (hash_contrasena, google_sub, intentos_fallidos, bloqueado_hasta). Se conservan imagen, insignia, seccion y fundamento como tablas. En la versión 1.4.0 vuelven, rediseñadas, las tablas de documentos legales y aceptaciones (documento_legal y aceptacion_documento) por DEC-28. Criterio: toda tabla debe tener uso en al menos una vista.",
       "estado": "decidido",
       "detalles": {
-        "origen": "Revisión del 17/10 con el equipo"
+        "origen": "Revisión del 17/10 con el equipo",
+        "revisada": "1.4.0 (21/10): 19 → 21 tablas"
       }
     },
     {
@@ -1354,13 +1364,38 @@
             "por_defecto": "—",
             "restricciones": "—",
             "descripcion": "Momento en que se anonimizó la cuenta"
+          },
+          {
+            "campo": "mayoria_edad_confirmada_en",
+            "tipo": "TIMESTAMPTZ",
+            "nulo": "Sí*",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Momento en que confirmó tener 18 años o más (DEC-89). *Obligatoria salvo en cuentas anonimizadas"
+          },
+          {
+            "campo": "negativa_encuesta",
+            "tipo": "BOOLEAN",
+            "nulo": "No",
+            "por_defecto": "false",
+            "restricciones": "—",
+            "descripcion": "No desea la invitación a la encuesta de satisfacción (DEC-88)"
+          },
+          {
+            "campo": "negativa_estadisticas",
+            "tipo": "BOOLEAN",
+            "nulo": "No",
+            "por_defecto": "false",
+            "restricciones": "—",
+            "descripcion": "No desea que sus datos se usen para estadísticas anónimas; se conserva al anonimizar (DEC-88)"
           }
         ],
         "restricciones_de_tabla": [
           "chk_usuario_acceso: si la cuenta no está anonimizada, tiene contraseña o identificador de Google.",
           "chk_usuario_datos: si la cuenta no está anonimizada, tiene nombre y correo.",
           "chk_usuario_activo: una cuenta activa tiene el correo verificado o entra con Google.",
-          "chk_usuario_anonimizado: una cuenta anonimizada tiene fecha de anonimización y no tiene correo, contraseña ni identificador de Google."
+          "chk_usuario_anonimizado: una cuenta anonimizada tiene fecha de anonimización y no tiene correo, contraseña ni identificador de Google.",
+          "chk_usuario_mayoria_edad: si la cuenta no está anonimizada, tiene mayoria_edad_confirmada_en."
         ],
         "indices": [
           {
@@ -2848,7 +2883,7 @@
       "id": "ROL-CONTENIDO",
       "tipo": "rol_bd",
       "nombre": "echo_contenido",
-      "descripcion": "Scripts de carga del equipo (RN-02). SELECT, INSERT, UPDATE y DELETE sobre las 11 tablas de contenido. No ve ni toca tablas de estudiantes; ON DELETE RESTRICT le impide borrar contenido respondido.",
+      "descripcion": "Scripts de carga del equipo (RN-02). SELECT, INSERT, UPDATE y DELETE sobre las 11 tablas de contenido y documento_legal (versiones del aviso y los términos). No ve ni toca tablas de estudiantes; ON DELETE RESTRICT le impide borrar contenido respondido.",
       "estado": "decidido"
     },
     {
@@ -2884,7 +2919,7 @@
       "id": "FN-ANONIMIZAR",
       "tipo": "funcion_bd",
       "nombre": "fn_anonimizar_usuario(usuario)",
-      "descripcion": "Borra datos personales y credenciales, elimina sesiones y enlaces y marca la cuenta como anonimizada en una sola transacción.",
+      "descripcion": "Borra datos personales y credenciales, elimina sesiones y enlaces, borra la IP de sus aceptaciones (conserva fecha, hora y versión) y marca la cuenta como anonimizada en una sola transacción. Conserva negativa_estadisticas para seguir excluyendo su historial de las estadísticas.",
       "estado": "decidido",
       "detalles": {
         "invocacion": "prisma.$queryRaw",
@@ -2895,7 +2930,7 @@
       "id": "FN-LIMPIEZA",
       "tipo": "funcion_bd",
       "nombre": "fn_limpieza_diaria()",
-      "descripcion": "Elimina cuentas pendientes con más de 24 h sin verificar, enlaces vencidos y sesiones vencidas. Solo borra cuentas pendientes, nunca cuentas con historial.",
+      "descripcion": "Elimina cuentas pendientes con más de 24 h sin verificar, enlaces vencidos y sesiones vencidas. Solo borra cuentas pendientes, nunca cuentas con historial. Las aceptaciones de una cuenta pendiente que se elimina se borran en cascada.",
       "estado": "decidido",
       "detalles": {
         "invocacion": "proceso programado (DEC-63)",
@@ -2934,7 +2969,7 @@
       "id": "VW-RESULTADOS-ANONIMOS",
       "tipo": "vista_bd",
       "nombre": "v_resultados_anonimos",
-      "descripcion": "Intentos enviados con módulo, curso, tipo, fecha y calificación, sin nombre ni correo. Solo para echo_lectura.",
+      "descripcion": "Intentos enviados con módulo, curso, tipo, fecha y calificación, sin nombre ni correo, excluyendo a los estudiantes con negativa_estadisticas. Solo para echo_lectura.",
       "estado": "decidido"
     },
     {
@@ -3088,13 +3123,13 @@
       "id": "OP-01",
       "tipo": "operacion",
       "nombre": "Registrarse con correo",
-      "descripcion": "Correo válido y normalizado; contraseña 8+ con letra y número; hash Argon2id; crea enlace de verificación de 24 h; texto «Al registrarte aceptas el aviso de privacidad» con enlace. Si el correo ya tiene cuenta no se crea otra: la respuesta es la misma y se envía el correo «ya tienes cuenta» (DEC-77).",
+      "descripcion": "Correo válido y normalizado; contraseña 8+ con letra y número; hash Argon2id; crea enlace de verificación de 24 h. Exige las casillas del aviso, los términos y la mayoría de edad, y las versiones vigentes que el formulario mostró; guarda las negativas a finalidades secundarias. Crea la cuenta y sus aceptaciones (fecha, hora, IP y versión) en una transacción (INV-30). Si el correo ya tiene cuenta no se crea otra ni se registra aceptación: la respuesta es la misma y se envía el correo «ya tienes cuenta» (DEC-77).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-01 de la tabla de operaciones corregida",
         "tipo_acceso": "E",
         "frecuencia": "Baja",
-        "recibe": "Nombre(s), apellidos (al menos el primero), correo, contraseña",
+        "recibe": "Nombre(s), apellidos (al menos el primero), correo, contraseña, versiones aceptadas del aviso y de los términos, confirmación de mayoría de edad, negativas a finalidades secundarias",
         "devuelve": "Aviso de «revisa tu correo»"
       }
     },
@@ -3116,7 +3151,7 @@
       "id": "OP-03",
       "tipo": "operacion",
       "nombre": "Entrar con Google",
-      "descripcion": "Busca por google_sub; si no existe, vincula con cuenta verificada del mismo correo o crea una activa; actualiza el correo desde Google. El apellido de Google va a apellidos; si no viene, queda vacío (DEC-22).",
+      "descripcion": "Busca por google_sub; si no existe, vincula con cuenta verificada del mismo correo o, si no hay cuenta, guarda los datos de Google en una cookie temporal y lleva a SCR-19: la cuenta (activa) se crea al aceptar (OP-13). Actualiza el correo desde Google. El apellido de Google va a apellidos; si no viene, queda vacío (DEC-22).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-03 de la tabla de operaciones corregida",
@@ -3193,7 +3228,7 @@
         "tipo_acceso": "L",
         "frecuencia": "Baja",
         "recibe": "Sesión",
-        "devuelve": "Nombre, apellidos, correo, método de acceso, fecha de registro"
+        "devuelve": "Nombre, apellidos, correo, método de acceso, fecha de registro, preferencias de finalidades secundarias y aceptaciones registradas (documento, versión, fecha y hora)"
       }
     },
     {
@@ -3256,7 +3291,7 @@
       "id": "OP-14",
       "tipo": "operacion",
       "nombre": "Eliminar cuenta",
-      "descripcion": "Anonimiza; no borra historial.",
+      "descripcion": "Anonimiza; no borra historial. Borra la IP de sus aceptaciones (DEC-28).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-14 de la tabla de operaciones corregida",
@@ -3494,14 +3529,14 @@
       "id": "OP-31",
       "tipo": "operacion",
       "nombre": "Validar sesión",
-      "descripcion": "Caduca tras 30 min sin actividad; renueva la última actividad.",
+      "descripcion": "Caduca tras 30 min sin actividad; renueva la última actividad. Indica si el estudiante debe aceptar una versión nueva del aviso o los términos (INV-30).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-31 de la tabla de operaciones corregida",
         "tipo_acceso": "L+E",
         "frecuencia": "Muy alta",
         "recibe": "Código de sesión (cookie)",
-        "devuelve": "Alumno autenticado"
+        "devuelve": "Alumno autenticado y si tiene una aceptación pendiente"
       }
     },
     {
@@ -3522,7 +3557,7 @@
       "id": "OP-33",
       "tipo": "operacion",
       "nombre": "Enviar correos",
-      "descripcion": "Verificación, recuperación, cambio de correo y «ya tienes cuenta», enviados con Resend desde una sola plantilla (DEC-66, DEC-79).",
+      "descripcion": "Verificación, recuperación, cambio de correo y «ya tienes cuenta», enviados con Resend desde una sola plantilla (DEC-66, DEC-79). Incluye las variantes de cambios a los documentos legales y la invitación a la encuesta (DEC-79).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-33 de la tabla de operaciones corregida",
@@ -3550,7 +3585,7 @@
       "id": "OP-35",
       "tipo": "operacion",
       "nombre": "Cargar o actualizar contenido",
-      "descripcion": "Rol echo_contenido; valida reglas de varias filas (DEC-33).",
+      "descripcion": "Rol echo_contenido; valida reglas de varias filas (DEC-33). También publica versiones nuevas del aviso y los términos (documento_legal).",
       "estado": "decidido",
       "detalles": {
         "origen": "O-35 de la tabla de operaciones corregida",
@@ -3577,11 +3612,15 @@
     {
       "id": "OP-13",
       "tipo": "operacion",
-      "nombre": "Aceptar aviso de privacidad",
-      "descripcion": "Eliminada: el aviso es una página fija con consentimiento tácito.",
-      "estado": "descartado",
+      "nombre": "Aceptar aviso de privacidad y términos",
+      "descripcion": "Registra la aceptación de las versiones vigentes (fecha, hora, IP y versión) en dos casos: (1) primera entrada con Google, que además crea la cuenta con la mayoría de edad y las negativas (INV-30); (2) una versión nueva con requiere_aceptacion, con sesión. Rechaza versiones que no sean las vigentes.",
+      "estado": "decidido",
       "detalles": {
-        "origen": "O-13 de la tabla de operaciones corregida"
+        "origen": "O-13, recuperada en 1.4.0 (DEC-28 revisada)",
+        "tipo_acceso": "L+E",
+        "frecuencia": "Baja",
+        "recibe": "Versiones aceptadas; en el caso (1), además mayoría de edad y negativas, y la cookie temporal de Google",
+        "devuelve": "Sesión (caso 1) o confirmación (caso 2)"
       }
     },
     {
@@ -3594,20 +3633,21 @@
         "origen": "V-01",
         "estados_a_disenar": "Mensaje único ante cualquier fallo, que menciona la pausa de 15 min tras 5 intentos y cubre también la cuenta bloqueada; correo sin verificar (con «Reenviar enlace») solo si la contraseña es correcta (DEC-77). No existe un estado «cuenta bloqueada» con la hora de desbloqueo.",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
       }
     },
     {
       "id": "SCR-02",
       "tipo": "pantalla",
       "nombre": "Registro",
-      "descripcion": "Nombre(s), apellidos (al menos el primero), correo, contraseña, enlace al aviso de privacidad, botón de Google.",
+      "descripcion": "Nombre(s), apellidos (al menos el primero), correo, contraseña, aviso de privacidad simplificado con enlace al integral, casillas sin marcar: «No deseo… encuesta» y «No deseo… estadísticas» (opcionales), «Confirmo que tengo 18 años o más», «He leído y acepto el Aviso de privacidad» y «He leído y acepto los Términos y condiciones» (obligatorias); botón de Google.",
       "estado": "decidido",
       "detalles": {
         "origen": "V-02",
-        "estados_a_disenar": "Apellidos vacíos; Contraseña débil; registro enviado: siempre «Revisa tu correo», exista o no una cuenta con ese correo (DEC-77)",
+        "estados_a_disenar": "Apellidos vacíos; Contraseña débil; registro enviado: siempre «Revisa tu correo», exista o no una cuenta con ese correo (DEC-77); casilla obligatoria sin marcar (error junto a la casilla, con foco)",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
+        "texto_aviso_simplificado": "Anexo A del aviso de privacidad integral v1.0 (docs/legal/)"
       }
     },
     {
@@ -3620,7 +3660,7 @@
         "origen": "V-03",
         "estados_a_disenar": "Enlace vencido, enlace ya usado",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
       }
     },
     {
@@ -3633,20 +3673,20 @@
         "origen": "V-04",
         "estados_a_disenar": "Enlace vencido o usado; solicitud enviada: siempre el mensaje genérico, que incluye «Si entras con Google, no necesitas contraseña» (DEC-77)",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
       }
     },
     {
       "id": "SCR-05",
       "tipo": "pantalla",
       "nombre": "Aviso de privacidad (página fija)",
-      "descripcion": "Página fija con el aviso de privacidad: el equipo como responsable (LFPDPPP), finalidades, datos recabados (nombre, apellidos, correo), derechos ARCO y correo de contacto (PEND-12). Se redacta con el correo ARCO como espacio reservado mientras PEND-12 siga pendiente. Incluye que Echo es un piloto académico vigente hasta diciembre de 2026 y qué pasa con los datos al cierre (OP-38, DEC-74).",
+      "descripcion": "Página fija con el aviso de privacidad integral vigente (v1.0), con el texto de docs/legal/: responsable (Brian Luis Ruiz Pérez), datos, finalidades primarias y secundarias, encargados, derechos ARCO (privacidad.echo@gmail.com), cookies, seguridad, menores, conservación, registro de aceptación y cambios. Muestra la versión, la fecha y el registro de versiones. Incluye que Echo es un piloto académico vigente hasta diciembre de 2026 y qué pasa con los datos al cierre (OP-38, DEC-74).",
       "estado": "decidido",
       "detalles": {
         "origen": "V-05",
         "estados_a_disenar": "—",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad",
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
         "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026."
       }
     },
@@ -3660,7 +3700,7 @@
         "origen": "V-06",
         "estados_a_disenar": "Primer ingreso con 0%; módulo bloqueado con su requisito; búsqueda sin resultados",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3673,7 +3713,7 @@
         "origen": "V-07",
         "estados_a_disenar": "Curso bloqueado con su requisito",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3686,7 +3726,7 @@
         "origen": "V-08",
         "estados_a_disenar": "Lección «nueva» en curso completado; examen bloqueado, en espera o aprobado",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3699,7 +3739,7 @@
         "origen": "V-09",
         "estados_a_disenar": "Retomar en la última sección vista; lección ya terminada",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3712,7 +3752,7 @@
         "origen": "V-10",
         "estados_a_disenar": "Preguntas sin responder; etiqueta de decisión en casos; reintento; relación de columnas operable sin arrastrar (lista desplegable o clics)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3725,7 +3765,7 @@
         "origen": "V-11",
         "estados_a_disenar": "Disponible, intento a medias («Continuar»), en espera con cuenta regresiva, aprobado",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3738,7 +3778,7 @@
         "origen": "V-12",
         "estados_a_disenar": "Sin conexión (respuestas a salvo hasta el último guardado); preguntas pendientes al enviar; relación de columnas operable sin arrastrar (lista desplegable o clics)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3751,7 +3791,7 @@
         "origen": "V-13",
         "estados_a_disenar": "Reprobado con lecciones a repasar y espera; aprobado con insignia nueva",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3764,7 +3804,7 @@
         "origen": "V-14",
         "estados_a_disenar": "Sin avance todavía",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3777,20 +3817,20 @@
         "origen": "V-15",
         "estados_a_disenar": "Sin resultados; filtros sin coincidencias",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
       "id": "SCR-16",
       "tipo": "pantalla",
       "nombre": "Perfil",
-      "descripcion": "Datos personales, editar nombre, cambiar contraseña o correo, cerrar sesión en todos lados, eliminar cuenta.",
+      "descripcion": "Datos personales, editar nombre, cambiar contraseña o correo, cerrar sesión en todos lados, eliminar cuenta. Sección «Privacidad»: casillas de las finalidades secundarias (OP-39) y lista de aceptaciones registradas (documento, versión, fecha y hora).",
       "estado": "decidido",
       "detalles": {
         "origen": "V-16",
         "estados_a_disenar": "Cuenta de Google (sin contraseña, correo no editable); cuenta de Google sin apellido (invitación a completarlo); confirmación de eliminar; cambio de correo enviado: siempre «Revisa tu correo nuevo» (DEC-77)",
         "requiere_sesion": true,
-        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlace al aviso de privacidad; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
+        "comunes": "Encabezado con «Echo», Ayuda, nombre del alumno y Cerrar sesión; menú Módulos / Mi progreso / Mis resultados; pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones; aviso 2 minutos antes de que expire la sesión con botón «Seguir conectado»; en móvil, barra inferior Módulos / Mi progreso / Mis resultados (DEC-80)"
       }
     },
     {
@@ -3803,7 +3843,7 @@
         "origen": "V-17",
         "estados_a_disenar": "—",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad",
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
         "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026.",
         "ancla_cierre": "#cierre-del-piloto"
       }
@@ -3818,7 +3858,7 @@
         "origen": "Nueva (18/10)",
         "estados_a_disenar": "Con sesión activa: redirige a Módulos",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad",
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
         "contenido": "Fijo; no invoca operaciones ni lee tablas",
         "diseno": "Propuesta B «Tierra» en Figma (DEC-82)",
         "ruta": "/",
@@ -4967,8 +5007,8 @@
       "id": "FDA-15",
       "tipo": "fuera_de_alcance",
       "nombre": "Versiones y aceptación registrada del aviso de privacidad",
-      "descripcion": "Excluido de la versión 1; no se implementa sin aprobación.",
-      "estado": "fuera_de_alcance"
+      "descripcion": "Ya no está fuera de alcance: entra en la versión 1.4.0 por exigencia del docente (DEC-28 revisada).",
+      "estado": "descartado"
     },
     {
       "id": "FDA-16",
@@ -5217,10 +5257,15 @@
       "id": "DEC-68",
       "tipo": "decision",
       "nombre": "Ley aplicable: LFPDPPP",
-      "descripcion": "El equipo opera Echo y es el responsable de los datos personales; aplica la LFPDPPP. Si la universidad adoptara el sistema, se revisa (aplicaría la ley para sujetos obligados). En la base de datos no cambia nada.",
+      "descripcion": "Aplica la LFPDPPP (DOF 20/03/2025). El responsable del tratamiento es la persona física Brian Luis Ruiz Pérez, que opera Echo con ese nombre comercial; Ángel Eduardo Moreno Moreno y Diego Alberto Zárate Vázquez, del equipo de desarrollo, tratan los datos por cuenta del responsable y con obligación de confidencialidad. La autoridad garante es la Secretaría Anticorrupción y Buen Gobierno (sustituyó al INAI). Si la universidad adoptara el sistema, se revisa (aplicaría la ley para sujetos obligados). En la base de datos no cambia nada.",
       "estado": "decidido",
       "detalles": {
-        "origen": "PEND-02 (18/10)"
+        "origen": "PEND-02 (18/10)",
+        "revisada": "1.4.0 (21/10): un solo responsable, ley de 2025 y autoridad garante",
+        "responsable": "Brian Luis Ruiz Pérez",
+        "domicilio_notificaciones": "Carretera Tuxtla Gutiérrez – Portillo Zaragoza km 21+500, col. Las Brisas, Suchiapa, Chiapas, C.P. 29145, a la atención de Brian Luis Ruiz Pérez (Echo)",
+        "correo_privacidad": "privacidad.echo@gmail.com",
+        "correo_soporte": "echo.soporte@gmail.com"
       }
     },
     {
@@ -5347,13 +5392,13 @@
       "id": "OP-38",
       "tipo": "operacion",
       "nombre": "Cierre del proyecto",
-      "descripcion": "Anonimizar o eliminar la base, detener servicios (incluido el frontend con la página pública SCR-18 y su dominio) y borrar respaldos y copias (DEC-74, DEC-78).",
+      "descripcion": "Antes del cierre, invitar una sola vez a la encuesta a quien no la rechazó (DEC-88). Después, anonimizar o eliminar la base, detener servicios (incluido el frontend con la página pública SCR-18 y su dominio) y borrar respaldos y copias (DEC-74, DEC-78).",
       "estado": "decidido",
       "detalles": {
         "origen": "Nueva (18/10)",
         "tipo_acceso": "E",
         "frecuencia": "Una vez, tras las calificaciones (diciembre de 2026)",
-        "recibe": "Aprobación del equipo",
+        "recibe": "Aprobación del responsable",
         "devuelve": "—"
       }
     },
@@ -5368,8 +5413,8 @@
       "id": "PEND-12",
       "tipo": "pregunta_abierta",
       "nombre": "Correo de contacto ARCO",
-      "descripcion": "Qué correo del equipo aparece en el aviso de privacidad para solicitudes ARCO.",
-      "estado": "pendiente"
+      "descripcion": "Qué correo del equipo aparece en el aviso de privacidad para solicitudes ARCO. Resuelto (21/10): privacidad.echo@gmail.com, exclusivo para privacidad, derechos ARCO y seguridad; soporte y accesibilidad en echo.soporte@gmail.com.",
+      "estado": "resuelto"
     },
     {
       "id": "PEND-13",
@@ -5478,7 +5523,7 @@
       "id": "DEC-79",
       "tipo": "decision",
       "nombre": "Plantilla única de correo",
-      "descripcion": "Los correos salen de una sola plantilla HTML con versión de texto plano, idioma español, logo con texto alternativo, la vigencia del enlace escrita y sin píxeles de rastreo. Cambia solo el texto variable: verificación (enlace de 24 h), recuperación (enlace de 30 min), cambio de correo (enlace de 30 min, enviado al correo nuevo) y «ya tienes cuenta» (sin enlace de un solo uso; si la cuenta tiene contraseña, enlaza a Recuperar contraseña; si entra con Google, indica entrar con Google). Se envían con Resend (DEC-66).",
+      "descripcion": "Los correos salen de una sola plantilla HTML con versión de texto plano, idioma español, logo con texto alternativo, la vigencia del enlace escrita y sin píxeles de rastreo. Cambia solo el texto variable: verificación (enlace de 24 h), recuperación (enlace de 30 min), cambio de correo (enlace de 30 min, enviado al correo nuevo) «ya tienes cuenta», «cambios al aviso o los términos» (resumen y enlace, a todos los registrados) e «invitación a la encuesta» (una sola vez, solo a quien no la rechazó, con enlace para no recibir más) (sin enlace de un solo uso; si la cuenta tiene contraseña, enlaza a Recuperar contraseña; si entra con Google, indica entrar con Google). Se envían con Resend (DEC-66).",
       "estado": "decidido",
       "detalles": {
         "origen": "Revisión de pantallas con el equipo (18/10)",
@@ -5486,7 +5531,9 @@
           "verificacion",
           "recuperacion",
           "cambio_correo",
-          "ya_tienes_cuenta"
+          "ya_tienes_cuenta",
+          "cambio_documentos",
+          "invitacion_encuesta"
         ]
       }
     },
@@ -5541,7 +5588,7 @@
       "id": "DEC-83",
       "tipo": "decision",
       "nombre": "Sitio público dentro de la app de Next.js",
-      "descripcion": "La página de inicio pública (SCR-18) vive en la misma aplicación y el mismo servicio de Railway que el resto del frontend, en la ruta «/» del grupo de rutas (publico), junto con el aviso de privacidad (SCR-05) y la ayuda (SCR-17). No es un servicio aparte: otro servicio costaría otros 512 MB (DEC-70) y duplicaría dominio, fuentes y tokens. La página se genera estática al compilar y no consulta al backend; la redirección a Módulos con sesión activa (DEC-78) la hace proxy.ts al ver la cookie de sesión. Sus secciones son componentes en src/areas/inicio/componentes/ y app/(publico)/page.tsx solo las acomoda.",
+      "descripcion": "La página de inicio pública (SCR-18) vive en la misma aplicación y el mismo servicio de Railway que el resto del frontend, en la ruta «/» del grupo de rutas (publico), junto con el aviso de privacidad (SCR-05), los términos y condiciones (SCR-20) y la ayuda (SCR-17). No es un servicio aparte: otro servicio costaría otros 512 MB (DEC-70) y duplicaría dominio, fuentes y tokens. La página se genera estática al compilar y no consulta al backend; la redirección a Módulos con sesión activa (DEC-78) la hace proxy.ts al ver la cookie de sesión. Sus secciones son componentes en src/areas/inicio/componentes/ y app/(publico)/page.tsx solo las acomoda.",
       "estado": "decidido",
       "detalles": {
         "origen": "Revisión de la arquitectura del frontend (19/10)",
@@ -5558,6 +5605,317 @@
         "origen": "Revisión de la arquitectura del frontend (19/10)",
         "figma": "https://www.figma.com/design/1zggHPVnKEPlt7khBbtWTt/Echo?node-id=66-2"
       }
+    },
+    {
+      "id": "DEC-85",
+      "tipo": "decision",
+      "nombre": "Frontend con mismo origen",
+      "descripcion": "El navegador solo habla con el dominio del frontend: /api/* se reescribe hacia API_URL_INTERNA (red privada de Railway). Cookie de sesión __Host-echo_sesion (HttpOnly, Secure, SameSite=Lax, Path=/, sin Domain); el backend rechaza mutaciones cuyo Origin no sea el del frontend; sin CORS ni NEXT_PUBLIC_*. Errores con forma { codigo, mensaje }. Google OAuth en /api/auth/google y su callback.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "docs/frontend/arquitectura.md §3 y §14, aprobada el 21/10"
+      }
+    },
+    {
+      "id": "DEC-86",
+      "tipo": "decision",
+      "nombre": "Estructura y convenciones del frontend",
+      "descripcion": "Áreas iguales a los MOD-* más «inicio»; componentes de servidor por defecto; mutaciones desde el cliente con fetch a /api y router.refresh(), sin Server Actions; dos clientes de API (servidor.ts con server-only y navegador.ts); textos para el alumno desde un solo archivo de mensajes; versiones exactas (save-exact) y Node 22 LTS.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "docs/frontend/arquitectura.md §4, §6 y §12, aprobada el 21/10",
+        "version_next": "16.4.2"
+      }
+    },
+    {
+      "id": "DEC-87",
+      "tipo": "decision",
+      "nombre": "Términos y condiciones versionados",
+      "descripcion": "Echo publica Términos y condiciones de uso (v1.0) en una página fija (SCR-20). Su aceptación es una casilla aparte del aviso de privacidad, para que cada consentimiento sea específico, y se registra igual que la del aviso (DEC-28) en aceptacion_documento. Una versión que cambie derechos u obligaciones se vuelve a aceptar en SCR-19.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Entregable de la asignatura (21/10)",
+        "texto_fuente": "docs/legal/ (términos v1.0, 21/10/2026)",
+        "jurisdiccion": "Tribunales de Tuxtla Gutiérrez, Chiapas"
+      }
+    },
+    {
+      "id": "DEC-88",
+      "tipo": "decision",
+      "nombre": "Finalidades secundarias con negativa",
+      "descripcion": "Dos finalidades secundarias: (1) una invitación única por correo, al cierre del piloto, a una encuesta de satisfacción voluntaria y anónima; (2) estadísticas anónimas de uso y desempeño para el informe académico. El registro y SCR-19 muestran una casilla sin marcar por cada una («No deseo…»); el Perfil (SCR-16, sección «Privacidad») permite cambiarlas en cualquier momento. La negativa no limita el servicio. Quien rechazó las estadísticas queda fuera de v_resultados_anonimos, también después de anonimizar su cuenta.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Rúbrica del docente y aviso de privacidad integral v1.0 (21/10)",
+        "sin_publicidad": true
+      }
+    },
+    {
+      "id": "DEC-89",
+      "tipo": "decision",
+      "nombre": "Solo personas mayores de edad",
+      "descripcion": "Echo es para personas de 18 años o más. El registro y SCR-19 piden la casilla obligatoria «Confirmo que tengo 18 años o más»; se guarda solo el momento de la confirmación, nunca la fecha de nacimiento. Si se comprueba que una cuenta es de una persona menor de edad, se elimina.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Rúbrica del docente y aviso de privacidad integral v1.0 (21/10)"
+      }
+    },
+    {
+      "id": "DEC-90",
+      "tipo": "decision",
+      "nombre": "Contrato OpenAPI y API simulada",
+      "descripcion": "docs/api/openapi.yaml, escrito desde las OP-*, es la fuente de verdad de la API hasta que exista el backend; el OpenAPI que genere Nest debe ser equivalente. El frontend genera sus tipos con openapi-typescript. En desarrollo, una API simulada sin dependencias (frontend/simulador/, puerto 4000) cumple el contrato y sus reglas; nunca entra al build de producción. Al existir el backend solo cambia API_URL_INTERNA.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Elección de la persona del equipo (21/10): «Contrato + API falsa»"
+      }
+    },
+    {
+      "id": "INV-29",
+      "tipo": "invariante",
+      "nombre": "Nada del alumno en el navegador fuera de la cookie",
+      "descripcion": "Ningún secreto ni dato del alumno en localStorage, sessionStorage, variables NEXT_PUBLIC_* ni scripts de terceros. La única cookie es la de sesión (HttpOnly) y la temporal del registro con Google (DEC-28).",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "INV-30",
+      "tipo": "invariante",
+      "nombre": "No hay cuenta sin aceptación registrada",
+      "descripcion": "Toda cuenta se crea en la misma transacción que sus aceptaciones del aviso de privacidad y de los términos vigentes, con fecha, hora, IP y versión, y con la confirmación de mayoría de edad. Las rutas de la app rechazan con ACEPTACION_PENDIENTE a quien deba aceptar una versión nueva, salvo aceptar, consultar los documentos, ver o eliminar la cuenta y cerrar sesión.",
+      "estado": "obligatorio"
+    },
+    {
+      "id": "TBL-DOCUMENTO-LEGAL",
+      "tipo": "tabla",
+      "nombre": "documento_legal",
+      "descripcion": "Cada versión publicada del aviso de privacidad y de los términos y condiciones.",
+      "estado": "decidido",
+      "detalles": {
+        "grupo": "cuentas",
+        "llave_primaria": [
+          "id"
+        ],
+        "unicas": [
+          "(tipo, version)"
+        ],
+        "columnas": [
+          {
+            "campo": "id",
+            "tipo": "BIGINT",
+            "nulo": "No",
+            "por_defecto": "identity",
+            "restricciones": "PK",
+            "descripcion": "Identificador de la versión"
+          },
+          {
+            "campo": "tipo",
+            "tipo": "TEXT",
+            "nulo": "No",
+            "por_defecto": "—",
+            "restricciones": "CHECK en ('aviso_privacidad', 'terminos')",
+            "descripcion": "Documento"
+          },
+          {
+            "campo": "version",
+            "tipo": "TEXT",
+            "nulo": "No",
+            "por_defecto": "—",
+            "restricciones": "CHECK formato «mayor.menor» (^[0-9]+\\.[0-9]+$)",
+            "descripcion": "Número de versión visible, p. ej. 1.0"
+          },
+          {
+            "campo": "publicado_en",
+            "tipo": "TIMESTAMPTZ",
+            "nulo": "No",
+            "por_defecto": "now()",
+            "restricciones": "—",
+            "descripcion": "Entrada en vigor; la vigente es la más reciente de su tipo"
+          },
+          {
+            "campo": "requiere_aceptacion",
+            "tipo": "BOOLEAN",
+            "nulo": "No",
+            "por_defecto": "true",
+            "restricciones": "—",
+            "descripcion": "Si los estudiantes con una versión anterior deben aceptar esta para seguir"
+          },
+          {
+            "campo": "huella_contenido",
+            "tipo": "TEXT",
+            "nulo": "No",
+            "por_defecto": "—",
+            "restricciones": "CHECK 64 caracteres hexadecimales",
+            "descripcion": "SHA-256 del texto publicado, para probar qué texto se aceptó"
+          },
+          {
+            "campo": "resumen_cambios",
+            "tipo": "TEXT",
+            "nulo": "No",
+            "por_defecto": "—",
+            "restricciones": "CHECK longitud 1 a 1000",
+            "descripcion": "Lo que cambió respecto a la versión anterior; se muestra en SCR-19 y en el correo"
+          }
+        ],
+        "restricciones_de_tabla": [
+          "uq_documento_legal_tipo_version: UNIQUE (tipo, version)."
+        ],
+        "indices": [
+          {
+            "nombre": "ux_documento_legal_tipo_version",
+            "sobre": "documento_legal (tipo, version)",
+            "tipo": "B-Tree único",
+            "consulta": "Versión vigente de cada documento (orden por publicado_en)"
+          }
+        ],
+        "carga": "Se publica con un script versionado de echo_contenido (OP-35), igual que el contenido; una versión publicada no se edita (INV-02)"
+      }
+    },
+    {
+      "id": "TBL-ACEPTACION-DOCUMENTO",
+      "tipo": "tabla",
+      "nombre": "aceptacion_documento",
+      "descripcion": "Prueba del consentimiento: qué versión de cada documento legal aceptó cada estudiante, cuándo y desde qué IP.",
+      "estado": "decidido",
+      "detalles": {
+        "grupo": "cuentas",
+        "llave_primaria": [
+          "id"
+        ],
+        "unicas": [
+          "(usuario_id, documento_id)"
+        ],
+        "columnas": [
+          {
+            "campo": "id",
+            "tipo": "UUID",
+            "nulo": "No",
+            "por_defecto": "uuidv7()",
+            "restricciones": "PK",
+            "descripcion": "Identificador de la aceptación"
+          },
+          {
+            "campo": "usuario_id",
+            "tipo": "UUID",
+            "nulo": "No",
+            "por_defecto": "—",
+            "restricciones": "FK → usuario.id",
+            "descripcion": "Estudiante que aceptó"
+          },
+          {
+            "campo": "documento_id",
+            "tipo": "BIGINT",
+            "nulo": "No",
+            "por_defecto": "—",
+            "restricciones": "FK → documento_legal.id",
+            "descripcion": "Versión aceptada (de aquí salen el tipo y el número de versión)"
+          },
+          {
+            "campo": "aceptado_en",
+            "tipo": "TIMESTAMPTZ",
+            "nulo": "No",
+            "por_defecto": "now()",
+            "restricciones": "—",
+            "descripcion": "Fecha y hora de la aceptación, con la hora del servidor de BD (INV-03)"
+          },
+          {
+            "campo": "direccion_ip",
+            "tipo": "INET",
+            "nulo": "Sí*",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "IP desde la que aceptó (la del cliente que entrega el proxy de Railway, no la del frontend). *Solo nula en cuentas anonimizadas"
+          }
+        ],
+        "restricciones_de_tabla": [
+          "uq_aceptacion_usuario_documento: UNIQUE (usuario_id, documento_id); aceptar dos veces la misma versión no crea otra fila."
+        ],
+        "indices": [
+          {
+            "nombre": "ux_aceptacion_usuario_documento",
+            "sobre": "aceptacion_documento (usuario_id, documento_id)",
+            "tipo": "B-Tree único",
+            "consulta": "Saber si el estudiante aceptó la versión vigente (cada validación de sesión)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "OP-39",
+      "tipo": "operacion",
+      "nombre": "Cambiar preferencias de privacidad",
+      "descripcion": "Marca o desmarca la negativa a cada finalidad secundaria; el cambio aplica de inmediato.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva 1.4.0 (DEC-88)",
+        "tipo_acceso": "E",
+        "frecuencia": "Baja",
+        "recibe": "negativaEncuesta, negativaEstadisticas",
+        "devuelve": "Preferencias actualizadas"
+      }
+    },
+    {
+      "id": "OP-40",
+      "tipo": "operacion",
+      "nombre": "Consultar documentos legales vigentes",
+      "descripcion": "Sin sesión. Devuelve la versión vigente del aviso y de los términos, con su fecha y resumen de cambios, para que el formulario envíe la versión que mostró.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva 1.4.0 (DEC-28, DEC-87)",
+        "tipo_acceso": "L",
+        "frecuencia": "Media",
+        "recibe": "—",
+        "devuelve": "Por documento: tipo, versión, fecha de publicación, si requiere aceptación y resumen de cambios"
+      }
+    },
+    {
+      "id": "SCR-19",
+      "tipo": "pantalla",
+      "nombre": "Aceptar aviso y términos",
+      "descripcion": "Pantalla de aceptación en dos casos: primera entrada con Google (casillas de mayoría de edad, negativas a finalidades secundarias, aviso y términos) y versión nueva que requiere aceptación (resumen de cambios, enlaces a cada documento y casillas de aceptación). Mientras esté pendiente, la app no muestra otra pantalla con sesión salvo Perfil para eliminar la cuenta.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva 1.4.0 (DEC-28)",
+        "ruta": "/aceptar",
+        "requiere_sesion": "No en el caso de Google (cookie temporal); sí en el de versión nueva",
+        "estados_a_disenar": "Registro con Google; versión nueva del aviso; versión nueva de los términos; ambas; casilla obligatoria sin marcar; la cookie temporal venció (volver a «Continuar con Google»)",
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
+      }
+    },
+    {
+      "id": "SCR-20",
+      "tipo": "pantalla",
+      "nombre": "Términos y condiciones (página fija)",
+      "descripcion": "Página fija con los términos y condiciones vigentes (v1.0) con el texto de docs/legal/, su versión, fecha y registro de versiones.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva 1.4.0 (DEC-87)",
+        "ruta": "/terminos-y-condiciones",
+        "requiere_sesion": false,
+        "render": "Estático, como SCR-05",
+        "estados_a_disenar": "—",
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
+      }
+    },
+    {
+      "id": "TEC-OPENAPI",
+      "tipo": "tecnologia",
+      "nombre": "OpenAPI 3.1 + openapi-typescript",
+      "descripcion": "Contrato de la API en docs/api/openapi.yaml; el frontend genera sus tipos con openapi-typescript (dependencia de desarrollo, versión exacta).",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-PLAYWRIGHT",
+      "tipo": "tecnologia",
+      "nombre": "Playwright + axe",
+      "descripcion": "Pruebas de extremo a extremo y de API del frontend, con revisión automática de accesibilidad (@axe-core/playwright).",
+      "estado": "decidido"
+    },
+    {
+      "id": "TEC-TAILWIND",
+      "tipo": "tecnologia",
+      "nombre": "Tailwind CSS 4",
+      "descripcion": "Estilos del frontend; las variables de Figma son tokens en @theme (DEC-84).",
+      "estado": "decidido"
     }
   ],
   "aristas": [
@@ -8860,11 +9218,6 @@
       "relacion": "regida_por"
     },
     {
-      "origen": "OP-13",
-      "destino": "DEC-28",
-      "relacion": "retirada_en"
-    },
-    {
       "origen": "OP-03",
       "destino": "ACT-04",
       "relacion": "usa"
@@ -10130,11 +10483,6 @@
     {
       "origen": "DEC-46",
       "destino": "FDA-14",
-      "relacion": "excluye"
-    },
-    {
-      "origen": "DEC-28",
-      "destino": "FDA-15",
       "relacion": "excluye"
     },
     {
@@ -11461,6 +11809,516 @@
       "origen": "SCR-17",
       "destino": "DEC-78",
       "relacion": "regida_por"
+    },
+    {
+      "origen": "PEND-12",
+      "destino": "DEC-68",
+      "relacion": "resuelta_por"
+    },
+    {
+      "origen": "FDA-15",
+      "destino": "DEC-28",
+      "relacion": "resuelto_por"
+    },
+    {
+      "origen": "INV-29",
+      "destino": "DEC-85",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "INV-30",
+      "destino": "DEC-28",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "INV-30",
+      "destino": "DEC-87",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "INV-30",
+      "destino": "DEC-89",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "TBL-ACEPTACION-DOCUMENTO",
+      "destino": "TBL-USUARIO",
+      "relacion": "referencia",
+      "nota": "FK 29: aceptacion_documento.usuario_id → usuario.id · ON DELETE CASCADE · ON UPDATE NO ACTION"
+    },
+    {
+      "origen": "TBL-ACEPTACION-DOCUMENTO",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "referencia",
+      "nota": "FK 30: aceptacion_documento.documento_id → documento_legal.id · ON DELETE RESTRICT · ON UPDATE NO ACTION"
+    },
+    {
+      "origen": "TBL-DOCUMENTO-LEGAL",
+      "destino": "DEC-28",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "TBL-DOCUMENTO-LEGAL",
+      "destino": "DEC-87",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "DEC-28",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "TBL-ACEPTACION-DOCUMENTO",
+      "destino": "DEC-28",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "TBL-ACEPTACION-DOCUMENTO",
+      "destino": "DEC-87",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "DEC-28",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "ROL-APP",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-APP",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-APP",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-CONTENIDO",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-CONTENIDO",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TBL-USUARIO",
+      "destino": "DEC-88",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "TBL-USUARIO",
+      "destino": "DEC-89",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "FN-ANONIMIZAR",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "FN-ANONIMIZAR",
+      "destino": "DEC-28",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "VW-RESULTADOS-ANONIMOS",
+      "destino": "TBL-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "VW-RESULTADOS-ANONIMOS",
+      "destino": "DEC-88",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "DEC-28",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "DEC-87",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "DEC-88",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "DEC-89",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "DEC-77",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "MOD-CUENTA",
+      "relacion": "pertenece_a"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "ACT-01",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "TBL-USUARIO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "TBL-SESION",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "DEC-87",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "DEC-88",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "DEC-89",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "OP-03",
+      "destino": "DEC-28",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-08",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-08",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-31",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-31",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "OP-35",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "OP-38",
+      "destino": "DEC-88",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-39",
+      "destino": "MOD-CUENTA",
+      "relacion": "pertenece_a"
+    },
+    {
+      "origen": "OP-39",
+      "destino": "ACT-01",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "OP-39",
+      "destino": "DEC-88",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-40",
+      "destino": "MOD-CUENTA",
+      "relacion": "pertenece_a"
+    },
+    {
+      "origen": "OP-40",
+      "destino": "ACT-01",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "OP-40",
+      "destino": "DEC-28",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-40",
+      "destino": "DEC-87",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-39",
+      "destino": "TBL-USUARIO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "OP-40",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "DEC-28",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "DEC-87",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "DEC-88",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "DEC-89",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "OP-40",
+      "relacion": "invoca"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "MOD-CUENTA",
+      "relacion": "parte_de"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-20",
+      "destino": "MOD-CUENTA",
+      "relacion": "parte_de"
+    },
+    {
+      "origen": "SCR-20",
+      "destino": "DEC-71",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-20",
+      "destino": "DEC-82",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "DEC-28",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "DEC-87",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "DEC-88",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "DEC-89",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-20",
+      "destino": "DEC-87",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-20",
+      "destino": "DEC-83",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "OP-13",
+      "relacion": "invoca"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "OP-40",
+      "relacion": "invoca"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "SCR-05",
+      "relacion": "navega_a",
+      "nota": "Enlace al aviso de privacidad"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "SCR-20",
+      "relacion": "navega_a",
+      "nota": "Enlace a los términos y condiciones"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "SCR-06",
+      "relacion": "navega_a",
+      "nota": "Aceptó"
+    },
+    {
+      "origen": "SCR-19",
+      "destino": "SCR-16",
+      "relacion": "navega_a",
+      "nota": "Prefiere eliminar su cuenta"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "SCR-20",
+      "relacion": "navega_a",
+      "nota": "Enlace a los términos y condiciones"
+    },
+    {
+      "origen": "SCR-02",
+      "destino": "SCR-19",
+      "relacion": "navega_a",
+      "nota": "Registro con Google sin cuenta"
+    },
+    {
+      "origen": "SCR-01",
+      "destino": "SCR-19",
+      "relacion": "navega_a",
+      "nota": "Aceptación pendiente o primera entrada con Google"
+    },
+    {
+      "origen": "SCR-18",
+      "destino": "SCR-20",
+      "relacion": "navega_a",
+      "nota": "Pie: Términos y condiciones"
+    },
+    {
+      "origen": "SCR-16",
+      "destino": "OP-39",
+      "relacion": "invoca"
+    },
+    {
+      "origen": "SCR-16",
+      "destino": "DEC-88",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-90",
+      "destino": "TEC-OPENAPI",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-86",
+      "destino": "TEC-PLAYWRIGHT",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-86",
+      "destino": "TEC-TAILWIND",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-86",
+      "destino": "TEC-NEXT",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-85",
+      "destino": "TEC-NEXT",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-85",
+      "destino": "DEC-12",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-85",
+      "destino": "DEC-64",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-86",
+      "destino": "DEC-85",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-90",
+      "destino": "DEC-85",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-87",
+      "destino": "DEC-28",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-88",
+      "destino": "DEC-28",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-28",
+      "destino": "DEC-68",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-28",
+      "destino": "ACT-01",
+      "relacion": "protege_a"
+    },
+    {
+      "origen": "DEC-88",
+      "destino": "ACT-01",
+      "relacion": "protege_a"
     }
   ]
 }
