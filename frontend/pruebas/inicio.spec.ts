@@ -100,6 +100,16 @@ test.describe("SCR-18 · Movimiento", () => {
     }
   });
 
+  test("las ondas del hero terminan invisibles: en reposo no queda ningún borde", async ({ page }) => {
+    await page.goto("/");
+    const reposo = await page.evaluate(async () => {
+      const ondas = [...document.querySelectorAll<HTMLElement>(".onda")];
+      await Promise.all(ondas.flatMap((onda) => onda.getAnimations().map((animacion) => animacion.finished)));
+      return ondas.map((onda) => getComputedStyle(onda).opacity);
+    });
+    expect(reposo).toEqual(["0", "0", "0"]);
+  });
+
   test("con movimiento reducido nada nuevo se mueve: Moris, íconos, cierre ni encabezado", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
