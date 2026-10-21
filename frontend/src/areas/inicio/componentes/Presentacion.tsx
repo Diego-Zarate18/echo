@@ -99,21 +99,27 @@ export function Presentacion() {
         id="portada"
         aria-labelledby="titulo-portada"
         data-fondo="oscuro"
-        className="relative isolate overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero lg:rounded-hero lg:[--alto-hero:clamp(38rem,calc(100svh-1rem),57.5rem)]"
+        className="relative isolate overflow-hidden rounded-panel bg-marca-cafe text-marca-crema shadow-hero [container-type:inline-size] lg:rounded-hero lg:[--alto-hero:clamp(38rem,calc(100svh-1rem),57.5rem)]"
       >
         {/*
           Borde de arriba del hero: en cuanto sale de la ventana, el encabezado se vuelve barra fija, y al subir
           solo se suelta cuando el encabezado del hero se ve completo. Así nunca hay un momento sin navegación.
         */}
         <span id="centinela-encabezado" aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-2" />
+        {/*
+          «ÉTICA» centrada en la tarjeta, como en Figma (84:479: 984 de 1408 px, el 69.9 %). El tamaño va en
+          unidades de la tarjeta (`cqw`), no de la ventana, para que la barra de desplazamiento no la descuadre:
+          24.15cqw hacen ese 69.9 % de ancho. La altura sigue limitada por el alto del hero.
+          Se centra con la propiedad `translate`, que no choca con el `transform` de la animación `eco`.
+        */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute top-[92px] left-1/2 -z-10 -translate-x-1/2 animate-eco font-titulo text-[32.2cqw] leading-none font-black tracking-[-0.03em] whitespace-nowrap text-marca-crema/8 select-none lg:top-[11.3%] lg:text-[min(24.15cqw,calc(var(--alto-hero)*0.37))]"
+        >
+          ÉTICA
+        </span>
         {/* El contenido sigue la retícula de 1424 px aunque la tarjeta llegue a 8 px del borde. */}
         <div className="relative mx-auto flex w-full max-w-[1424px] flex-col px-5 pt-[76px] pb-6 md:px-8 md:pt-[92px] md:pb-10 lg:min-h-(--alto-hero) lg:justify-end lg:px-[72px] lg:pt-40 lg:pb-[72px]">
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute top-[92px] left-[3.3%] -z-10 animate-eco font-titulo text-[calc((100vw-1rem)*0.322)] leading-none font-black tracking-[-0.03em] whitespace-nowrap text-marca-crema/8 select-none lg:top-[11.3%] lg:left-[15%] lg:text-[min(calc((100vw-1rem)*0.2415),340px,calc(var(--alto-hero)*0.37))]"
-          >
-            ÉTICA
-          </span>
 
           {/*
             Ancho de Moris: 26 % del contenedor, sin pasar del 42 % del alto del hero y, cuando se ve la
