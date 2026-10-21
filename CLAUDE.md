@@ -40,7 +40,14 @@ Se corren desde `frontend/`:
 - `npm run start`: sirve la compilación de producción.
 - `npm run lint`: ESLint (`next lint` ya no existe en Next 16).
 - `npm run tipos`: genera los tipos de rutas (`next typegen`) y revisa tipos con `tsc --noEmit`.
-- `npm run prueba:e2e`: Playwright + axe en escritorio y móvil; compila y levanta la app por su cuenta.
+- `npm run simulador`: API simulada en `http://localhost:4000` (cumple `docs/api/openapi.yaml`; datos de ejemplo y
+  escenarios en `frontend/simulador/README.md`).
+- `npm run api:tipos`: regenera `src/lib/api/esquema.d.ts` desde `docs/api/openapi.yaml`. `npm run tipos` falla si quedó
+  desactualizado.
+- `npm run prueba:e2e`: Playwright + axe en escritorio y móvil, y las pruebas de API a través del rewrite; levanta la API
+  simulada y compila y levanta la app por su cuenta.
+- **App con la API simulada (dos terminales):** copia `.env.example` a `.env.local` (`API_URL_INTERNA=http://localhost:4000`)
+  y corre `npm run simulador` en una terminal y `npm run dev` en otra. `npm run build` también necesita `API_URL_INTERNA`.
 - `npx playwright install chromium`: descarga el navegador de las pruebas (solo la primera vez).
 
 ### Backend

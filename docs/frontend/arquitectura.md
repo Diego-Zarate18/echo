@@ -70,6 +70,25 @@ Navegador ──HTTPS──▶ Frontend Next.js (echo-web, dominio público)
 
 Los dos devuelven datos tipados y convierten los errores de la API en un tipo `ErrorApi` con un `codigo`. Los textos para el alumno salen de un solo archivo de mensajes (§10), nunca del texto técnico del backend.
 
+- **Contrato:** `docs/api/openapi.yaml` (DEC-90) es la fuente de verdad de la API hasta que exista el backend.
+  `npm run api:tipos` genera `src/lib/api/esquema.d.ts` con `openapi-typescript`; las funciones de los dos clientes se
+  llaman como los `operationId`. `servidor.ts` solo expone las lecturas; las mutaciones van desde `navegador.ts`.
+- **Resultados sin excepciones:** cada llamada devuelve `{ ok: true, datos, expiraEn }` o `{ ok: false, error }`. Los
+  textos de cada `codigo` están en `src/lib/api/mensajes.ts`, que es exhaustivo: si falta un código, no compila.
+
+**En desarrollo, la API simulada** (`frontend/simulador/`, DEC-90) ocupa el lugar del backend:
+
+```
+Navegador ──▶ next dev (:3000) ── /api/* ──rewrite──▶ API simulada (:4000, node:http, datos en memoria)
+```
+
+- Se corren en dos terminales: `npm run simulador` y `npm run dev`, con `API_URL_INTERNA=http://localhost:4000` en
+  `.env.local`.
+- Cumple el contrato y sus reglas (avance lineal, calificación al enviar, espera, DEC-77, sesión de 30 minutos, `Origin`,
+  aceptaciones) y trae escenarios en `/__simulador/*`, fuera de `/api`, así que el rewrite nunca los expone.
+- Nunca entra al build: ESLint prohíbe importarlo desde `src/` y una prueba lo busca en `.next/`.
+- Cuando exista el backend de NestJS, solo cambia `API_URL_INTERNA`.
+
 ---
 
 ## 4. Estructura de carpetas
@@ -85,7 +104,9 @@ echo/                          ← repositorio Diego-Zarate18/echo
    ├─ public/
    │  ├─ marca/                ← logos (claro/oscuro), favicon, Moris (5 expresiones)
    │  └─ imagenes/             ← imágenes de contenido e insignias; la BD guarda su ruta (DEC-31)
-   ├─ pruebas/                 ← Playwright: flujos completos + axe por pantalla
+   ├─ pruebas/                 ← Playwright: flujos completos + axe por pantalla; api.spec.ts (contrato e invariantes)
+   ├─ simulador/               ← API simulada de desarrollo (DEC-90); nunca entra al build
+   ├─ scripts/                 ← generar-iconos.mjs, revisar-tipos-api.mjs
    └─ src/
       ├─ app/                  ← solo rutas (§5); cada page.tsx es delgada
       ├─ areas/                ← lógica por área, mismo nombre que los MOD-* del grafo
@@ -108,10 +129,10 @@ echo/                          ← repositorio Diego-Zarate18/echo
       │                           Pie, SaltarAlContenido, AvisoSesion, EncabezadoInterno,
       │                           IndicePagina («En esta página» del aviso y de Ayuda)
       ├─ lib/
-      │  ├─ api/               ← servidor.ts, navegador.ts, errores.ts
+      │  ├─ api/               ← esquema.d.ts (generado), operaciones.ts, cliente.ts, servidor.ts,
+      │  │                        navegador.ts, errores.ts, mensajes.ts (código de error → texto en español)
       │  ├─ sesion.ts          ← obtenerSesion() en el servidor
-      │  ├─ fechas.ts          ← Intl en es-MX, America/Mexico_City, DD/MM/AAAA, 24 h (INV-03)
-      │  └─ mensajes.ts        ← código de error → texto en español
+      │  └─ fechas.ts          ← Intl en es-MX, America/Mexico_City, DD/MM/AAAA, 24 h (INV-03)
       ├─ estilos/
       │  └─ globales.css       ← @import "tailwindcss"; @theme con los tokens de marca
       └─ proxy.ts              ← redirección rápida si no hay cookie (§7)
@@ -206,7 +227,7 @@ Cada grupo tiene sus propios `loading.tsx`, `error.tsx` y `not-found.tsx` en esp
 - Etiqueta visible en todos los campos y error junto al campo, enlazado con `aria-describedby`.
 - Al enviar con errores aparece un resumen arriba que recibe el foco, más una región `aria-live`.
 - La validación del cliente usa **Zod** **[por aprobar]** y es solo de ayuda; la que manda es la del backend.
-- Los textos de seguridad son **exactos**: se copian de `DEC-77 › detalles.textos_sugeridos` del grafo a `lib/mensajes.ts`. Por ejemplo:
+- Los textos de seguridad son **exactos**: se copian de `DEC-77 › detalles.textos_sugeridos` del grafo a `lib/api/mensajes.ts`. Por ejemplo:
 
   | Situación | Texto (DEC-77) |
   |---|---|
@@ -305,16 +326,18 @@ Además:
 
 ## 12. Dependencias propuestas [por aprobar]
 
+**Aprobadas e instaladas (Tarea 05, 21/10):** `server-only` 0.0.1 y `openapi-typescript` 7.13.0 (desarrollo), con versión exacta.
+
 | Paquete | Para qué | ¿Necesaria? |
 |---|---|---|
 | `next`, `react`, `react-dom`, `typescript`, `tailwindcss`, `eslint`, `eslint-config-next` | Base de `create-next-app` | Sí |
-| `server-only` | Impide que `lib/api/servidor.ts` termine en el navegador | Sí |
+| `server-only` | Impide que `lib/api/servidor.ts` termine en el navegador | Sí, instalada |
 | `zod` | Validar formularios y respuestas de la API | Recomendada |
 | `react-aria-components` | Menús, diálogos, selectores y pestañas accesibles, probados con lectores de pantalla. Evita reinventar el manejo del foco | Recomendada |
 | `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `jsdom` | Pruebas de componentes y utilidades | Sí (desarrollo) |
 | `@playwright/test`, `@axe-core/playwright` | Flujos completos y accesibilidad automática | Sí (desarrollo) |
 | `prettier`, `prettier-plugin-tailwindcss` | Formato uniforme | Recomendada (desarrollo) |
-| `openapi-typescript` | Generar los tipos de la API desde el OpenAPI de Nest | Depende del backend (§14) |
+| `openapi-typescript` | Generar los tipos de la API desde `docs/api/openapi.yaml` (después, desde el de Nest) | Sí (desarrollo), instalada |
 
 **Descartadas por ahora:**
 - Gestores de estado globales (Redux, Zustand) y TanStack Query: con componentes de servidor no hacen falta.
@@ -341,7 +364,10 @@ Además:
   - Arranque con `node .next/standalone/server.js`.
 - Variables de entorno: `API_URL_INTERNA=http://backend.railway.internal:<puerto>`.
   - Es la única que hace falta.
-  - El rewrite de `/api/*` la usa en tiempo de ejecución, así que no queda fija en el build.
+  - **Tiene que estar disponible al compilar.** Next escribe el destino del rewrite en `.next/routes-manifest.json`
+    durante `next build`, y `next start` no lo vuelve a leer (comprobado el 21/10: con otra URL al arrancar, `/api/*` sigue
+    yendo a la del build). Railway pasa las variables del servicio al build, así que basta definirla ahí. Sin ella,
+    `next build` falla con un mensaje claro.
 - Healthcheck en `/api/salud` (lo responde el backend a través del rewrite) o en una ruta propia `/salud`.
 
 ---
@@ -353,10 +379,10 @@ Esto sirve de entrada para definir el backend:
 1. **Todas las rutas bajo el prefijo `/api`.** Así el rewrite es directo.
 2. **Cookie de sesión** `__Host-echo_sesion` con los atributos de §3, y verificación de `Origin` en las mutaciones.
 3. **`GET /api/sesion`.** Devuelve `{ nombre, apellidos, metodoAcceso, expiraEn }`. Más un encabezado con la expiración en cada respuesta, y `POST /api/sesion/renovar`.
-4. **Errores con forma fija.** `{ codigo, mensaje }`, donde `codigo` sale de una lista cerrada (`CREDENCIALES_INVALIDAS`, `CORREO_SIN_VERIFICAR`, `ENLACE_VENCIDO`, `BLOQUEADO_POR_AVANCE`, `EN_ESPERA`, etc.).
-5. **OpenAPI generado por Nest.** El frontend genera sus tipos con `openapi-typescript`, así un cambio en la API rompe la compilación y no la pantalla.
+4. **Errores con forma fija.** `{ codigo, mensaje }`, donde `codigo` sale de la lista cerrada `CodigoError` de `docs/api/openapi.yaml` (la tabla completa está en `docs/api/README.md`).
+5. **Un OpenAPI equivalente al contrato.** Mientras no existe el backend, `docs/api/openapi.yaml` es la fuente de verdad (DEC-90). El que genere Nest debe ser equivalente: mismas rutas, `operationId`, esquemas y códigos. El frontend genera sus tipos con `openapi-typescript`, así un cambio en la API rompe la compilación y no la pantalla.
 6. **Google OAuth.** `GET /api/auth/google` y `GET /api/auth/google/callback`. La redirect URI registrada en Google es la del dominio del frontend.
-7. **Contenido de lecciones en un formato seguro de renderizar.** Por ejemplo, bloques estructurados, nunca HTML libre que obligue a usar `dangerouslySetInnerHTML`.
+7. **Contenido de lecciones en Markdown (DEC-57).** `seccion.cuerpo` llega como texto Markdown sin HTML. Cómo se convierte a HTML seguro (sin `dangerouslySetInnerHTML` sobre texto sin limpiar) se decide en la vista de Lección.
 
 ---
 
@@ -411,7 +437,9 @@ No se crea antes de `create-next-app` porque este se niega a trabajar en una car
 - **DEC-83, sitio público dentro de la app de Next.js.** SCR-18 en la ruta `/`, render estático y redirección con sesión en `proxy.ts`.
 - **DEC-84, paso del diseño «Tierra» de Figma a Next.js.** Variables como tokens, componentes de Figma como componentes de React y assets exportados.
 
-**Pendientes. Cuando apruebes el resto de la arquitectura, se registran en el grafo v1.4.0:**
+**Registrados en el grafo v1.4.0 (21/10):** DEC-85, DEC-86, DEC-90 e INV-29.
+
+**Lo que este documento propuso y ya quedó en el grafo 1.4.0:**
 
 - **DEC-85, frontend con mismo origen.** El rewrite `/api/*` a la red privada, la cookie `__Host-` y la verificación de `Origin`. Depende de DEC-12 y DEC-64.
 - **DEC-86, estructura y convenciones del frontend.** Áreas iguales a los MOD-* (más `inicio`), componentes de servidor por defecto, sin Server Actions y versiones exactas.
