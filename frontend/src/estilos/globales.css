@@ -43,6 +43,10 @@
   /* Sombras de Figma */
   --shadow-hero: 0 24px 48px -8px rgb(61 34 19 / 0.28);
   --shadow-vidrio: 0 24px 24px rgb(42 23 13 / 0.5);
+  /* Tarjeta en relieve sobre crema (índice del Aviso de privacidad, 84:789). */
+  --shadow-relieve: -5px -5px 14px rgb(255 255 255 / 0.95), 5px 6px 16px rgb(61 34 19 / 0.07);
+  /* Barra café de las páginas internas (84:764). */
+  --shadow-barra: 0 10px 12px rgb(61 34 19 / 0.18);
 
   /* Desenfoque del vidrio sutil */
   --blur-vidrio: 14px;
