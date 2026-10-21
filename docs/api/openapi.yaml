@@ -1,0 +1,2492 @@
+openapi: 3.1.0
+info:
+  title: API de Echo
+  version: 0.1.0
+  description: >-
+    Contrato de la API REST de Echo, escrito a mano desde las operaciones OP-* del grafo de conocimiento (v1.4.0).
+    Es la fuente de verdad hasta que exista el backend de NestJS; el OpenAPI que genere Nest debe ser equivalente
+    (DEC-90). Todas las rutas van bajo /api y el navegador solo habla con el dominio del frontend, que las reescribe
+    hacia el backend (DEC-85). Cada operación lleva en x-grafo el id de su operación en el grafo. Ver docs/api/README.md.
+servers:
+  - url: /
+    description: Mismo origen que el frontend; /api/* se reescribe hacia API_URL_INTERNA.
+tags:
+  - name: sesion
+    description: Validar, iniciar, renovar y cerrar la sesión.
+  - name: cuenta
+    description: Registro, verificación, aceptación de documentos y Google.
+  - name: documentos
+    description: Versiones vigentes del aviso de privacidad y de los términos.
+  - name: contrasena
+    description: Recuperar y restablecer la contraseña.
+  - name: perfil
+    description: Datos propios, privacidad, contraseña, correo y eliminación de la cuenta.
+  - name: contenido
+    description: Módulos, cursos, lecciones y búsqueda.
+  - name: evaluables
+    description: Actividades, casos prácticos y exámenes.
+  - name: desempeno
+    description: Progreso y resultados del alumno de la sesión.
+paths:
+  /api/sesion:
+    get:
+      tags: [sesion]
+      operationId: obtenerSesion
+      x-grafo: OP-31
+      summary: Validar la sesión y saber si hay una aceptación pendiente
+      description: >-
+        Caduca tras 30 minutos sin actividad y renueva la última actividad. No responde ACEPTACION_PENDIENTE: en
+        su lugar indica qué documentos faltan por aceptar.
+      security:
+        - cookieSesion: []
+      responses:
+        "200":
+          description: Sesión válida.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sesion"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+    post:
+      tags: [sesion]
+      operationId: iniciarSesion
+      x-grafo: OP-04
+      summary: Iniciar sesión con correo y contraseña
+      description: >-
+        Un solo error para correo inexistente, contraseña equivocada y cuenta en pausa tras 5 fallos
+        (CREDENCIALES_INVALIDAS, con el mismo tiempo de respuesta). CORREO_SIN_VERIFICAR solo con la contraseña
+        correcta y sin pausa (DEC-77, DEC-26, INV-28).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CredencialesEntrada"
+      responses:
+        "200":
+          description: Sesión iniciada; el encabezado Set-Cookie trae __Host-echo_sesion.
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/CookieSesion"
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sesion"
+        "401":
+          $ref: "#/components/responses/CredencialesInvalidas"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+        "429":
+          $ref: "#/components/responses/DemasiadasSolicitudes"
+    delete:
+      tags: [sesion]
+      operationId: cerrarSesion
+      x-grafo: OP-05
+      summary: Cerrar la sesión actual
+      security:
+        - cookieSesion: []
+      responses:
+        "204":
+          description: Sesión revocada; Set-Cookie borra la cookie.
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+  /api/sesion/renovar:
+    post:
+      tags: [sesion]
+      operationId: renovarSesion
+      x-grafo: OP-31
+      summary: Renovar la sesión («Seguir conectado»)
+      security:
+        - cookieSesion: []
+      responses:
+        "200":
+          description: Sesión renovada.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sesion"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+  /api/sesiones:
+    delete:
+      tags: [sesion]
+      operationId: cerrarTodasLasSesiones
+      x-grafo: OP-05
+      summary: Cerrar todas las sesiones del alumno
+      security:
+        - cookieSesion: []
+      responses:
+        "204":
+          description: Todas las sesiones revocadas; Set-Cookie borra la cookie.
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+  /api/cuenta/registro:
+    post:
+      tags: [cuenta]
+      operationId: registrarCuenta
+      x-grafo: OP-01
+      summary: Registrarse con correo, aceptando el aviso y los términos vigentes
+      description: >-
+        Exige las tres casillas obligatorias (aviso, términos y mayoría de edad) y las versiones vigentes que mostró
+        el formulario. La cuenta y sus dos aceptaciones se crean juntas; la IP la toma el servidor de la petición
+        (X-Forwarded-For del proxy), nunca del cuerpo (INV-30). Si el correo ya tiene cuenta, la respuesta es
+        idéntica, no se crea nada y se envía el correo «ya tienes cuenta» (DEC-77).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroEntrada"
+      responses:
+        "202":
+          description: Siempre «Revisa tu correo», exista o no una cuenta con ese correo.
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+        "429":
+          $ref: "#/components/responses/DemasiadasSolicitudes"
+  /api/cuenta/verificacion:
+    post:
+      tags: [cuenta]
+      operationId: verificarCorreo
+      x-grafo: OP-02
+      summary: Verificar el correo con el código del enlace
+      description: Enlace de 24 horas y un solo uso. Activa la cuenta e inicia la sesión.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodigoEnlaceEntrada"
+      responses:
+        "200":
+          description: Cuenta activa y sesión iniciada.
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/CookieSesion"
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sesion"
+        "400":
+          $ref: "#/components/responses/EnlaceInvalido"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/cuenta/verificacion/reenvio:
+    post:
+      tags: [cuenta]
+      operationId: reenviarVerificacion
+      x-grafo: OP-02
+      summary: Reenviar el enlace de verificación
+      description: >-
+        Respuesta idéntica exista o no una cuenta pendiente con ese correo (DEC-77); solo se envía si la hay.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorreoEntrada"
+      responses:
+        "202":
+          description: Siempre la misma respuesta.
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+        "429":
+          $ref: "#/components/responses/DemasiadasSolicitudes"
+  /api/cuenta/aceptacion:
+    post:
+      tags: [cuenta]
+      operationId: aceptarDocumentos
+      x-grafo: OP-13
+      summary: Aceptar el aviso y los términos vigentes
+      description: >-
+        Dos casos. (1) Primera entrada con Google: sin sesión, con la cookie temporal __Host-echo_registro_google;
+        exige aviso, términos y mayoría de edad, guarda las negativas, crea la cuenta con sus aceptaciones y abre la
+        sesión. (2) Versión nueva con requiere_aceptacion: con sesión; basta aceptar los documentos pendientes.
+        Rechaza versiones que no sean las vigentes (VERSION_NO_VIGENTE). La IP la toma el servidor.
+      security:
+        - cookieSesion: []
+        - cookieRegistroGoogle: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AceptacionEntrada"
+      responses:
+        "200":
+          description: Aceptación registrada. En el caso (1) Set-Cookie trae la sesión y borra la cookie temporal.
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/CookieSesion"
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sesion"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/auth/google:
+    get:
+      tags: [cuenta]
+      operationId: entrarConGoogle
+      x-grafo: OP-03
+      summary: Ir a Google para entrar
+      description: >-
+        Redirige a Google. Con proposito=eliminar, el callback cuenta como reingreso para eliminar la cuenta
+        (OP-14) en lugar de iniciar otra sesión.
+      parameters:
+        - name: proposito
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [entrar, eliminar]
+      responses:
+        "302":
+          description: Redirección a la pantalla de consentimiento de Google.
+          headers:
+            Location:
+              $ref: "#/components/headers/Ubicacion"
+  /api/auth/google/callback:
+    get:
+      tags: [cuenta]
+      operationId: volverDeGoogle
+      x-grafo: OP-03
+      summary: Regreso de Google
+      description: >-
+        Busca la cuenta por google_sub (o vincula una cuenta verificada del mismo correo). Si existe, inicia sesión y
+        redirige a /modulos. Si no existe, no crea la cuenta: guarda los datos de Google en la cookie temporal
+        cifrada y firmada __Host-echo_registro_google (HttpOnly, 10 minutos) y redirige a /aceptar (SCR-19). Si
+        Google falla o el alumno cancela, redirige a /iniciar-sesion?error=google.
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirección a /modulos, /aceptar, /perfil (reingreso para eliminar) o /iniciar-sesion?error=google.
+          headers:
+            Location:
+              $ref: "#/components/headers/Ubicacion"
+            Set-Cookie:
+              $ref: "#/components/headers/CookieSesion"
+  /api/documentos:
+    get:
+      tags: [documentos]
+      operationId: obtenerDocumentosVigentes
+      x-grafo: OP-40
+      summary: Versiones vigentes del aviso y de los términos
+      description: Sin sesión. No devuelve la huella del contenido.
+      responses:
+        "200":
+          description: Un documento por tipo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentosVigentes"
+  /api/contrasena/recuperacion:
+    post:
+      tags: [contrasena]
+      operationId: solicitarRecuperacion
+      x-grafo: OP-06
+      summary: Pedir un enlace para restablecer la contraseña
+      description: >-
+        Solo cuentas con contraseña; enlace de 30 minutos y un uso. La respuesta es siempre la misma (DEC-77).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CorreoEntrada"
+      responses:
+        "202":
+          description: Siempre el mismo mensaje genérico.
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+        "429":
+          $ref: "#/components/responses/DemasiadasSolicitudes"
+  /api/contrasena/restablecimiento:
+    post:
+      tags: [contrasena]
+      operationId: restablecerContrasena
+      x-grafo: OP-07
+      summary: Restablecer la contraseña con el código del enlace
+      description: Enlace vigente y sin usar; cierra todas las sesiones.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestablecimientoEntrada"
+      responses:
+        "204":
+          description: Contraseña cambiada.
+        "400":
+          $ref: "#/components/responses/EnlaceInvalido"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/perfil:
+    get:
+      tags: [perfil]
+      operationId: obtenerPerfil
+      x-grafo: OP-08
+      summary: Ver el perfil propio
+      description: Disponible aunque haya una aceptación pendiente. Las aceptaciones no incluyen la IP.
+      security:
+        - cookieSesion: []
+      responses:
+        "200":
+          description: Perfil del alumno de la sesión.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perfil"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+    patch:
+      tags: [perfil]
+      operationId: editarNombre
+      x-grafo: OP-09
+      summary: Editar nombre y apellidos
+      security:
+        - cookieSesion: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NombreEntrada"
+      responses:
+        "200":
+          description: Perfil actualizado.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Perfil"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/perfil/privacidad:
+    patch:
+      tags: [perfil]
+      operationId: cambiarPreferenciasPrivacidad
+      x-grafo: OP-39
+      summary: Cambiar las negativas a las finalidades secundarias
+      security:
+        - cookieSesion: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreferenciasEntrada"
+      responses:
+        "200":
+          description: Preferencias actualizadas; aplican de inmediato.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Preferencias"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/perfil/contrasena:
+    put:
+      tags: [perfil]
+      operationId: cambiarContrasena
+      x-grafo: OP-10
+      summary: Cambiar la contraseña
+      description: Solo cuentas con contraseña; pide la actual y cierra las demás sesiones.
+      security:
+        - cookieSesion: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CambioContrasenaEntrada"
+      responses:
+        "204":
+          description: Contraseña cambiada.
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/perfil/correo:
+    post:
+      tags: [perfil]
+      operationId: cambiarCorreo
+      x-grafo: OP-11
+      summary: Pedir el cambio de correo
+      description: >-
+        Solo cuentas sin Google; pide la contraseña. Siempre «Revisa tu correo nuevo»: si el correo nuevo ya tiene
+        cuenta, se avisa a esa dirección (DEC-77).
+      security:
+        - cookieSesion: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CambioCorreoEntrada"
+      responses:
+        "202":
+          description: Siempre la misma respuesta.
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+        "429":
+          $ref: "#/components/responses/DemasiadasSolicitudes"
+  /api/perfil/correo/confirmacion:
+    post:
+      tags: [perfil]
+      operationId: confirmarCambioCorreo
+      x-grafo: OP-12
+      summary: Confirmar el cambio de correo con el código del enlace
+      description: >-
+        Enlace de 30 minutos y un uso; no pide sesión, porque el enlace puede abrirse en otro dispositivo. Si el
+        correo ya no está libre, responde ENLACE_INVALIDO.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CodigoEnlaceEntrada"
+      responses:
+        "204":
+          description: Correo actualizado.
+        "400":
+          $ref: "#/components/responses/EnlaceInvalido"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/perfil/eliminacion:
+    post:
+      tags: [perfil]
+      operationId: eliminarCuenta
+      x-grafo: OP-14
+      summary: Eliminar la cuenta (anonimizar)
+      description: >-
+        Anonimiza la cuenta, conserva el historial sin forma de identificar al alumno y borra la IP de sus
+        aceptaciones (DEC-27, DEC-28). Con contraseña, la pide. Con Google (sin contraseña), exige un reingreso con
+        Google de menos de 5 minutos (GET /api/auth/google?proposito=eliminar). Disponible aunque haya una
+        aceptación pendiente.
+      security:
+        - cookieSesion: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EliminacionEntrada"
+      responses:
+        "204":
+          description: Cuenta anonimizada y sesión cerrada; Set-Cookie borra la cookie.
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/modulos:
+    get:
+      tags: [contenido]
+      operationId: listarModulos
+      x-grafo: OP-15
+      summary: Listar los módulos con su estado, avance e insignia
+      security:
+        - cookieSesion: []
+      responses:
+        "200":
+          description: Módulos en orden.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaModulos"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+  /api/modulos/{modulo}:
+    get:
+      tags: [contenido]
+      operationId: obtenerModulo
+      x-grafo: OP-16
+      summary: Listar los cursos de un módulo
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/SlugModulo"
+      responses:
+        "200":
+          description: Módulo con sus cursos en orden.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetalleModulo"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+  /api/cursos/{curso}:
+    get:
+      tags: [contenido]
+      operationId: obtenerCurso
+      x-grafo: OP-17
+      summary: Ver el índice de un curso
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/SlugCurso"
+      responses:
+        "200":
+          description: Lecciones con su actividad y casos, y el examen con su estado.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetalleCurso"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+  /api/lecciones/{leccion}:
+    get:
+      tags: [contenido]
+      operationId: abrirLeccion
+      x-grafo: OP-18
+      summary: Abrir una lección
+      description: >-
+        Registra la primera apertura (efecto idempotente). Las secciones traen su cuerpo en Markdown sin HTML
+        (DEC-57) y cada imagen con su texto alternativo (INV-13).
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/SlugLeccion"
+      responses:
+        "200":
+          description: Lección con sus secciones.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Leccion"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+  /api/lecciones/{leccion}/seccion-vista:
+    put:
+      tags: [contenido]
+      operationId: guardarSeccionVista
+      x-grafo: OP-19
+      summary: Guardar la última sección vista
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/SlugLeccion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeccionVistaEntrada"
+      responses:
+        "204":
+          description: Guardada.
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/lecciones/{leccion}/terminar:
+    post:
+      tags: [contenido]
+      operationId: terminarLeccion
+      x-grafo: OP-20
+      summary: Terminar la lección («Terminé la lección»)
+      description: >-
+        Solo desde la última sección (si no, BLOQUEADO_POR_AVANCE); se registra una vez y repetirla devuelve lo
+        mismo.
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/SlugLeccion"
+      responses:
+        "200":
+          description: Lección terminada y estado de su actividad y casos.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeccionTerminada"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+  /api/busqueda:
+    get:
+      tags: [contenido]
+      operationId: buscar
+      x-grafo: OP-21
+      summary: Buscar módulos, cursos y lecciones
+      description: Sin distinguir acentos ni mayúsculas; lo bloqueado aparece como bloqueado (DEC-32).
+      security:
+        - cookieSesion: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+      responses:
+        "200":
+          description: Resultados (lista vacía si no hay coincidencias).
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultadosBusqueda"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/actividades/{cuestionario}:
+    get:
+      tags: [evaluables]
+      operationId: abrirActividad
+      x-grafo: OP-22
+      summary: Abrir una actividad o un caso práctico
+      description: >-
+        Lección leída y orden de la actividad y los casos (INV-06). Devuelve preguntas para responder, sin valores,
+        sin la opción o la pareja correcta y sin retroalimentación (INV-04).
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/IdCuestionario"
+      responses:
+        "200":
+          description: Instrucciones y preguntas.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Actividad"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+  /api/actividades/{cuestionario}/envios:
+    post:
+      tags: [evaluables]
+      operationId: enviarActividad
+      x-grafo: OP-23
+      summary: Enviar una actividad o un caso práctico
+      description: >-
+        Todas las preguntas respondidas. El servidor crea o retoma el intento (fn_iniciar_intento), guarda las
+        respuestas y califica (fn_enviar_intento). Reintentos ilimitados y sin espera (DEC-17, DEC-21). En
+        actividades la retroalimentación trae la respuesta correcta; en casos, la etiqueta, la consecuencia y el
+        fundamento de la decisión elegida (DEC-16).
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/IdCuestionario"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnvioActividadEntrada"
+      responses:
+        "200":
+          description: Intento enviado y calificado.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultadoActividad"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/examenes/{cuestionario}:
+    get:
+      tags: [evaluables]
+      operationId: obtenerPortadaExamen
+      x-grafo: OP-24
+      summary: Ver la portada del examen
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/IdCuestionario"
+      responses:
+        "200":
+          description: Instrucciones, número de preguntas, calificación mínima, estado e intentos previos.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortadaExamen"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+  /api/examenes/{cuestionario}/intentos:
+    post:
+      tags: [evaluables]
+      operationId: iniciarIntentoExamen
+      x-grafo: OP-25
+      summary: Iniciar o retomar el intento del examen
+      description: >-
+        Si ya hay un intento en curso lo retoma (200); si no, lo crea (201). Examen no aprobado (EXAMEN_APROBADO) y
+        sin espera activa (EN_ESPERA). Preguntas en el orden de la semilla, sin valores (INV-04), y respuestas ya
+        guardadas (DEC-19).
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/IdCuestionario"
+      responses:
+        "200":
+          description: Intento retomado.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntentoEnCurso"
+        "201":
+          description: Intento nuevo.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntentoEnCurso"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+  /api/intentos/{intento}/respuestas/{pregunta}:
+    put:
+      tags: [evaluables]
+      operationId: guardarRespuesta
+      x-grafo: OP-26
+      summary: Guardar la respuesta de una pregunta del intento
+      description: >-
+        Intento en curso y propio (si no es propio, NO_ENCONTRADO). Se guarda al elegir; la respuesta no dice si es
+        correcta (INV-04).
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/IdIntento"
+        - $ref: "#/components/parameters/IdPregunta"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespuestaEntrada"
+      responses:
+        "200":
+          description: Guardada.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RespuestaGuardada"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/intentos/{intento}/envio:
+    post:
+      tags: [evaluables]
+      operationId: enviarExamen
+      x-grafo: OP-27
+      summary: Enviar el examen
+      description: >-
+        Todas respondidas (RESPUESTAS_INCOMPLETAS si no). Califica el servidor. Aprobado: retroalimentación
+        completa, curso completado e insignia nueva si completa el módulo. Reprobado: qué preguntas falló y qué
+        lección repasar, sin la respuesta correcta, y la espera (DEC-11, DEC-21).
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/IdIntento"
+      responses:
+        "200":
+          description: Examen calificado.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultadoExamen"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/progreso:
+    get:
+      tags: [desempeno]
+      operationId: obtenerProgreso
+      x-grafo: OP-28
+      summary: Ver mi progreso
+      security:
+        - cookieSesion: []
+      responses:
+        "200":
+          description: Avance general, por módulo y curso, e insignias.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Progreso"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+  /api/resultados:
+    get:
+      tags: [desempeno]
+      operationId: listarResultados
+      x-grafo: OP-29
+      summary: Ver mis resultados
+      description: >-
+        Solo los intentos enviados del alumno de la sesión (INV-07). Las fechas del filtro son días en
+        America/Mexico_City (DEC-30).
+      security:
+        - cookieSesion: []
+      parameters:
+        - name: modulo
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+        - name: tipo
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/TipoCuestionario"
+        - name: desde
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Lista (vacía si no hay resultados).
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaResultados"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "422":
+          $ref: "#/components/responses/DatosInvalidos"
+  /api/resultados/{intento}:
+    get:
+      tags: [desempeno]
+      operationId: obtenerDetalleIntento
+      x-grafo: OP-30
+      summary: Ver el detalle de un intento enviado
+      description: >-
+        Solo los propios: el intento de otro alumno responde NO_ENCONTRADO. Examen reprobado sin respuestas
+        correctas.
+      security:
+        - cookieSesion: []
+      parameters:
+        - $ref: "#/components/parameters/IdIntento"
+      responses:
+        "200":
+          description: Cada pregunta con lo elegido, su puntaje y la retroalimentación que corresponda.
+          headers:
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DetalleIntento"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+components:
+  securitySchemes:
+    cookieSesion:
+      type: apiKey
+      in: cookie
+      name: __Host-echo_sesion
+      description: >-
+        Código aleatorio de sesión (DEC-12). Atributos HttpOnly, Secure, SameSite=Lax, Path=/, sin Domain. En la base
+        solo se guarda su huella SHA-256 (INV-08). Caduca tras 30 minutos sin actividad.
+    cookieRegistroGoogle:
+      type: apiKey
+      in: cookie
+      name: __Host-echo_registro_google
+      description: >-
+        Cookie temporal cifrada y firmada con los datos de Google de quien aún no tiene cuenta (DEC-28). HttpOnly,
+        Secure, SameSite=Lax, Path=/, 10 minutos. Solo la usa POST /api/cuenta/aceptacion.
+  headers:
+    SesionExpira:
+      description: Momento en que caduca la sesión si no hay más actividad (ISO 8601, UTC).
+      schema:
+        type: string
+        format: date-time
+    CookieSesion:
+      description: __Host-echo_sesion=…; HttpOnly; Secure; SameSite=Lax; Path=/
+      schema:
+        type: string
+    Ubicacion:
+      description: Destino de la redirección.
+      schema:
+        type: string
+  parameters:
+    SlugModulo:
+      name: modulo
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Slug"
+    SlugCurso:
+      name: curso
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Slug"
+    SlugLeccion:
+      name: leccion
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Slug"
+    IdCuestionario:
+      name: cuestionario
+      in: path
+      required: true
+      description: Id del cuestionario (la tabla cuestionario no tiene slug).
+      schema:
+        type: integer
+        minimum: 1
+    IdPregunta:
+      name: pregunta
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    IdIntento:
+      name: intento
+      in: path
+      required: true
+      schema:
+        $ref: "#/components/schemas/Uuid"
+  responses:
+    NoAutenticado:
+      description: Sin sesión, o la sesión caducó (NO_AUTENTICADO, REGISTRO_GOOGLE_VENCIDO).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    CredencialesInvalidas:
+      description: CREDENCIALES_INVALIDAS, igual para correo inexistente, contraseña equivocada y pausa.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Prohibido:
+      description: >-
+        ORIGEN_NO_PERMITIDO, ACEPTACION_PENDIENTE, BLOQUEADO_POR_AVANCE, CORREO_SIN_VERIFICAR,
+        CONTRASENA_INCORRECTA o REINGRESO_REQUERIDO, según la operación.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NoEncontrado:
+      description: NO_ENCONTRADO. También cuando el recurso existe pero es de otro alumno (INV-07).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflicto:
+      description: >-
+        EN_ESPERA, EXAMEN_APROBADO, INTENTO_CERRADO, VERSION_NO_VIGENTE o NO_DISPONIBLE_CON_GOOGLE, según la
+        operación.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    DatosInvalidos:
+      description: DATOS_INVALIDOS (con campos) o RESPUESTAS_INCOMPLETAS (con preguntasPendientes).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    EnlaceInvalido:
+      description: ENLACE_INVALIDO; un solo código para vencido, usado o inexistente.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    DemasiadasSolicitudes:
+      description: DEMASIADAS_SOLICITUDES por el límite de peticiones por IP (RSG-04); lleva Retry-After.
+      headers:
+        Retry-After:
+          description: Segundos para volver a intentar.
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+      description: UUID v7.
+    Slug:
+      type: string
+      pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+    FechaHora:
+      type: string
+      format: date-time
+      description: ISO 8601 en UTC; se muestra en America/Mexico_City (INV-03).
+    CodigoError:
+      type: string
+      description: Lista cerrada. El frontend nunca muestra el mensaje del servidor; sus textos salen de lib/api/mensajes.ts.
+      enum:
+        - NO_AUTENTICADO
+        - CREDENCIALES_INVALIDAS
+        - CORREO_SIN_VERIFICAR
+        - ENLACE_INVALIDO
+        - CONTRASENA_INCORRECTA
+        - REINGRESO_REQUERIDO
+        - REGISTRO_GOOGLE_VENCIDO
+        - NO_DISPONIBLE_CON_GOOGLE
+        - DATOS_INVALIDOS
+        - RESPUESTAS_INCOMPLETAS
+        - NO_ENCONTRADO
+        - BLOQUEADO_POR_AVANCE
+        - EN_ESPERA
+        - EXAMEN_APROBADO
+        - INTENTO_CERRADO
+        - ORIGEN_NO_PERMITIDO
+        - DEMASIADAS_SOLICITUDES
+        - ACEPTACION_PENDIENTE
+        - VERSION_NO_VIGENTE
+        - ERROR_INTERNO
+    CodigoCampo:
+      type: string
+      description: Motivo por campo en DATOS_INVALIDOS.
+      enum:
+        - OBLIGATORIO
+        - FORMATO_INVALIDO
+        - LONGITUD_INVALIDA
+        - CONTRASENA_DEBIL
+        - CASILLA_OBLIGATORIA
+        - FUERA_DE_RANGO
+    Error:
+      type: object
+      required: [codigo, mensaje]
+      additionalProperties: false
+      properties:
+        codigo:
+          $ref: "#/components/schemas/CodigoError"
+        mensaje:
+          type: string
+          description: Texto técnico para registros y depuración; nunca se muestra al alumno.
+        campos:
+          type: object
+          description: Solo en DATOS_INVALIDOS. Llave = campo del cuerpo en camelCase.
+          additionalProperties:
+            $ref: "#/components/schemas/CodigoCampo"
+        minutosRestantes:
+          type: integer
+          minimum: 1
+          description: Solo en EN_ESPERA.
+        disponibleEn:
+          $ref: "#/components/schemas/FechaHora"
+        preguntasPendientes:
+          type: array
+          description: Solo en RESPUESTAS_INCOMPLETAS.
+          items:
+            type: integer
+    MetodoAcceso:
+      type: string
+      enum: [correo, google, ambos]
+    TipoDocumento:
+      type: string
+      enum: [avisoPrivacidad, terminos]
+    AceptacionPendiente:
+      type: object
+      required: [aviso, terminos]
+      additionalProperties: false
+      properties:
+        aviso:
+          type: boolean
+        terminos:
+          type: boolean
+    Sesion:
+      type: object
+      required: [nombre, apellidos, metodoAcceso, expiraEn, aceptacionPendiente]
+      additionalProperties: false
+      properties:
+        nombre:
+          type: string
+        apellidos:
+          type: [string, "null"]
+          description: Puede faltar en cuentas creadas con Google (DEC-22).
+        metodoAcceso:
+          $ref: "#/components/schemas/MetodoAcceso"
+        expiraEn:
+          $ref: "#/components/schemas/FechaHora"
+        aceptacionPendiente:
+          $ref: "#/components/schemas/AceptacionPendiente"
+    CredencialesEntrada:
+      type: object
+      required: [correo, contrasena]
+      properties:
+        correo:
+          type: string
+          maxLength: 254
+        contrasena:
+          type: string
+          maxLength: 200
+    CorreoEntrada:
+      type: object
+      required: [correo]
+      properties:
+        correo:
+          type: string
+          maxLength: 254
+    Contrasena:
+      type: string
+      minLength: 8
+      maxLength: 200
+      description: 8 o más caracteres con al menos una letra y un número (DEC-25).
+    Version:
+      type: string
+      pattern: "^[0-9]+\\.[0-9]+$"
+    RegistroEntrada:
+      type: object
+      required:
+        - nombre
+        - apellidos
+        - correo
+        - contrasena
+        - versionAviso
+        - versionTerminos
+        - aceptaAviso
+        - aceptaTerminos
+        - mayorDeEdad
+        - negativaEncuesta
+        - negativaEstadisticas
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+        apellidos:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Al menos el primero (DEC-22).
+        correo:
+          type: string
+          maxLength: 254
+        contrasena:
+          $ref: "#/components/schemas/Contrasena"
+        versionAviso:
+          $ref: "#/components/schemas/Version"
+        versionTerminos:
+          $ref: "#/components/schemas/Version"
+        aceptaAviso:
+          type: boolean
+          description: Casilla obligatoria «He leído y acepto el Aviso de privacidad»; debe ser true.
+        aceptaTerminos:
+          type: boolean
+          description: Casilla obligatoria «He leído y acepto los Términos y condiciones»; debe ser true.
+        mayorDeEdad:
+          type: boolean
+          description: Casilla obligatoria «Confirmo que tengo 18 años o más» (DEC-89); debe ser true.
+        negativaEncuesta:
+          type: boolean
+          description: Casilla opcional «No deseo…» de la encuesta (DEC-88).
+        negativaEstadisticas:
+          type: boolean
+          description: Casilla opcional «No deseo…» de las estadísticas anónimas (DEC-88).
+    AceptacionEntrada:
+      type: object
+      description: >-
+        Igual que el registro sin nombre, correo ni contraseña. Caso Google: todas las casillas obligatorias. Caso
+        versión nueva: solo las de los documentos pendientes; mayorDeEdad y las negativas se ignoran.
+      properties:
+        versionAviso:
+          $ref: "#/components/schemas/Version"
+        versionTerminos:
+          $ref: "#/components/schemas/Version"
+        aceptaAviso:
+          type: boolean
+        aceptaTerminos:
+          type: boolean
+        mayorDeEdad:
+          type: boolean
+        negativaEncuesta:
+          type: boolean
+        negativaEstadisticas:
+          type: boolean
+    CodigoEnlaceEntrada:
+      type: object
+      required: [codigo]
+      properties:
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Código del enlace (la base solo guarda su huella SHA-256).
+    RestablecimientoEntrada:
+      type: object
+      required: [codigo, contrasena]
+      properties:
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 200
+        contrasena:
+          $ref: "#/components/schemas/Contrasena"
+    Documento:
+      type: object
+      required: [tipo, version, publicadoEn, requiereAceptacion, resumenCambios]
+      additionalProperties: false
+      properties:
+        tipo:
+          $ref: "#/components/schemas/TipoDocumento"
+        version:
+          $ref: "#/components/schemas/Version"
+        publicadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        requiereAceptacion:
+          type: boolean
+        resumenCambios:
+          type: string
+    DocumentosVigentes:
+      type: object
+      required: [documentos]
+      additionalProperties: false
+      properties:
+        documentos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Documento"
+    Preferencias:
+      type: object
+      required: [negativaEncuesta, negativaEstadisticas]
+      additionalProperties: false
+      properties:
+        negativaEncuesta:
+          type: boolean
+        negativaEstadisticas:
+          type: boolean
+    PreferenciasEntrada:
+      type: object
+      minProperties: 1
+      properties:
+        negativaEncuesta:
+          type: boolean
+        negativaEstadisticas:
+          type: boolean
+    AceptacionRegistrada:
+      type: object
+      required: [documento, version, aceptadoEn]
+      additionalProperties: false
+      description: Sin la IP; se entrega solo por una solicitud ARCO de acceso.
+      properties:
+        documento:
+          $ref: "#/components/schemas/TipoDocumento"
+        version:
+          $ref: "#/components/schemas/Version"
+        aceptadoEn:
+          $ref: "#/components/schemas/FechaHora"
+    Perfil:
+      type: object
+      required: [nombre, apellidos, correo, metodoAcceso, registradoEn, preferencias, aceptaciones]
+      additionalProperties: false
+      properties:
+        nombre:
+          type: string
+        apellidos:
+          type: [string, "null"]
+        correo:
+          type: string
+        metodoAcceso:
+          $ref: "#/components/schemas/MetodoAcceso"
+        registradoEn:
+          $ref: "#/components/schemas/FechaHora"
+        preferencias:
+          $ref: "#/components/schemas/Preferencias"
+        aceptaciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/AceptacionRegistrada"
+    NombreEntrada:
+      type: object
+      required: [nombre, apellidos]
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+        apellidos:
+          type: string
+          minLength: 1
+          maxLength: 100
+    CambioContrasenaEntrada:
+      type: object
+      required: [contrasenaActual, contrasenaNueva]
+      properties:
+        contrasenaActual:
+          type: string
+          maxLength: 200
+        contrasenaNueva:
+          $ref: "#/components/schemas/Contrasena"
+    CambioCorreoEntrada:
+      type: object
+      required: [correoNuevo, contrasena]
+      properties:
+        correoNuevo:
+          type: string
+          maxLength: 254
+        contrasena:
+          type: string
+          maxLength: 200
+    EliminacionEntrada:
+      type: object
+      required: [confirmacion]
+      properties:
+        confirmacion:
+          type: boolean
+          description: Debe ser true.
+        contrasena:
+          type: string
+          maxLength: 200
+          description: Obligatoria si la cuenta tiene contraseña.
+    EstadoAvance:
+      type: string
+      enum: [bloqueado, disponible, enCurso, completado]
+    TipoContenido:
+      type: string
+      enum: [modulo, curso, leccion, examen, evaluable]
+    Requisito:
+      type: object
+      required: [tipo, titulo]
+      additionalProperties: false
+      description: Lo que falta para desbloquear (el texto lo arma el frontend).
+      properties:
+        tipo:
+          $ref: "#/components/schemas/TipoContenido"
+        slug:
+          $ref: "#/components/schemas/Slug"
+        id:
+          type: integer
+        titulo:
+          type: string
+    Referencia:
+      type: object
+      required: [slug, titulo]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+    Imagen:
+      type: object
+      required: [ruta, textoAlternativo]
+      additionalProperties: false
+      properties:
+        ruta:
+          type: string
+        textoAlternativo:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: Obligatorio (INV-13).
+        pie:
+          type: [string, "null"]
+    Insignia:
+      type: object
+      required: [nombre, descripcion, imagen, obtenidaEn]
+      additionalProperties: false
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        imagen:
+          $ref: "#/components/schemas/Imagen"
+        obtenidaEn:
+          oneOf:
+            - $ref: "#/components/schemas/FechaHora"
+            - type: "null"
+    ResumenModulo:
+      type: object
+      required: [slug, titulo, descripcion, orden, estado, avance, insignia, requisito]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        orden:
+          type: integer
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        avance:
+          $ref: "#/components/schemas/Porcentaje"
+        insignia:
+          oneOf:
+            - $ref: "#/components/schemas/Insignia"
+            - type: "null"
+        requisito:
+          oneOf:
+            - $ref: "#/components/schemas/Requisito"
+            - type: "null"
+    Porcentaje:
+      type: number
+      minimum: 0
+      maximum: 100
+      description: Dos decimales (DEC-07, DEC-14).
+    ListaModulos:
+      type: object
+      required: [avanceGeneral, modulos]
+      additionalProperties: false
+      properties:
+        avanceGeneral:
+          $ref: "#/components/schemas/Porcentaje"
+        modulos:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumenModulo"
+    ResumenCurso:
+      type: object
+      required: [slug, titulo, descripcion, orden, estado, avance, requisito]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        orden:
+          type: integer
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        avance:
+          $ref: "#/components/schemas/Porcentaje"
+        requisito:
+          oneOf:
+            - $ref: "#/components/schemas/Requisito"
+            - type: "null"
+    DetalleModulo:
+      type: object
+      required: [slug, titulo, descripcion, estado, avance, insignia, cursos]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        avance:
+          $ref: "#/components/schemas/Porcentaje"
+        insignia:
+          oneOf:
+            - $ref: "#/components/schemas/Insignia"
+            - type: "null"
+        cursos:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumenCurso"
+    TipoCuestionario:
+      type: string
+      enum: [actividad, caso, examen]
+    EstadoEvaluable:
+      type: string
+      enum: [bloqueado, disponible, enviado]
+    ResumenEvaluable:
+      type: object
+      required: [id, tipo, titulo, orden, estado, mejorCalificacion]
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        tipo:
+          type: string
+          enum: [actividad, caso]
+        titulo:
+          type: string
+        orden:
+          type: integer
+        estado:
+          $ref: "#/components/schemas/EstadoEvaluable"
+        mejorCalificacion:
+          oneOf:
+            - $ref: "#/components/schemas/Porcentaje"
+            - type: "null"
+    ResumenLeccion:
+      type: object
+      required: [slug, titulo, resumen, orden, estado, nueva, evaluables]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        resumen:
+          type: [string, "null"]
+        orden:
+          type: integer
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        nueva:
+          type: boolean
+          description: Publicada después de que el alumno completó el curso (DEC-10); no bloquea nada.
+        evaluables:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumenEvaluable"
+    EstadoExamen:
+      type: string
+      enum: [bloqueado, disponible, enCurso, enEspera, aprobado]
+    ResumenExamen:
+      type: object
+      required: [id, titulo, estado, minutosRestantes, disponibleEn]
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        titulo:
+          type: string
+        estado:
+          $ref: "#/components/schemas/EstadoExamen"
+        minutosRestantes:
+          type: [integer, "null"]
+          description: Solo en enEspera.
+        disponibleEn:
+          oneOf:
+            - $ref: "#/components/schemas/FechaHora"
+            - type: "null"
+    DetalleCurso:
+      type: object
+      required: [slug, titulo, descripcion, modulo, estado, avance, lecciones, examen]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        modulo:
+          $ref: "#/components/schemas/Referencia"
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        avance:
+          $ref: "#/components/schemas/Porcentaje"
+        lecciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumenLeccion"
+        examen:
+          oneOf:
+            - $ref: "#/components/schemas/ResumenExamen"
+            - type: "null"
+    Seccion:
+      type: object
+      required: [orden, titulo, cuerpo, imagen]
+      additionalProperties: false
+      properties:
+        orden:
+          type: integer
+          minimum: 1
+        titulo:
+          type: string
+        cuerpo:
+          type: string
+          description: Markdown sin HTML (DEC-57). Cómo se convierte a HTML seguro se decide en la vista de Lección.
+        imagen:
+          oneOf:
+            - $ref: "#/components/schemas/Imagen"
+            - type: "null"
+    Leccion:
+      type: object
+      required: [slug, titulo, curso, modulo, secciones, ultimaSeccion, terminadaEn, anterior, siguiente, evaluables]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        curso:
+          $ref: "#/components/schemas/Referencia"
+        modulo:
+          $ref: "#/components/schemas/Referencia"
+        secciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/Seccion"
+        ultimaSeccion:
+          type: integer
+          minimum: 1
+          description: Para retomar la lectura.
+        terminadaEn:
+          oneOf:
+            - $ref: "#/components/schemas/FechaHora"
+            - type: "null"
+        anterior:
+          oneOf:
+            - $ref: "#/components/schemas/Referencia"
+            - type: "null"
+        siguiente:
+          oneOf:
+            - $ref: "#/components/schemas/Referencia"
+            - type: "null"
+          description: La lección siguiente, aunque esté bloqueada; su estado se ve en el índice del curso.
+        evaluables:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumenEvaluable"
+    SeccionVistaEntrada:
+      type: object
+      required: [seccion]
+      properties:
+        seccion:
+          type: integer
+          minimum: 1
+    LeccionTerminada:
+      type: object
+      required: [terminadaEn, evaluables]
+      additionalProperties: false
+      properties:
+        terminadaEn:
+          $ref: "#/components/schemas/FechaHora"
+        evaluables:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumenEvaluable"
+    ResultadoBusqueda:
+      type: object
+      required: [tipo, slug, titulo, estado, contexto]
+      additionalProperties: false
+      properties:
+        tipo:
+          type: string
+          enum: [modulo, curso, leccion]
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        contexto:
+          type: [string, "null"]
+          description: Título del módulo o curso que lo contiene.
+    ResultadosBusqueda:
+      type: object
+      required: [resultados]
+      additionalProperties: false
+      properties:
+        resultados:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResultadoBusqueda"
+    TipoPregunta:
+      type: string
+      enum: [opcionMultiple, verdaderoFalso, relacion, decision]
+    OpcionParaResponder:
+      type: object
+      required: [id, texto]
+      additionalProperties: false
+      description: Sin valor, sin retroalimentación ni consecuencia (INV-04).
+      properties:
+        id:
+          type: integer
+        texto:
+          type: string
+    ElementoIzquierdo:
+      type: object
+      required: [id, texto]
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          description: Id de la pareja cuyo texto izquierdo se muestra.
+        texto:
+          type: string
+    ElementoDerecho:
+      type: object
+      required: [clave, texto]
+      additionalProperties: false
+      description: >-
+        La clave es opaca: el servidor la deriva de la pareja para cada alumno y cuestionario, así que no se puede
+        comparar con el id del elemento izquierdo para adivinar la pareja correcta (INV-04).
+      properties:
+        clave:
+          type: string
+        texto:
+          type: string
+    PreguntaParaResponder:
+      description: Pregunta antes del envío. Nunca trae valores, la respuesta correcta ni la retroalimentación (INV-04).
+      oneOf:
+        - $ref: "#/components/schemas/PreguntaDeOpcionesParaResponder"
+        - $ref: "#/components/schemas/PreguntaDeRelacionParaResponder"
+      discriminator:
+        propertyName: tipo
+        mapping:
+          opcionMultiple: "#/components/schemas/PreguntaDeOpcionesParaResponder"
+          verdaderoFalso: "#/components/schemas/PreguntaDeOpcionesParaResponder"
+          decision: "#/components/schemas/PreguntaDeOpcionesParaResponder"
+          relacion: "#/components/schemas/PreguntaDeRelacionParaResponder"
+    PreguntaDeOpcionesParaResponder:
+      type: object
+      required: [id, tipo, enunciado, opciones]
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        tipo:
+          type: string
+          enum: [opcionMultiple, verdaderoFalso, decision]
+        enunciado:
+          type: string
+        opciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpcionParaResponder"
+    PreguntaDeRelacionParaResponder:
+      type: object
+      required: [id, tipo, enunciado, izquierda, derecha]
+      additionalProperties: false
+      description: Se responde eligiendo, para cada elemento izquierdo, uno derecho; sin arrastrar (DEC-71).
+      properties:
+        id:
+          type: integer
+        tipo:
+          type: string
+          enum: [relacion]
+        enunciado:
+          type: string
+        izquierda:
+          type: array
+          items:
+            $ref: "#/components/schemas/ElementoIzquierdo"
+        derecha:
+          type: array
+          items:
+            $ref: "#/components/schemas/ElementoDerecho"
+    Union:
+      type: object
+      required: [izquierdaId, derechaClave]
+      additionalProperties: false
+      properties:
+        izquierdaId:
+          type: integer
+        derechaClave:
+          type: string
+    RespuestaEntrada:
+      description: La opción elegida o las uniones de una relación de columnas.
+      oneOf:
+        - $ref: "#/components/schemas/RespuestaDeOpcionEntrada"
+        - $ref: "#/components/schemas/RespuestaDeRelacionEntrada"
+    RespuestaDeOpcionEntrada:
+      type: object
+      required: [opcionId]
+      properties:
+        opcionId:
+          type: integer
+    RespuestaDeRelacionEntrada:
+      type: object
+      required: [uniones]
+      properties:
+        uniones:
+          type: array
+          items:
+            $ref: "#/components/schemas/Union"
+    RespuestaGuardada:
+      type: object
+      required: [preguntaId, guardadaEn]
+      additionalProperties: false
+      description: Lo que ya eligió el alumno; no dice si es correcto.
+      properties:
+        preguntaId:
+          type: integer
+        guardadaEn:
+          $ref: "#/components/schemas/FechaHora"
+        opcionId:
+          type: integer
+        uniones:
+          type: array
+          items:
+            $ref: "#/components/schemas/Union"
+    Actividad:
+      type: object
+      required: [id, tipo, titulo, instrucciones, leccion, preguntas, intentosEnviados, mejorCalificacion]
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        tipo:
+          type: string
+          enum: [actividad, caso]
+        titulo:
+          type: string
+        instrucciones:
+          type: string
+        leccion:
+          $ref: "#/components/schemas/Referencia"
+        preguntas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PreguntaParaResponder"
+        intentosEnviados:
+          type: integer
+          minimum: 0
+        mejorCalificacion:
+          oneOf:
+            - $ref: "#/components/schemas/Porcentaje"
+            - type: "null"
+    EnvioActividadEntrada:
+      type: object
+      required: [respuestas]
+      properties:
+        respuestas:
+          type: array
+          items:
+            $ref: "#/components/schemas/RespuestaDePregunta"
+    RespuestaDePregunta:
+      type: object
+      required: [preguntaId]
+      additionalProperties: false
+      description: preguntaId con opcionId, o con uniones si es relación de columnas.
+      properties:
+        preguntaId:
+          type: integer
+        opcionId:
+          type: integer
+        uniones:
+          type: array
+          items:
+            $ref: "#/components/schemas/Union"
+    Fundamento:
+      type: object
+      required: [tipo, nombre, articulo, descripcion, referencia]
+      additionalProperties: false
+      properties:
+        tipo:
+          type: string
+          enum: [ley, norma, principio, codigo]
+        nombre:
+          type: string
+        articulo:
+          type: [string, "null"]
+        descripcion:
+          type: string
+        referencia:
+          type: [string, "null"]
+    EtiquetaDecision:
+      type: string
+      enum: [optima, aceptable, riesgosa]
+      description: 1 = óptima, entre 0 y 1 = aceptable, 0 = riesgosa (DEC-16).
+    OpcionCalificada:
+      type: object
+      required: [id, texto, elegida, correcta, retroalimentacion]
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        texto:
+          type: string
+        elegida:
+          type: boolean
+        correcta:
+          type: boolean
+        retroalimentacion:
+          type: [string, "null"]
+    UnionCalificada:
+      type: object
+      required: [izquierda, derechaElegida, derechaCorrecta, correcta]
+      additionalProperties: false
+      properties:
+        izquierda:
+          type: string
+        derechaElegida:
+          type: [string, "null"]
+        derechaCorrecta:
+          type: string
+        correcta:
+          type: boolean
+    DecisionCalificada:
+      type: object
+      required: [opcionElegida, etiqueta, consecuencia, retroalimentacion, fundamento]
+      additionalProperties: false
+      description: Solo casos prácticos. La evaluación de la decisión que se eligió.
+      properties:
+        opcionElegida:
+          type: string
+        etiqueta:
+          $ref: "#/components/schemas/EtiquetaDecision"
+        consecuencia:
+          type: [string, "null"]
+        retroalimentacion:
+          type: [string, "null"]
+        fundamento:
+          oneOf:
+            - $ref: "#/components/schemas/Fundamento"
+            - type: "null"
+    PreguntaCalificada:
+      type: object
+      required: [id, tipo, enunciado, puntaje, correcta, retroalimentacion, fundamento]
+      additionalProperties: false
+      description: >-
+        Pregunta después del envío con la retroalimentación completa. Se usa en actividades (con la respuesta
+        correcta, DEC-17), en casos (con la decisión calificada, DEC-16) y en exámenes aprobados (DEC-11).
+      properties:
+        id:
+          type: integer
+        tipo:
+          $ref: "#/components/schemas/TipoPregunta"
+        enunciado:
+          type: string
+        puntaje:
+          type: number
+          minimum: 0
+          maximum: 1
+        correcta:
+          type: boolean
+        retroalimentacion:
+          type: [string, "null"]
+        fundamento:
+          oneOf:
+            - $ref: "#/components/schemas/Fundamento"
+            - type: "null"
+        opciones:
+          type: array
+          description: En opción múltiple y verdadero/falso.
+          items:
+            $ref: "#/components/schemas/OpcionCalificada"
+        uniones:
+          type: array
+          description: En relación de columnas.
+          items:
+            $ref: "#/components/schemas/UnionCalificada"
+        decision:
+          $ref: "#/components/schemas/DecisionCalificada"
+    PreguntaSinSolucion:
+      type: object
+      required: [id, tipo, enunciado, puntaje, correcta, respuestaElegida, leccionRepaso]
+      additionalProperties: false
+      description: >-
+        Examen reprobado: qué pregunta falló y qué lección repasar, sin la respuesta correcta ni la
+        retroalimentación (DEC-11).
+      properties:
+        id:
+          type: integer
+        tipo:
+          $ref: "#/components/schemas/TipoPregunta"
+        enunciado:
+          type: string
+        puntaje:
+          type: number
+          minimum: 0
+          maximum: 1
+        correcta:
+          type: boolean
+        respuestaElegida:
+          type: array
+          description: Textos que eligió el alumno (en relación, «izquierda → derecha»).
+          items:
+            type: string
+        leccionRepaso:
+          oneOf:
+            - $ref: "#/components/schemas/Referencia"
+            - type: "null"
+    IntentoEnviado:
+      type: object
+      required: [id, numero, enviadoEn, calificacion]
+      additionalProperties: false
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        numero:
+          type: integer
+          minimum: 1
+        enviadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        calificacion:
+          $ref: "#/components/schemas/Porcentaje"
+    ResultadoActividad:
+      type: object
+      required: [intento, tipo, mejorCalificacion, preguntas]
+      additionalProperties: false
+      properties:
+        intento:
+          $ref: "#/components/schemas/IntentoEnviado"
+        tipo:
+          type: string
+          enum: [actividad, caso]
+        mejorCalificacion:
+          $ref: "#/components/schemas/Porcentaje"
+        preguntas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PreguntaCalificada"
+    IntentoPrevio:
+      type: object
+      required: [id, numero, enviadoEn, calificacion, aprobado]
+      additionalProperties: false
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        numero:
+          type: integer
+        enviadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        calificacion:
+          $ref: "#/components/schemas/Porcentaje"
+        aprobado:
+          type: boolean
+    PortadaExamen:
+      type: object
+      required:
+        - id
+        - titulo
+        - instrucciones
+        - curso
+        - numeroPreguntas
+        - calificacionMinima
+        - estado
+        - minutosRestantes
+        - disponibleEn
+        - intentoEnCurso
+        - intentosPrevios
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+        titulo:
+          type: string
+        instrucciones:
+          type: string
+        curso:
+          $ref: "#/components/schemas/Referencia"
+        numeroPreguntas:
+          type: integer
+        calificacionMinima:
+          $ref: "#/components/schemas/Porcentaje"
+        estado:
+          $ref: "#/components/schemas/EstadoExamen"
+        minutosRestantes:
+          type: [integer, "null"]
+        disponibleEn:
+          oneOf:
+            - $ref: "#/components/schemas/FechaHora"
+            - type: "null"
+        intentoEnCurso:
+          oneOf:
+            - $ref: "#/components/schemas/Uuid"
+            - type: "null"
+        intentosPrevios:
+          type: array
+          items:
+            $ref: "#/components/schemas/IntentoPrevio"
+    IntentoEnCurso:
+      type: object
+      required: [id, numero, iniciadoEn, examen, preguntas, respuestas]
+      additionalProperties: false
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        numero:
+          type: integer
+        iniciadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        examen:
+          type: object
+          required: [id, titulo]
+          additionalProperties: false
+          properties:
+            id:
+              type: integer
+            titulo:
+              type: string
+        preguntas:
+          type: array
+          description: En el orden de la semilla del intento (DEC-09).
+          items:
+            $ref: "#/components/schemas/PreguntaParaResponder"
+        respuestas:
+          type: array
+          items:
+            $ref: "#/components/schemas/RespuestaGuardada"
+    ResultadoExamen:
+      description: Aprobado o reprobado; cada uno con su propio esquema para que el reprobado no pueda traer soluciones.
+      oneOf:
+        - $ref: "#/components/schemas/ExamenAprobado"
+        - $ref: "#/components/schemas/ExamenReprobado"
+      discriminator:
+        propertyName: resultado
+        mapping:
+          aprobado: "#/components/schemas/ExamenAprobado"
+          reprobado: "#/components/schemas/ExamenReprobado"
+    ExamenAprobado:
+      type: object
+      required: [resultado, intento, calificacionMinima, aciertos, errores, cursoCompletado, insigniaNueva, preguntas]
+      additionalProperties: false
+      properties:
+        resultado:
+          type: string
+          enum: [aprobado]
+        intento:
+          $ref: "#/components/schemas/IntentoEnviado"
+        calificacionMinima:
+          $ref: "#/components/schemas/Porcentaje"
+        aciertos:
+          type: integer
+        errores:
+          type: integer
+        cursoCompletado:
+          $ref: "#/components/schemas/Referencia"
+        insigniaNueva:
+          oneOf:
+            - $ref: "#/components/schemas/Insignia"
+            - type: "null"
+        preguntas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PreguntaCalificada"
+    ExamenReprobado:
+      type: object
+      required:
+        - resultado
+        - intento
+        - calificacionMinima
+        - aciertos
+        - errores
+        - leccionesRepaso
+        - minutosEspera
+        - disponibleEn
+        - preguntas
+      additionalProperties: false
+      properties:
+        resultado:
+          type: string
+          enum: [reprobado]
+        intento:
+          $ref: "#/components/schemas/IntentoEnviado"
+        calificacionMinima:
+          $ref: "#/components/schemas/Porcentaje"
+        aciertos:
+          type: integer
+        errores:
+          type: integer
+        leccionesRepaso:
+          type: array
+          items:
+            $ref: "#/components/schemas/Referencia"
+        minutosEspera:
+          type: integer
+        disponibleEn:
+          $ref: "#/components/schemas/FechaHora"
+        preguntas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PreguntaSinSolucion"
+    CursoEnProgreso:
+      type: object
+      required: [slug, titulo, estado, avance]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        avance:
+          $ref: "#/components/schemas/Porcentaje"
+    ModuloEnProgreso:
+      type: object
+      required: [slug, titulo, estado, avance, cursos]
+      additionalProperties: false
+      properties:
+        slug:
+          $ref: "#/components/schemas/Slug"
+        titulo:
+          type: string
+        estado:
+          $ref: "#/components/schemas/EstadoAvance"
+        avance:
+          $ref: "#/components/schemas/Porcentaje"
+        cursos:
+          type: array
+          items:
+            $ref: "#/components/schemas/CursoEnProgreso"
+    InsigniaEnProgreso:
+      type: object
+      required: [modulo, insignia, cursosFaltantes]
+      additionalProperties: false
+      properties:
+        modulo:
+          $ref: "#/components/schemas/Referencia"
+        insignia:
+          $ref: "#/components/schemas/Insignia"
+        cursosFaltantes:
+          type: integer
+          minimum: 0
+          description: Cursos que faltan para completar el módulo; 0 si ya se obtuvo (C-11).
+    Progreso:
+      type: object
+      required: [avanceGeneral, modulos, insignias]
+      additionalProperties: false
+      properties:
+        avanceGeneral:
+          $ref: "#/components/schemas/Porcentaje"
+        modulos:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModuloEnProgreso"
+        insignias:
+          type: array
+          items:
+            $ref: "#/components/schemas/InsigniaEnProgreso"
+    ResultadoIntento:
+      type: object
+      required: [intentoId, enviadoEn, tipo, titulo, modulo, curso, leccion, calificacion, numero, destacado]
+      additionalProperties: false
+      properties:
+        intentoId:
+          $ref: "#/components/schemas/Uuid"
+        enviadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        tipo:
+          $ref: "#/components/schemas/TipoCuestionario"
+        titulo:
+          type: string
+        modulo:
+          $ref: "#/components/schemas/Referencia"
+        curso:
+          $ref: "#/components/schemas/Referencia"
+        leccion:
+          oneOf:
+            - $ref: "#/components/schemas/Referencia"
+            - type: "null"
+        calificacion:
+          $ref: "#/components/schemas/Porcentaje"
+        numero:
+          type: integer
+        destacado:
+          type: boolean
+          description: El mejor intento en actividades y exámenes; el primero en casos (C-08).
+    ListaResultados:
+      type: object
+      required: [resultados]
+      additionalProperties: false
+      properties:
+        resultados:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResultadoIntento"
+    DetalleIntento:
+      description: Detalle de un intento enviado; un examen reprobado nunca trae soluciones.
+      oneOf:
+        - $ref: "#/components/schemas/DetalleIntentoCalificado"
+        - $ref: "#/components/schemas/DetalleIntentoSinSolucion"
+      discriminator:
+        propertyName: solucion
+        mapping:
+          completa: "#/components/schemas/DetalleIntentoCalificado"
+          oculta: "#/components/schemas/DetalleIntentoSinSolucion"
+    DetalleIntentoCalificado:
+      type: object
+      required: [solucion, resultado, preguntas]
+      additionalProperties: false
+      properties:
+        solucion:
+          type: string
+          enum: [completa]
+        resultado:
+          $ref: "#/components/schemas/ResultadoIntento"
+        preguntas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PreguntaCalificada"
+    DetalleIntentoSinSolucion:
+      type: object
+      required: [solucion, resultado, preguntas]
+      additionalProperties: false
+      properties:
+        solucion:
+          type: string
+          enum: [oculta]
+        resultado:
+          $ref: "#/components/schemas/ResultadoIntento"
+        preguntas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PreguntaSinSolucion"
