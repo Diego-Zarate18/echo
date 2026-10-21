@@ -89,7 +89,7 @@ echo/                          ← repositorio Diego-Zarate18/echo
    └─ src/
       ├─ app/                  ← solo rutas (§5); cada page.tsx es delgada
       ├─ areas/                ← lógica por área, mismo nombre que los MOD-* del grafo
-      │  ├─ inicio/            ← sitio público SCR-18 (DEC-83): Encabezado, Presentacion, AvisoPiloto,
+      │  ├─ inicio/            ← sitio público SCR-18 (DEC-83): Encabezado, Presentacion,
       │  │                        QueEsEcho, QueEncontraras, PorQueEcho, QuienesSomos, Llamado
       │  ├─ cuenta/            ← formularios de acceso, perfil, mensajes de DEC-77
       │  ├─ contenido/         ← tarjetas de módulo/curso, lector de lección, buscador
@@ -253,7 +253,6 @@ El sitio web del proyecto **es la ruta `/` de esta misma app**, no un servicio a
   |---|---|
   | `EncabezadoPublico.tsx` | Logo, anclas (Qué es Echo, Qué encontrarás, Por qué Echo, Quiénes somos), «Iniciar sesión» y «Crear cuenta»; en móvil, botón de menú |
   | `Presentacion.tsx` | Hero «Lo que construyes, regresa.», Moris, ejemplo de ruta y botones «Crear cuenta» y «Ver cómo funciona» |
-  | `AvisoPiloto.tsx` | Franja: piloto académico de la UP Chiapas vigente hasta diciembre de 2026, con «Saber más» |
   | `QueEsEcho.tsx` | Qué es Echo, para quién, «¿Sabías que…?» de Moris y fundamentos |
   | `QueEncontraras.tsx` | Lecciones, actividades, casos, examen, progreso e insignias |
   | `PorQueEcho.tsx` | Lo que hace distinta a Echo (seis puntos) |
@@ -261,6 +260,7 @@ El sitio web del proyecto **es la ruta `/` de esta misma app**, no un servicio a
   | `Llamado.tsx` | «Tu primera lección te espera.» con Moris |
 
 - No lleva formulario propio (DEC-78).
+- El aviso del piloto académico (vigente hasta diciembre de 2026) **no** va en el inicio: se explica en el Aviso de privacidad (SCR-05) y en la Ayuda (SCR-17, `#cierre-del-piloto`), según DEC-78 v1.3.1.
 - Se apaga con todo lo demás al cerrar el proyecto (OP-38).
 
 ## 10. Accesibilidad (DEC-71), en concreto
