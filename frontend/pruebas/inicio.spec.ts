@@ -309,13 +309,14 @@ test.describe("SCR-18 · Aire de las secciones", () => {
       const medida = `${ancho}×${alto}`;
       await page.setViewportSize({ width: ancho, height: alto });
       await page.goto("/");
-      const ids = await page.locator("main section[id]:has(h2)").evaluateAll((secciones) => secciones.map((s) => s.id));
-      expect(ids.length).toBeGreaterThanOrEqual(4);
+      // El id de cada ancla está en el bloque del título; se mide la sección que lo contiene.
+      const ids = await page.locator("main section .ancla-seccion").evaluateAll((bloques) => bloques.map((b) => b.id));
+      expect(ids).toHaveLength(4);
 
       // Aire entre el borde de arriba de la sección y su título.
       for (const id of ids) {
         const aire = await page.evaluate((idSeccion) => {
-          const seccion = document.getElementById(idSeccion)!;
+          const seccion = document.getElementById(idSeccion)!.closest("section")!;
           return seccion.querySelector("h2")!.getBoundingClientRect().top - seccion.getBoundingClientRect().top;
         }, id);
         expect(aire, `${medida}, #${id}`).toBeGreaterThanOrEqual(64);
@@ -328,19 +329,121 @@ test.describe("SCR-18 · Aire de las secciones", () => {
       for (const id of ids) {
         const { distancia } = await page.evaluate((idSeccion) => {
           const barra = document.querySelector("header > div")!.getBoundingClientRect();
-          return { distancia: Math.round(document.getElementById(idSeccion)!.getBoundingClientRect().top - barra.bottom) };
+          const seccion = document.getElementById(idSeccion)!.closest("section")!;
+          return { distancia: Math.round(seccion.getBoundingClientRect().top - barra.bottom) };
         }, id);
         await page.mouse.wheel(0, distancia);
         await page.waitForTimeout(400);
         const medidas = await page.evaluate((idSeccion) => {
           const barra = document.querySelector("header > div")!.getBoundingClientRect();
-          const seccion = document.getElementById(idSeccion)!.getBoundingClientRect();
+          const seccion = document.getElementById(idSeccion)!.closest("section")!.getBoundingClientRect();
           const titulo = document.querySelector(`#${idSeccion} h2`)!.getBoundingClientRect();
           return { bordeSeccion: seccion.top - barra.bottom, tituloArriba: titulo.top - barra.bottom, tituloAbajo: titulo.bottom };
         }, id);
         expect(Math.abs(medidas.bordeSeccion), `${medida}, #${id}: la sección toca la barra`).toBeLessThanOrEqual(2);
         expect(medidas.tituloArriba, `${medida}, #${id}: título bajo la barra`).toBeGreaterThanOrEqual(0);
         expect(medidas.tituloAbajo, `${medida}, #${id}: título completo`).toBeLessThanOrEqual(alto);
+      }
+    }
+  });
+});
+
+test.describe("SCR-18 · Ajustes de la Tarea 03", () => {
+  test.beforeEach(async ({ page }, info) => {
+    test.skip(info.project.name !== "escritorio", "Cada prueba fija sus propios anchos");
+    // Sin la escala de la animación `eco`: se mide la posición final.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+  });
+
+  test("«ÉTICA» queda centrada en la tarjeta del hero", async ({ page }) => {
+    for (const ancho of [1024, 1280, 1440, 1536, 1920, 2560]) {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      await page.goto("/");
+      const medidas = await page.evaluate(() => {
+        const tarjeta = document.getElementById("portada")!.getBoundingClientRect();
+        const palabra = [...document.querySelectorAll("#portada span")].find((s) => s.textContent === "ÉTICA")!;
+        const caja = palabra.getBoundingClientRect();
+        return {
+          desfase: caja.left + caja.width / 2 - (tarjeta.left + tarjeta.width / 2),
+          proporcion: caja.width / tarjeta.width,
+          alto: caja.height / tarjeta.height,
+        };
+      });
+      expect(Math.abs(medidas.desfase), `${ancho} px: centro`).toBeLessThanOrEqual(4);
+      // 69.9 % de la tarjeta, como en Figma, salvo que lo limite el alto del hero (37 % del alto).
+      expect(medidas.proporcion, `${ancho} px: ancho`).toBeLessThanOrEqual(0.71);
+      expect(Math.max(medidas.proporcion / 0.699, medidas.alto / 0.37), `${ancho} px: tamaño`).toBeGreaterThan(0.97);
+    }
+  });
+
+  test("el hero deja el mismo margen a los dos lados y no hay desbordamiento horizontal", async ({ page }) => {
+    for (const ancho of [390, 768, 1024, 1280, 1536, 1920]) {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      await page.goto("/");
+      const medidas = await page.evaluate(() => {
+        const raiz = document.documentElement;
+        const tarjeta = document.getElementById("portada")!.getBoundingClientRect();
+        return {
+          izquierda: tarjeta.left,
+          derecha: raiz.clientWidth - tarjeta.right,
+          sobrante: raiz.scrollWidth - raiz.clientWidth,
+        };
+      });
+      expect(Math.abs(medidas.izquierda - 8), `${ancho} px: izquierda`).toBeLessThanOrEqual(1);
+      expect(Math.abs(medidas.derecha - 8), `${ancho} px: derecha`).toBeLessThanOrEqual(1);
+      expect(medidas.sobrante, `${ancho} px: scrollWidth`).toBe(0);
+    }
+  });
+
+  test("la barra fija coincide con los bordes del contenido (y a 8 px en móvil)", async ({ page }) => {
+    for (const ancho of [390, 1280, 1440, 1536]) {
+      await page.setViewportSize({ width: ancho, height: 900 });
+      await page.goto("/");
+      await page.evaluate(() =>
+        document.getElementById("por-que-echo")!.scrollIntoView({ block: "start", behavior: "instant" }),
+      );
+      const encabezado = page.getByRole("banner");
+      await expect(encabezado).toHaveAttribute("data-flotante", "true");
+      await expect(encabezado).toHaveCSS("opacity", "1");
+      const medidas = await page.evaluate(() => {
+        const barra = document.querySelector("header > div")!.getBoundingClientRect();
+        const contenido = document.getElementById("por-que-echo")!.getBoundingClientRect();
+        return {
+          barra: { izquierda: barra.left, derecha: barra.right, alto: barra.height },
+          contenido: { izquierda: contenido.left, derecha: contenido.right },
+          pagina: document.documentElement.clientWidth,
+        };
+      });
+      const esperado =
+        ancho < 1024 ? { izquierda: 8, derecha: medidas.pagina - 8 } : medidas.contenido;
+      expect(Math.abs(medidas.barra.izquierda - esperado.izquierda), `${ancho} px: izquierda`).toBeLessThanOrEqual(2);
+      expect(Math.abs(medidas.barra.derecha - esperado.derecha), `${ancho} px: derecha`).toBeLessThanOrEqual(2);
+      expect(medidas.barra.alto, `${ancho} px: alto`).toBeLessThanOrEqual(62);
+    }
+  });
+
+  test("al usar cada ancla se ve la sección completa bajo la barra", async ({ page }) => {
+    const anclas = ["Qué es Echo", "Qué encontrarás", "Por qué Echo", "Quiénes somos"];
+    for (const [ancho, alto] of [[1536, 705], [1440, 900]]) {
+      const medida = `${ancho}×${alto}`;
+      await page.setViewportSize({ width: ancho, height: alto });
+      await page.goto("/");
+      for (const texto of anclas) {
+        const enlace = page.getByRole("navigation", { name: "Secciones de la página" }).getByRole("link", { name: texto });
+        const id = (await enlace.getAttribute("href"))!.slice(1);
+        await enlace.click();
+        await expect(page.getByRole("banner")).toHaveAttribute("data-flotante", "true");
+        await page.waitForTimeout(300);
+        const medidas = await page.evaluate((idBloque) => {
+          const barra = document.querySelector("header > div")!.getBoundingClientRect();
+          const bloque = document.getElementById(idBloque)!;
+          return {
+            titulo: bloque.querySelector("h2")!.getBoundingClientRect().top - barra.bottom,
+            sobrante: window.innerHeight - bloque.getBoundingClientRect().bottom,
+          };
+        }, id);
+        expect(medidas.titulo, `${medida}, ${texto}: h2 bajo la barra`).toBeGreaterThanOrEqual(16);
+        expect(medidas.sobrante, `${medida}, ${texto}: último elemento a la vista`).toBeGreaterThanOrEqual(0);
       }
     }
   });
