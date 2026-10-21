@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function PaginaAvisoDePrivacidad() {
   return (
     <>
-      <EncabezadoInterno />
+      <EncabezadoInterno actual="/aviso-de-privacidad" />
       <main id="contenido" tabIndex={-1} className="outline-none">
         <AvisoPrivacidad />
       </main>

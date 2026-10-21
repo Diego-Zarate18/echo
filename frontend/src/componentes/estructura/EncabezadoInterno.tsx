@@ -4,9 +4,17 @@ import { Boton } from "@/componentes/ui/Boton";
 import { IconoFlechaIzquierda } from "@/componentes/ui/iconos/iconos";
 import { MenuMovil } from "./MenuMovil";
 
+type PaginaInterna = "/ayuda" | "/aviso-de-privacidad";
+
+/** Cada página interna enlaza a la otra (84:764 en el aviso, 84:857 en Ayuda). */
+const OTRA_PAGINA: Record<PaginaInterna, { href: PaginaInterna; texto: string }> = {
+  "/aviso-de-privacidad": { href: "/ayuda", texto: "Ayuda" },
+  "/ayuda": { href: "/aviso-de-privacidad", texto: "Aviso de privacidad" },
+};
+
 type PropsEncabezadoInterno = {
-  /** Página actual entre las del encabezado: su enlace lleva `aria-current="page"`. */
-  actual?: "/ayuda";
+  /** Página en la que está el encabezado: enlaza a la otra página interna. */
+  actual: PaginaInterna;
 };
 
 const enlaceTexto =
@@ -16,8 +24,10 @@ const enlaceTexto =
  * Encabezado de las páginas internas del sitio público (84:764): Aviso de privacidad (SCR-05) y Ayuda (SCR-17).
  * Franja crema de 8 px con la barra café de 64 px dentro, como el encabezado de la app. No es fijo: en estas
  * páginas se lee y el índice de cada página es el que acompaña al bajar. En móvil, logo y menú.
+ * Como en Figma, el aviso enlaza a Ayuda y Ayuda al aviso.
  */
 export function EncabezadoInterno({ actual }: PropsEncabezadoInterno) {
+  const otra = OTRA_PAGINA[actual];
   return (
     <header data-fondo="oscuro" className="px-2 pt-2">
       <div className="relative mx-auto flex h-16 max-w-[1424px] items-center justify-between gap-6 rounded-aviso bg-marca-cafe px-4 shadow-barra md:px-8">
@@ -32,12 +42,8 @@ export function EncabezadoInterno({ actual }: PropsEncabezadoInterno) {
         </div>
 
         <nav aria-label="Páginas del sitio" className="hidden items-center gap-5 lg:flex">
-          <Link
-            href="/ayuda"
-            aria-current={actual === "/ayuda" ? "page" : undefined}
-            className={`${enlaceTexto} flex font-semibold underline aria-[current=page]:font-extrabold`}
-          >
-            Ayuda
+          <Link href={otra.href} className={`${enlaceTexto} flex font-semibold underline`}>
+            {otra.texto}
           </Link>
           <Link href="/iniciar-sesion" className={`${enlaceTexto} flex font-bold`}>
             Iniciar sesión
@@ -50,7 +56,7 @@ export function EncabezadoInterno({ actual }: PropsEncabezadoInterno) {
         <MenuMovil
           enlaces={[
             { href: "/", texto: "Volver al inicio" },
-            { href: "/ayuda", texto: "Ayuda", actual: actual === "/ayuda" },
+            { href: otra.href, texto: otra.texto },
           ]}
           etiqueta="Páginas del sitio"
           escritorioDesde="lg"
