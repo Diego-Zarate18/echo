@@ -21,6 +21,22 @@ export const MINUTOS_AVISO_SESION = 2;
 /** Vigencia del enlace para confirmar el correo; las cuentas sin confirmar se eliminan pasado este tiempo (DEC-13). */
 export const HORAS_VERIFICACION = 24;
 
+/** Largo mínimo de la contraseña; además lleva al menos una letra y un número (DEC-25). */
+export const CARACTERES_MINIMOS_CONTRASENA = 8;
+
+/** Vigencia de los enlaces para recuperar la contraseña y para confirmar un cambio de correo (DEC-24, DEC-25). */
+export const MINUTOS_ENLACE = 30;
+
+/** Fallos seguidos al iniciar sesión antes de la pausa, y duración de la pausa (DEC-26, DEC-77). */
+export const INTENTOS_ANTES_DE_PAUSA = 5;
+export const MINUTOS_PAUSA = 15;
+
+/** Contacto para pedir ayuda o reportar un problema, incluido uno de accesibilidad (DEC-68 › correo_soporte). */
+export const CORREO_SOPORTE = "echo.soporte@gmail.com";
+
+/** Contacto para dudas sobre datos personales (DEC-68 › correo_privacidad; resuelve PEND-12). */
+export const CORREO_PRIVACIDAD = "privacidad.echo@gmail.com";
+
 /**
  * Preguntas de la Ayuda, en el orden de Figma (84:813). El `id` es el ancla del índice y de la URL;
  * `cierre-del-piloto` es `SCR-17 › detalles.ancla_cierre`.

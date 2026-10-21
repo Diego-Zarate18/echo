@@ -4,7 +4,13 @@ import { IndicePagina } from "@/componentes/estructura/IndicePagina";
 import { Moris } from "@/componentes/marca/Moris";
 import {
   CALIFICACION_MINIMA,
+  CARACTERES_MINIMOS_CONTRASENA,
+  CORREO_PRIVACIDAD,
+  CORREO_SOPORTE,
   HORAS_VERIFICACION,
+  INTENTOS_ANTES_DE_PAUSA,
+  MINUTOS_ENLACE,
+  MINUTOS_PAUSA,
   MINUTOS_AVISO_SESION,
   MINUTOS_ESPERA_EXAMEN,
   MINUTOS_SESION,
@@ -18,6 +24,15 @@ import { PreguntasAyuda } from "./PreguntasAyuda";
 /** Párrafo de respuesta: 17 px, interlineado 1.7 y la misma medida de lectura que el aviso (65–75 caracteres). */
 function Parrafo({ children }: { children: ReactNode }) {
   return <p className="max-w-[58ch] text-cuerpo leading-[1.7]">{children}</p>;
+}
+
+/** Enlace de correo dentro de una respuesta. */
+function Correo({ direccion }: { direccion: string }) {
+  return (
+    <a href={`mailto:${direccion}`} className="font-semibold underline underline-offset-4 hover:decoration-2">
+      {direccion}
+    </a>
+  );
 }
 
 /** Respuestas redactadas con las decisiones del grafo (tabla de la Tarea 04). Tuteo y frases cortas. */
@@ -70,27 +85,35 @@ const respuestas: Record<PreguntaAyuda["id"], ReactNode> = {
       hay rachas, puntos ni vidas.
     </Parrafo>
   ),
-  // DEC-13, DEC-12, DEC-71, DEC-25, SCR-16, DEC-24, DEC-29, DEC-27
+  // DEC-13, DEC-25, DEC-26, DEC-77, DEC-12, DEC-71, DEC-24, SCR-16, DEC-29, DEC-27
   "cuenta-y-sesion": (
-    <Parrafo>
-      Creas tu cuenta con tu correo y una contraseña, o entras con Google. Si usas contraseña, confirma tu correo con el
-      enlace que te enviamos: vale {HORAS_VERIFICACION} horas, y las cuentas sin confirmar se eliminan pasado ese
-      tiempo. Tu sesión se cierra tras {MINUTOS_SESION} minutos sin actividad; {MINUTOS_AVISO_SESION} minutos antes te
-      avisamos para que sigas conectado. Si olvidas tu contraseña, pide un enlace para crear una nueva. En tu Perfil
-      ves tus datos, corriges tu nombre, cambias tu contraseña o tu correo (si no entras con Google) y puedes eliminar
-      tu cuenta: se borran tus datos personales y tu historial queda sin forma de saber que era tuyo.
-    </Parrafo>
+    <>
+      <Parrafo>
+        Creas tu cuenta con tu correo y una contraseña de {CARACTERES_MINIMOS_CONTRASENA} caracteres o más, con al menos
+        una letra y un número, o entras con Google. Si usas contraseña, confirma tu correo con el enlace que te enviamos:
+        vale {HORAS_VERIFICACION} horas, y las cuentas sin confirmar se eliminan pasado ese tiempo. Tras{" "}
+        {INTENTOS_ANTES_DE_PAUSA} intentos fallidos al iniciar sesión, el acceso se pausa {MINUTOS_PAUSA} minutos. Tu
+        sesión se cierra tras {MINUTOS_SESION} minutos sin actividad; {MINUTOS_AVISO_SESION} minutos antes te avisamos
+        para que sigas conectado.
+      </Parrafo>
+      <Parrafo>
+        Si olvidas tu contraseña, pide un enlace para crear una nueva: vence en {MINUTOS_ENLACE} minutos, igual que el
+        que confirma un cambio de correo. En tu Perfil ves tus datos, corriges tu nombre, cambias tu contraseña o tu
+        correo (si no entras con Google) y puedes eliminar tu cuenta: se borran tus datos personales y tu historial
+        queda sin forma de saber que era tuyo.
+      </Parrafo>
+    </>
   ),
-  // DEC-71
+  // DEC-71, DEC-68
   accesibilidad: (
     <Parrafo>
       Echo sigue las pautas WCAG 2.2 en su nivel AA. Puedes usarlo completo con el teclado, con el foco siempre
       visible, y con lector de pantalla. Los estados como bloqueado, disponible o completado se indican con ícono y
       texto, no solo con color, y en la relación de columnas nunca hay que arrastrar. Si tu dispositivo pide reducir
-      el movimiento, Echo lo respeta.
+      el movimiento, Echo lo respeta. Si algo no te funciona, escríbenos a <Correo direccion={CORREO_SOPORTE} />.
     </Parrafo>
   ),
-  // SCR-17 › texto_piloto, DEC-74, OP-38, DEC-27
+  // SCR-17 › texto_piloto, DEC-74, OP-38, DEC-27, DEC-68
   "cierre-del-piloto": (
     <Parrafo>
       {TEXTO_PILOTO} Después de entregar las calificaciones, anonimizamos o eliminamos la base de datos, apagamos la
@@ -102,7 +125,7 @@ const respuestas: Record<PreguntaAyuda["id"], ReactNode> = {
       >
         Aviso de privacidad
       </Link>
-      .
+      , y para cualquier duda sobre tus datos personales puedes escribir a <Correo direccion={CORREO_PRIVACIDAD} />.
     </Parrafo>
   ),
 };

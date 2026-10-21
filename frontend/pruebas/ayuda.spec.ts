@@ -109,7 +109,7 @@ test.describe("SCR-17 · Ayuda", () => {
     await expect(page.getByRole("region", { name: "Exámenes" })).toBeVisible();
   });
 
-  test("muestra el texto del piloto y los números de las decisiones", async ({ page }) => {
+  test("muestra el texto del piloto, los números de las decisiones y los contactos", async ({ page }) => {
     const principal = page.locator("main");
     await expect(page.locator("#cierre-del-piloto")).toContainText(
       "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026.",
@@ -117,6 +117,15 @@ test.describe("SCR-17 · Ayuda", () => {
     await expect(principal).toContainText("70 %");
     await expect(principal).toContainText("20 minutos");
     await expect(principal).toContainText("30 minutos");
+    await expect(page.locator("#cuenta-y-sesion")).toContainText("8 caracteres o más, con al menos una letra y un número");
+    await expect(page.locator("#cuenta-y-sesion")).toContainText("vence en 30 minutos, igual que el que confirma un cambio de correo");
+    // «Accesibilidad» empieza cerrada: su enlace existe aunque no se vea.
+    await expect(page.locator('#accesibilidad a[href="mailto:echo.soporte@gmail.com"]')).toHaveText(
+      "echo.soporte@gmail.com",
+    );
+    await expect(page.locator('#cierre-del-piloto a[href="mailto:privacidad.echo@gmail.com"]')).toHaveText(
+      "privacidad.echo@gmail.com",
+    );
     await expect(page.locator("#cierre-del-piloto").getByRole("link", { name: "Aviso de privacidad" })).toHaveAttribute(
       "href",
       "/aviso-de-privacidad",
