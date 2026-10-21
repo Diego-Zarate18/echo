@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { Logo } from "@/componentes/marca/Logo";
 import { Boton } from "@/componentes/ui/Boton";
 import { seccionesInicio } from "@/areas/inicio/secciones";
-import { MenuMovil } from "./MenuMovil";
+import { MenuMovil } from "@/componentes/estructura/MenuMovil";
 
 /**
  * Observa el hero y las secciones:
@@ -286,7 +286,11 @@ export function EncabezadoPublico() {
           </Boton>
         </div>
 
-        <MenuMovil secciones={seccionesInicio} />
+        <MenuMovil
+          enlaces={seccionesInicio.map((seccion) => ({ href: `#${seccion.id}`, texto: seccion.texto }))}
+          etiqueta="Secciones de la página"
+          escritorioDesde="xl"
+        />
       </div>
     </header>
   );

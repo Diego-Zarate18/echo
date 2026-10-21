@@ -1,24 +1,39 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Boton } from "@/componentes/ui/Boton";
 import { IconoCerrar, IconoMenu } from "@/componentes/ui/iconos/iconos";
-import type { SeccionInicio } from "@/areas/inicio/secciones";
 
-/** Ancho en el que aparece la navegación de escritorio (`xl` de Tailwind). */
-const CONSULTA_ESCRITORIO = "(min-width: 80rem)";
+/** Desde qué ancho aparece la navegación de escritorio y se esconde este menú. */
+const ESCRITORIO = {
+  lg: { consulta: "(min-width: 64rem)", ocultar: "lg:hidden" },
+  xl: { consulta: "(min-width: 80rem)", ocultar: "xl:hidden" },
+} as const;
+
+export type EnlaceMenu = {
+  /** Ruta interna (`/ayuda`) o ancla de la misma página (`#que-es-echo`). */
+  href: string;
+  texto: string;
+  /** Página actual: lleva `aria-current="page"`. */
+  actual?: boolean;
+};
 
 type PropsMenuMovil = {
-  secciones: readonly SeccionInicio[];
+  enlaces: readonly EnlaceMenu[];
+  /** Nombre del `nav` del panel. */
+  etiqueta: string;
+  escritorioDesde: keyof typeof ESCRITORIO;
 };
 
 /**
- * Menú del encabezado público en móvil y tableta (botón de 84:719).
+ * Menú de los encabezados públicos en móvil y tableta (botón de 84:719).
  * Figma no dibuja el menú abierto: es un panel bajo el encabezado dentro de «Tierra».
  * Se cierra con Escape (el foco vuelve al botón), al elegir un enlace, al tocar fuera
- * y al pasar a escritorio.
+ * y al pasar a escritorio. Lo usan el inicio (SCR-18) y las páginas internas (SCR-05, SCR-17).
  */
-export function MenuMovil({ secciones }: PropsMenuMovil) {
+export function MenuMovil({ enlaces, etiqueta, escritorioDesde }: PropsMenuMovil) {
+  const escritorio = ESCRITORIO[escritorioDesde];
   const [abierto, setAbierto] = useState(false);
   const botonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -44,23 +59,23 @@ export function MenuMovil({ secciones }: PropsMenuMovil) {
       cerrar(false);
     }
 
-    const escritorio = window.matchMedia(CONSULTA_ESCRITORIO);
+    const anchoEscritorio = window.matchMedia(escritorio.consulta);
     function alCambiarAncho(evento: MediaQueryListEvent) {
       if (evento.matches) cerrar(false);
     }
 
     document.addEventListener("keydown", alPresionarTecla);
     document.addEventListener("pointerdown", alTocarFuera);
-    escritorio.addEventListener("change", alCambiarAncho);
+    anchoEscritorio.addEventListener("change", alCambiarAncho);
     return () => {
       document.removeEventListener("keydown", alPresionarTecla);
       document.removeEventListener("pointerdown", alTocarFuera);
-      escritorio.removeEventListener("change", alCambiarAncho);
+      anchoEscritorio.removeEventListener("change", alCambiarAncho);
     };
-  }, [abierto, cerrar]);
+  }, [abierto, cerrar, escritorio.consulta]);
 
   return (
-    <div className="xl:hidden">
+    <div className={escritorio.ocultar}>
       <button
         ref={botonRef}
         type="button"
@@ -79,19 +94,30 @@ export function MenuMovil({ secciones }: PropsMenuMovil) {
         hidden={!abierto}
         className="absolute inset-x-2 top-full z-40 mt-3 rounded-panel border border-blanco/16 bg-marca-cafe p-3 shadow-vidrio motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0 md:inset-x-auto md:right-0 md:w-[22rem]"
       >
-        <nav aria-label="Secciones de la página">
+        <nav aria-label={etiqueta}>
           <ul className="flex flex-col">
-            {secciones.map((seccion) => (
-              <li key={seccion.id}>
-                <a
-                  href={`#${seccion.id}`}
-                  onClick={() => cerrar(false)}
-                  className="flex min-h-12 items-center rounded-full px-4 font-titulo text-cuerpo font-semibold text-marca-crema transition-colors hover:bg-marca-crema/14"
-                >
-                  {seccion.texto}
-                </a>
-              </li>
-            ))}
+            {enlaces.map((enlace) => {
+              const clases =
+                "flex min-h-12 items-center rounded-full px-4 font-titulo text-cuerpo font-semibold text-marca-crema transition-colors hover:bg-marca-crema/14 aria-[current=page]:bg-marca-crema/14";
+              return (
+                <li key={enlace.href}>
+                  {enlace.href.startsWith("#") ? (
+                    <a href={enlace.href} onClick={() => cerrar(false)} className={clases}>
+                      {enlace.texto}
+                    </a>
+                  ) : (
+                    <Link
+                      href={enlace.href}
+                      aria-current={enlace.actual ? "page" : undefined}
+                      onClick={() => cerrar(false)}
+                      className={clases}
+                    >
+                      {enlace.texto}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
         <div className="mt-3 flex flex-col gap-2.5 border-t border-marca-crema/16 pt-4">
