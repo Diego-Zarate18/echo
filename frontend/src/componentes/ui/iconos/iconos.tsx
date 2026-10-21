@@ -204,3 +204,11 @@ export function IconoCerrar(props: PropsIcono) {
     </Icono>
   );
 }
+
+export function IconoChevronAbajo(props: PropsIcono) {
+  return (
+    <Icono lienzo={22} {...props}>
+      <path d="M5.5 8.25L11 13.75L16.5 8.25" />
+    </Icono>
+  );
+}

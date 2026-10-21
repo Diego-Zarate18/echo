@@ -89,7 +89,8 @@ echo/                          ← repositorio Diego-Zarate18/echo
    └─ src/
       ├─ app/                  ← solo rutas (§5); cada page.tsx es delgada
       ├─ areas/                ← lógica por área, mismo nombre que los MOD-* del grafo
-      │  ├─ aviso/             ← Aviso de privacidad SCR-05: contenido fijo (contenido.ts) e índice «En esta página»
+      │  ├─ aviso/             ← Aviso de privacidad SCR-05: contenido fijo (contenido.ts)
+      │  ├─ ayuda/             ← Ayuda SCR-17: preguntas fijas (contenido.ts) y acordeón
       │  ├─ inicio/            ← sitio público SCR-18 (DEC-83): Encabezado, Presentacion,
       │  │                        QueEsEcho, QueEncontraras, PorQueEcho, QuienesSomos, Llamado
       │  ├─ cuenta/            ← formularios de acceso, perfil, mensajes de DEC-77
@@ -104,7 +105,8 @@ echo/                          ← repositorio Diego-Zarate18/echo
       │  │                        Alerta, Dialogo, Menu, Selector, BarraProgreso, Insignia, Estado
       │  ├─ marca/             ← Logo, Moris
       │  └─ estructura/        ← Encabezado, MenuPrincipal, BarraInferior (DEC-80),
-      │                           Pie, SaltarAlContenido, AvisoSesion
+      │                           Pie, SaltarAlContenido, AvisoSesion, EncabezadoInterno,
+      │                           IndicePagina («En esta página» del aviso y de Ayuda)
       ├─ lib/
       │  ├─ api/               ← servidor.ts, navegador.ts, errores.ts
       │  ├─ sesion.ts          ← obtenerSesion() en el servidor

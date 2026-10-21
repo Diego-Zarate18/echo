@@ -273,6 +273,34 @@
 
 /* Al pasar el puntero sobre Moris, `Ondas.tsx` reinicia estas mismas animaciones. */
 
+/*
+ * Respuesta del acordeón de la Ayuda (`PreguntasAyuda.tsx`, receta de acordeón de `animate`): se anima el alto
+ * con la fila de la cuadrícula (0fr ↔ 1fr), sin medir en JavaScript. Es una transición, así que se puede
+ * invertir a medio camino. Al cerrar, `visibility` cambia al final: hasta entonces se ve cómo se cierra, y
+ * después la respuesta no se lee ni recibe el foco.
+ */
+.respuesta-acordeon {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 220ms var(--ease-respuesta),
+    visibility 0s linear 220ms;
+}
+
+.respuesta-acordeon[data-abierta="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 220ms var(--ease-respuesta),
+    visibility 0s;
+}
+
+.respuesta-acordeon > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* Eco de «regresa.»: dos copias como contenido generado, fuera del texto y del lector de pantalla. */
 .eco-rastro {
   position: relative;
@@ -387,6 +415,11 @@
 
   .saludo {
     animation: none;
+  }
+
+  .respuesta-acordeon,
+  .respuesta-acordeon[data-abierta="true"] {
+    transition: none;
   }
 
   .moris-cierre {
