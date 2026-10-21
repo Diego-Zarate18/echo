@@ -383,7 +383,12 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
-    scrollbar-color: var(--color-texto-secundario) var(--color-marca-crema);
+    /*
+     * Carril hundido, no crema: con barras clásicas (Windows) un carril del color del fondo se leía como
+     * una franja crema más ancha que el marco de 8 px de la izquierda. Así, a la derecha se ve el marco y,
+     * aparte, la barra de desplazamiento.
+     */
+    scrollbar-color: var(--color-texto-secundario) var(--color-superficie-hundida);
   }
 
   @media (prefers-reduced-motion: no-preference) {
