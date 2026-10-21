@@ -5,6 +5,23 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // La API simulada nunca entra al build de producción (DEC-90): nada de src/ la importa.
+  {
+    files: ["src/**/*.{ts,tsx,js,jsx,mjs}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/simulador", "**/simulador/**"],
+              message: "La API simulada es solo para desarrollo y pruebas; la app habla con /api (lib/api).",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "tipos": "node scripts/revisar-tipos-api.mjs && next typegen && tsc --noEmit",
     "api:tipos": "openapi-typescript ../docs/api/openapi.yaml -o src/lib/api/esquema.d.ts",
+    "simulador": "node simulador/servidor.mjs",
     "prueba:e2e": "playwright test"
   },
   "dependencies": {
