@@ -190,8 +190,9 @@ function useIndicador(actual: string | null) {
 /**
  * Encabezado del inicio público (84:490 escritorio, 84:719 móvil).
  * Sobre el hero se dibuja dentro de la tarjeta, alineado a la retícula de 1424 px. Al salir del hero
- * se vuelve una píldora café sólida que flota a 8 px del borde (respeta el marco) y se queda siempre a la
- * vista. Se materializa una vez al aparecer y hace la inversa al volver al hero (opacidad, escala 0.98 y
+ * se vuelve una píldora café sólida que se queda siempre a la vista: en móvil flota a 8 px del borde (respeta
+ * el marco) y en escritorio sus bordes coinciden con los del contenido de las secciones (1296 px y el mismo
+ * relleno de 72 px). Se materializa una vez al aparecer y hace la inversa al volver al hero (opacidad, escala 0.98 y
  * desenfoque, transición interrumpible de 220 ms). Con movimiento reducido solo hay un fundido. En el DOM va antes de `<main>`.
  */
 export function EncabezadoPublico() {
@@ -213,7 +214,7 @@ export function EncabezadoPublico() {
       className={[
         "inset-x-2 top-2 z-30",
         fija
-          ? "fixed mx-auto max-w-[1180px] transition-[scale,opacity,filter] duration-220 ease-(--ease-respuesta)"
+          ? "fixed transition-[scale,opacity,filter] duration-220 ease-(--ease-respuesta) lg:inset-x-0 lg:px-[72px]"
           : "absolute px-5 pt-2 md:px-8 md:pt-5 xl:pt-7",
         fija && !visible
           ? "pointer-events-none scale-[0.98] opacity-0 blur-[6px] motion-reduce:scale-100 motion-reduce:blur-none"
@@ -224,7 +225,7 @@ export function EncabezadoPublico() {
         className={[
           "relative flex items-center justify-between gap-6",
           fija
-            ? "rounded-full border border-blanco/12 bg-marca-cafe py-1.5 pr-1.5 pl-5 shadow-vidrio"
+            ? "mx-auto max-w-[1296px] rounded-full border border-blanco/12 bg-marca-cafe py-1.5 pr-1.5 pl-5 shadow-vidrio"
             : "mx-auto max-w-[1360px]",
         ].join(" ")}
       >
