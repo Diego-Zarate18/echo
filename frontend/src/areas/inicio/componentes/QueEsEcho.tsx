@@ -24,12 +24,11 @@ const declaracion =
 export function QueEsEcho() {
   return (
     <section
-      id="que-es-echo"
       aria-labelledby="titulo-que-es-echo"
       data-fondo="oscuro"
       className="border-t border-marca-menta/16 bg-marca-cafe px-5 py-20 text-marca-crema md:px-10 md:py-28 lg:px-[72px] lg:py-[140px]"
     >
-      <div className="mx-auto grid w-full max-w-[1296px] gap-12 lg:grid-cols-[minmax(0,640px)_minmax(0,528px)] lg:gap-x-12 xl:gap-x-24">
+      <div id="que-es-echo" className="ancla-seccion mx-auto grid w-full max-w-[1296px] gap-12 lg:grid-cols-[minmax(0,640px)_minmax(0,528px)] lg:gap-x-12 xl:gap-x-24">
         <div className="flex flex-col gap-7">
           <h2 id="titulo-que-es-echo" className="declaracion font-titulo text-entrada font-extrabold text-balance">
             {declaracion.split(" ").map((palabra, i) => (

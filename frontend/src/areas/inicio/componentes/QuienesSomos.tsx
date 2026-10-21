@@ -15,12 +15,11 @@ const personas = [
 export function QuienesSomos() {
   return (
     <section
-      id="quienes-somos"
       aria-labelledby="titulo-quienes-somos"
       data-fondo="claro"
       className="bg-marca-crema px-5 py-20 text-marca-cafe md:px-10 md:py-28 lg:px-[72px] lg:py-[130px]"
     >
-      <div className="mx-auto w-full max-w-[1296px]">
+      <div id="quienes-somos" className="ancla-seccion mx-auto w-full max-w-[1296px]">
         <EncabezadoSeccion
           id="titulo-quienes-somos"
           titulo="Hecho por estudiantes, para estudiantes"

@@ -104,6 +104,21 @@
   --animate-encender: encender 500ms var(--ease-llegada) both;
 }
 
+/*
+ * Ventana de escritorio baja (por ejemplo, 1536 × 705 o 1440 × 900): compacta el ritmo para que cada sección
+ * quepa completa al llegar desde el menú. Desde 960 px de alto se queda el ritmo de Figma, que ya cabe.
+ */
+@custom-variant ventana-baja (@media (min-width: 80rem) and (max-height: 60rem));
+
+/*
+ * Bloque del título de cada sección, al que llevan las anclas del menú. Queda 18 px bajo la barra fija
+ * (8 + 62 + 18 = 88 px). El margen se suma al `scroll-padding-top` de `html` (6rem, pensado para el foco),
+ * por eso se resta.
+ */
+@utility ancla-seccion {
+  scroll-margin-top: calc(5.5rem - 6rem);
+}
+
 /* Fotogramas de las animaciones (fuera de @theme para que siempre se emitan). */
 /* «ÉTICA» llega como un sonido lejano: desenfocada y grande, luego nítida. */
 @keyframes eco {

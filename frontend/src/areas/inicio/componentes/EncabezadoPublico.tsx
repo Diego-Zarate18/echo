@@ -24,13 +24,14 @@ function useEstadoDelEncabezado() {
     const observadorPortada = new IntersectionObserver(([entrada]) => setFlotante(!entrada.isIntersecting));
     observadorPortada.observe(centinela);
 
+    // El ancla está en el bloque del título; la sección actual se mide con la sección completa.
     const secciones = seccionesInicio
-      .map((seccion) => document.getElementById(seccion.id))
-      .filter((elemento): elemento is HTMLElement => elemento !== null);
+      .map((seccion) => document.getElementById(seccion.id)?.closest("section"))
+      .filter((elemento): elemento is HTMLElement => elemento != null);
     const observadorSecciones = new IntersectionObserver(
       (entradas) => {
         for (const entrada of entradas) {
-          const id = entrada.target.id;
+          const id = entrada.target.querySelector(".ancla-seccion")!.id;
           // Al salir de la franja se limpia, para no dejar marcada una sección que ya pasó
           // (por ejemplo, «Quiénes somos» mientras se lee el cierre o el pie).
           setActual((anterior) => (entrada.isIntersecting ? id : anterior === id ? null : anterior));

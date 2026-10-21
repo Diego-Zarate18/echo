@@ -51,12 +51,11 @@ const diferencias: readonly { titulo: string; texto: string; Icono: ComponentTyp
 export function PorQueEcho() {
   return (
     <section
-      id="por-que-echo"
       aria-labelledby="titulo-por-que-echo"
       data-fondo="oscuro"
       className="border-t border-marca-menta/16 bg-marca-cafe px-5 py-20 text-marca-crema md:px-10 md:py-28 lg:px-[72px] lg:py-[140px]"
     >
-      <div className="mx-auto w-full max-w-[1296px]">
+      <div id="por-que-echo" className="ancla-seccion mx-auto w-full max-w-[1296px]">
         <EncabezadoSeccion
           id="titulo-por-que-echo"
           titulo="Lo que hace distinta a Echo"
