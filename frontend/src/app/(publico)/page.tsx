@@ -1,4 +1,5 @@
 import { DibujoDeIconos } from "@/areas/inicio/componentes/DibujoDeIconos";
+import { PiePublico } from "@/componentes/estructura/PiePublico";
 import { EncabezadoPublico } from "@/areas/inicio/componentes/EncabezadoPublico";
 import { Llamado } from "@/areas/inicio/componentes/Llamado";
 import { PorQueEcho } from "@/areas/inicio/componentes/PorQueEcho";
@@ -20,6 +21,7 @@ export default function Inicio() {
         <QuienesSomos />
         <Llamado />
       </main>
+      <PiePublico variante="oscuro" />
       <DibujoDeIconos />
     </div>
   );
