@@ -1,8 +1,8 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.3.0",
-    "actualizado": "2026-10-19",
+    "version": "1.3.1",
+    "actualizado": "2026-10-21",
     "fase": "Modelo de datos, 18 vistas en Figma (DEC-82) y dirección visual decididos. Siguiente: crear el frontend Next.js 16.4.2 empezando por el sitio público (ai/handoff/siguiente.md) y definir el backend.",
     "historial": [
       {
@@ -49,6 +49,11 @@
         "version": "1.3.0",
         "fecha": "2026-10-19",
         "cambio": "Apellidos en un solo campo, sin segundo_apellido (DEC-22 revisada, DEC-59, TBL-USUARIO, OP-01/03, SCR-02/16); bloqueo sin oráculo de contraseña (DEC-77 revisada, DEC-26, OP-04, SCR-01); OP-33 sin SMTP; sitio público dentro de la app de Next.js (DEC-83, SCR-18 con ruta «/») y paso del diseño «Tierra» de Figma a Next.js (DEC-84)."
+      },
+      {
+        "version": "1.3.1",
+        "fecha": "2026-10-21",
+        "cambio": "El aviso del piloto sale de SCR-18 y queda en el Aviso de privacidad (SCR-05) y la Ayuda (SCR-17, #cierre-del-piloto): DEC-78 revisada, texto_piloto movido a SCR-05 y SCR-17."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -152,7 +157,7 @@
     },
     "estadisticas": {
       "nodos": 434,
-      "aristas": 1161,
+      "aristas": 1163,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
@@ -3635,13 +3640,14 @@
       "id": "SCR-05",
       "tipo": "pantalla",
       "nombre": "Aviso de privacidad (página fija)",
-      "descripcion": "Página fija con el aviso de privacidad: el equipo como responsable (LFPDPPP), finalidades, datos recabados (nombre, apellidos, correo), derechos ARCO y correo de contacto (PEND-12). Se redacta con el correo ARCO como espacio reservado mientras PEND-12 siga pendiente.",
+      "descripcion": "Página fija con el aviso de privacidad: el equipo como responsable (LFPDPPP), finalidades, datos recabados (nombre, apellidos, correo), derechos ARCO y correo de contacto (PEND-12). Se redacta con el correo ARCO como espacio reservado mientras PEND-12 siga pendiente. Incluye que Echo es un piloto académico vigente hasta diciembre de 2026 y qué pasa con los datos al cierre (OP-38, DEC-74).",
       "estado": "decidido",
       "detalles": {
         "origen": "V-05",
         "estados_a_disenar": "—",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad",
+        "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026."
       }
     },
     {
@@ -3797,14 +3803,16 @@
         "origen": "V-17",
         "estados_a_disenar": "—",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad"
+        "comunes": "Pie con UP Chiapas, versión y enlace al aviso de privacidad",
+        "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026.",
+        "ancla_cierre": "#cierre-del-piloto"
       }
     },
     {
       "id": "SCR-18",
       "tipo": "pantalla",
       "nombre": "Inicio público",
-      "descripcion": "Página pública que presenta Echo: qué es, para quién es, qué encontrarás, en qué se distingue y quiénes somos (equipo y UP Chiapas), con el aviso de que es un piloto académico vigente hasta diciembre de 2026. Botones a Iniciar sesión, Crear cuenta, Aviso de privacidad y Ayuda.",
+      "descripcion": "Página pública que presenta Echo: qué es, para quién es, qué encontrarás, en qué se distingue y quiénes somos (equipo y UP Chiapas). Botones a Iniciar sesión, Crear cuenta, Aviso de privacidad y Ayuda.",
       "estado": "decidido",
       "detalles": {
         "origen": "Nueva (18/10)",
@@ -5458,12 +5466,12 @@
     {
       "id": "DEC-78",
       "tipo": "decision",
-      "nombre": "Página pública de inicio como piloto académico",
-      "descripcion": "SCR-18 presenta Echo sin sesión: qué es, para quién es, qué encontrarás, en qué se distingue, el equipo y la UP Chiapas, con enlaces a Iniciar sesión, Registro, Aviso de privacidad y Ayuda. Dice sin rodeos que Echo es un piloto académico vigente hasta diciembre de 2026 (RES-11, FDA-20). Con sesión activa redirige a Módulos (SCR-06). Su contenido es fijo: no invoca operaciones ni lee tablas. Se apaga con todo lo demás en el cierre (OP-38, DEC-74).",
+      "nombre": "Página pública de inicio",
+      "descripcion": "SCR-18 presenta Echo sin sesión: qué es, para quién es, qué encontrarás, en qué se distingue, el equipo y la UP Chiapas, con enlaces a Iniciar sesión, Registro, Aviso de privacidad y Ayuda. El aviso de que Echo es un piloto académico vigente hasta diciembre de 2026 (RES-11, FDA-20) no va en esta página: se explica en el Aviso de privacidad (SCR-05) y en la Ayuda (SCR-17, sección «¿Qué pasa con mis datos en diciembre?», ancla #cierre-del-piloto). Con sesión activa redirige a Módulos (SCR-06). Su contenido es fijo: no invoca operaciones ni lee tablas. Se apaga con todo lo demás en el cierre (OP-38, DEC-74).",
       "estado": "decidido",
       "detalles": {
         "origen": "Revisión de pantallas con el equipo (18/10)",
-        "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026."
+        "revision": "20/10 (v1.3.1): la persona pidió quitar el aviso del piloto de SCR-18 por repetitivo; se explica solo en SCR-05 y SCR-17."
       }
     },
     {
@@ -11442,6 +11450,16 @@
     {
       "origen": "SCR-18",
       "destino": "DEC-84",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-05",
+      "destino": "DEC-78",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-17",
+      "destino": "DEC-78",
       "relacion": "regida_por"
     }
   ]
