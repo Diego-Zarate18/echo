@@ -12,7 +12,7 @@ Todo el código lo escribe Claude y lo revisa una persona del equipo.
    operaciones (OP-*), consultas (C-*), pantallas y su navegación (SCR-*), fuera de alcance (FDA-*) y pendientes (PEND-*).
    Búscalo con Grep por id (p. ej. `"id": "DEC-19"` o `"id": "TBL-INTENTO"`); no lo leas completo si no hace falta.
    **Antes de empezar, lee los nodos `invariante`.**
-2. `docs/echo_db.drawio`: diagrama entidad-relación oficial (19 tablas, 28 relaciones).
+2. `docs/echo_db.drawio`: diagrama entidad-relación oficial (21 tablas, 30 relaciones).
 
 El documento de requerimientos original **no se usa**: el grafo lo sustituye (DEC-67). Si un requerimiento aparece
 como `parchado` o `descartado`, manda la decisión enlazada con `ajustado_por`, no el texto original.
