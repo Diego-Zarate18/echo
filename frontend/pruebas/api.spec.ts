@@ -7,6 +7,7 @@ import {
   OTRA_ALUMNA,
   URL_APP,
   aceptaciones,
+  control,
   correos,
   encabezadosSetCookie,
   escenario,
@@ -416,6 +417,48 @@ test.describe("API simulada a través del rewrite de Next", () => {
     expect(perfil.cuerpo.aceptaciones).toContainEqual(expect.objectContaining({ documento: "avisoPrivacidad", version: "1.1" }));
     expect(llavesPresentes(perfil.cuerpo, ["direccionIp", "ip"])).toEqual([]);
     await alumna.cerrar();
+  });
+
+  test("DEC-93: Google no hereda una cuenta sin verificar (pre-secuestro)", async () => {
+    // Alguien registra el correo de otra persona con una contraseña suya y no lo verifica.
+    const atacante = await Alumno.nuevo();
+    const registro = await atacante.pedir("POST", "/api/cuenta/registro", {
+      cuerpo: {
+        nombre: "Intruso",
+        apellidos: "Ejemplo",
+        correo: "vera@example.com",
+        contrasena: "DelAtacante1",
+        versionAviso: "1.0",
+        versionTerminos: "1.0",
+        aceptaAviso: true,
+        aceptaTerminos: true,
+        mayorDeEdad: true,
+        negativaEncuesta: false,
+        negativaEstadisticas: false,
+      },
+    });
+    expect(registro.status()).toBe(202);
+    await atacante.cerrar();
+
+    // La dueña real entra con Google con ese correo y acepta.
+    await control("POST", "/__simulador/google", { sub: "google-sub-vera", correo: "vera@example.com", nombre: "Vera", apellidos: "Ejemplo" });
+    const duena = await Alumno.nuevo();
+    const ida = await duena.pedir("GET", "/api/auth/google");
+    const vuelta = await duena.pedir("GET", ida.headers().location);
+    expect(vuelta.headers().location, "la cuenta pendiente no se vincula").toBe("/aceptar");
+    const antesDeAceptar = new Date();
+    const aceptada = await duena.json<Json>("POST", "/api/cuenta/aceptacion", {
+      cuerpo: { versionAviso: "1.0", versionTerminos: "1.0", aceptaAviso: true, aceptaTerminos: true, mayorDeEdad: true },
+    });
+    expect(aceptada.cuerpo).toMatchObject({ nombre: "Vera", metodoAcceso: "google" });
+    await duena.cerrar();
+
+    // La contraseña del registro pendiente ya no sirve y solo quedan las aceptaciones nuevas.
+    const intento = await (await Alumno.nuevo()).json("POST", "/api/sesion", { cuerpo: { correo: "vera@example.com", contrasena: "DelAtacante1" } });
+    expect(intento).toMatchObject({ estado: 401, cuerpo: { codigo: "CREDENCIALES_INVALIDAS" } });
+    const deVera = (await aceptaciones()).filter((a) => a.usuario === "vera@example.com");
+    expect(deVera).toHaveLength(2);
+    for (const aceptacion of deVera) expect(new Date(aceptacion.aceptadoEn).getTime()).toBeGreaterThanOrEqual(antesDeAceptar.getTime() - 1000);
   });
 
   test("Google sin cuenta: el callback no crea la cuenta; /aceptar la crea con sus aceptaciones", async () => {

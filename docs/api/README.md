@@ -148,6 +148,13 @@ OP-38 (cierre del proyecto). Son internas del backend, del Cron o de scripts con
 - `GET /api/documentos`, `POST /api/cuenta/aceptacion`, `GET /api/perfil` y `POST /api/perfil/eliminacion`;
 - las de cuenta sin sesión (registro, verificación, recuperación, confirmación de correo y Google).
 
+## Seguridad de la cuenta
+- **Google no hereda cuentas sin verificar (DEC-93).** `volverDeGoogle` y `aceptarDocumentos` solo vinculan Google con una
+  cuenta **activa y verificada** del mismo correo (INV-16). Si existe una cuenta **pendiente** con ese correo, al aceptar
+  se elimina con sus enlaces y aceptaciones y se crea una cuenta nueva desde Google, con las casillas que acaba de marcar
+  la persona. Así quien registró un correo ajeno con su propia contraseña no puede entrar después de que la dueña real
+  entre con Google (pre-secuestro de cuenta).
+
 ## Reglas del grafo que el contrato hace visibles
 | Regla | Dónde |
 |---|---|

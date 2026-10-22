@@ -275,11 +275,19 @@ function aceptarDocumentos(ctx) {
   sinErrores(campos);
   versionesVigentes(ctx, cuerpo, ["avisoPrivacidad", "terminos"]);
 
-  let usuario = [...ctx.bd.usuarios.values()].find((u) => u.googleSub === google.sub) ?? usuarioPorCorreo(ctx.bd, google.correo);
-  if (usuario) {
-    usuario.googleSub = google.sub;
-    usuario.estado = "activo";
-  } else {
+  let usuario = [...ctx.bd.usuarios.values()].find((u) => u.estado !== "anonimizado" && u.googleSub === google.sub) ?? null;
+  if (!usuario) {
+    const mismoCorreo = usuarioPorCorreo(ctx.bd, google.correo);
+    // DEC-93: solo se vincula con una cuenta activa y verificada del mismo correo (INV-16). Una cuenta pendiente se
+    // elimina con sus enlaces y aceptaciones: su contraseña la pudo poner otra persona (pre-secuestro de cuenta).
+    if (mismoCorreo?.estado === "activo") {
+      mismoCorreo.googleSub = google.sub;
+      usuario = mismoCorreo;
+    } else if (mismoCorreo?.estado === "pendiente") {
+      eliminarCuentaPendiente(ctx, mismoCorreo);
+    }
+  }
+  if (!usuario) {
     usuario = {
       id: uuidv7(),
       nombre: google.nombre,
@@ -303,6 +311,14 @@ function aceptarDocumentos(ctx) {
   ctx.borrarCookie(COOKIE_REGISTRO_GOOGLE);
   ctx.abrirSesion(usuario);
   return { estado: 200, cuerpo: sesionVisible(ctx, usuario) };
+}
+
+/** Borra una cuenta pendiente (sin verificar) con todo lo suyo, como la limpieza diaria (FN-LIMPIEZA). */
+function eliminarCuentaPendiente(ctx, usuario) {
+  ctx.bd.usuarios.delete(usuario.id);
+  ctx.bd.aceptaciones = ctx.bd.aceptaciones.filter((a) => a.usuarioId !== usuario.id);
+  for (const [llave, token] of [...ctx.bd.tokens]) if (token.usuarioId === usuario.id) ctx.bd.tokens.delete(llave);
+  for (const [llave, sesion] of [...ctx.bd.sesiones]) if (sesion.usuarioId === usuario.id) ctx.bd.sesiones.delete(llave);
 }
 
 /** Google simulado: no sale a Google, va directo al callback con la identidad de ejemplo. */
