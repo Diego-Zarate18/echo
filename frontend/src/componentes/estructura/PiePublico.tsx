@@ -4,17 +4,19 @@ import { Logo } from "@/componentes/marca/Logo";
 import upChiapasBlanco from "../../../public/imagenes/inicio/up-chiapas-blanco.png";
 import upChiapasCafe from "../../../public/imagenes/inicio/up-chiapas-cafe.png";
 
-type RutaPie = "/ayuda" | "/aviso-de-privacidad" | "/iniciar-sesion";
+type RutaPie = "/ayuda" | "/aviso-de-privacidad" | "/terminos-y-condiciones" | "/iniciar-sesion";
 
 const enlacesOscuro: readonly { href: RutaPie; texto: string }[] = [
   { href: "/ayuda", texto: "Ayuda" },
   { href: "/aviso-de-privacidad", texto: "Aviso de privacidad" },
+  { href: "/terminos-y-condiciones", texto: "Términos y condiciones" },
   { href: "/iniciar-sesion", texto: "Iniciar sesión" },
 ];
 
 const enlacesClaro: readonly { href: RutaPie; texto: string }[] = [
   { href: "/ayuda", texto: "Ayuda" },
   { href: "/aviso-de-privacidad", texto: "Aviso de privacidad" },
+  { href: "/terminos-y-condiciones", texto: "Términos y condiciones" },
 ];
 
 type PropsPiePublico = {
@@ -27,7 +29,7 @@ type PropsPiePublico = {
   actual?: RutaPie;
 };
 
-/** Pie del sitio público. Lo comparten SCR-18 (oscuro), SCR-05 y SCR-17 (claro). */
+/** Pie del sitio público. Lo comparten SCR-18 (oscuro), SCR-05, SCR-17 y SCR-20 (claro). */
 export function PiePublico({ variante, actual }: PropsPiePublico) {
   if (variante === "claro") {
     return (
