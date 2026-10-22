@@ -1,0 +1,2 @@
+# Los textos legales se guardan con fin de línea LF: su huella SHA-256 (DEC-28) se calcula sobre el archivo así.
+docs/legal/*.md text eol=lf
