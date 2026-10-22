@@ -69,6 +69,7 @@ test.describe("SCR-18 · Inicio público", () => {
     expect(await hrefsPorTexto("Ya tengo cuenta")).toEqual(["/iniciar-sesion"]);
     expect(await hrefsPorTexto("Ayuda")).toEqual(["/ayuda"]);
     expect(await hrefsPorTexto("Aviso de privacidad")).toEqual(["/aviso-de-privacidad"]);
+    expect(await hrefsPorTexto("Términos y condiciones")).toEqual(["/terminos-y-condiciones"]);
     expect(await hrefsPorTexto("Ver cómo funciona")).toEqual(["#que-encontraras"]);
   });
 

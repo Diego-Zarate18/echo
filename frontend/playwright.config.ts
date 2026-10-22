@@ -5,8 +5,8 @@ const URL_BASE = `http://localhost:${PUERTO}`;
 const PUERTO_SIMULADOR = 4000;
 const URL_SIMULADOR = `http://localhost:${PUERTO_SIMULADOR}`;
 
-/** Pruebas de la API (contrato e invariantes) y del build: cambian el estado del simulador y corren aparte. */
-const PRUEBAS_DE_API = /(api|build)\.spec\.ts$/;
+/** Pruebas de la API (contrato e invariantes), del build y del convertidor de Markdown: no usan pantallas y corren aparte. */
+const PRUEBAS_DE_API = /(api|build|markdown)\.spec\.ts$/;
 
 /**
  * Pruebas de extremo a extremo con Playwright y axe.

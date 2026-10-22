@@ -180,6 +180,6 @@ test.describe("SCR-17 · Enlaces hacia y desde Ayuda", () => {
       await encabezado.getByRole("link", { name: "Aviso de privacidad" }).click();
     }
     await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Aviso de privacidad");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Aviso de privacidad integral");
   });
 });
