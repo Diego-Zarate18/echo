@@ -48,7 +48,8 @@ Todo es inventado y vive en memoria; cada reinicio vuelve al inicio.
   - una actividad por lección;
   - un caso práctico con decisiones de valor 1, 0.5 y 0;
   - un examen por curso; el del curso 1 tiene 5 preguntas, con una relación de columnas.
-- **Documentos legales:** aviso y términos v1.0 publicados el 21/10/2026, con huella de ejemplo.
+- **Documentos legales:** aviso y términos v1.0 publicados el 21/10/2026. Su huella SHA-256 se calcula al arrancar
+  desde `docs/legal/` (DEC-28).
 
 Todos los textos dicen «Contenido de ejemplo».
 

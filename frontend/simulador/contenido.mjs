@@ -2,6 +2,9 @@
 // La forma sigue las tablas del grafo: modulo, curso, leccion, seccion, imagen, fundamento, cuestionario,
 // pregunta, opcion, pareja e insignia. Nada de esto es contenido real de Echo.
 
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
 const EJEMPLO = "Contenido de ejemplo.";
 const PUBLICADO = "2026-10-01T15:00:00.000Z";
 
@@ -175,10 +178,20 @@ export function respuestasCorrectas(cuestionarioId) {
     );
 }
 
-/** Documentos legales (documento_legal). La huella es de ejemplo: SHA-256 de un texto inventado. */
+/** Textos legales vigentes (docs/legal, con fin de línea LF por .gitattributes). */
+const carpetaLegal = new URL("../../docs/legal/", import.meta.url);
+export const archivosLegales = {
+  avisoPrivacidad: new URL("aviso-de-privacidad-v1.0.md", carpetaLegal),
+  terminos: new URL("terminos-y-condiciones-v1.0.md", carpetaLegal),
+};
+
+/** Huella SHA-256 del texto publicado (DEC-28): se calcula al arrancar desde el archivo, nunca se escribe a mano. */
+export const huellaDe = (archivo) => createHash("sha256").update(readFileSync(archivo)).digest("hex");
+
+/** Documentos legales (documento_legal) v1.0, publicados el 21/10/2026. */
 export const documentosIniciales = [
-  { id: 1, tipo: "avisoPrivacidad", version: "1.0", publicadoEn: "2026-10-21T06:00:00.000Z", requiereAceptacion: true, huellaContenido: "8f1c3a3e9b0d4c6a2f7e5b1d9c8a7f6e5d4c3b2a1908f7e6d5c4b3a291807f6e", resumenCambios: "Primera versión del aviso de privacidad integral." },
-  { id: 2, tipo: "terminos", version: "1.0", publicadoEn: "2026-10-21T06:00:00.000Z", requiereAceptacion: true, huellaContenido: "1e2d3c4b5a69788796a5b4c3d2e1f0e9d8c7b6a5948372615f4e3d2c1b0a9f8e", resumenCambios: "Primera versión de los términos y condiciones." },
+  { id: 1, tipo: "avisoPrivacidad", version: "1.0", publicadoEn: "2026-10-21T06:00:00.000Z", requiereAceptacion: true, huellaContenido: huellaDe(archivosLegales.avisoPrivacidad), resumenCambios: "Primera versión del aviso de privacidad integral." },
+  { id: 2, tipo: "terminos", version: "1.0", publicadoEn: "2026-10-21T06:00:00.000Z", requiereAceptacion: true, huellaContenido: huellaDe(archivosLegales.terminos), resumenCambios: "Primera versión de los términos y condiciones." },
 ];
 
 /** Escenario `version-nueva`: un aviso 1.1 que requiere aceptación. */
@@ -187,6 +200,7 @@ export const avisoVersionNueva = {
   tipo: "avisoPrivacidad",
   version: "1.1",
   requiereAceptacion: true,
+  // Versión de ejemplo sin archivo propio: huella de ejemplo.
   huellaContenido: "2a9b8c7d6e5f40312a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091",
   resumenCambios: "Ejemplo: se agrega una finalidad nueva. Hay que aceptarla para seguir usando Echo.",
 };

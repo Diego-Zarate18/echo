@@ -1,3 +1,6 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { chromium, expect, test } from "@playwright/test";
 import { leerYaml } from "./utilidades/yaml-simple";
 import {
@@ -126,6 +129,20 @@ test.describe("Contrato de la API (docs/api/openapi.yaml)", () => {
       ...Object.entries(rutasDeNavegacion).map(([id, ruta]) => `GET ${ruta} ${id}`),
     ].sort();
     expect(delFrontend).toEqual(operaciones.map((o) => `${o.metodo} ${o.ruta} ${o.operationId}`).sort());
+  });
+
+  test("la huella de los documentos del simulador sale de docs/legal y coincide con la publicada (DEC-28)", async () => {
+    const { documentosIniciales } = await importarDelSimulador<{ documentosIniciales: { tipo: string; huellaContenido: string }[] }>("contenido.mjs");
+    const esperadas: Record<string, [string, string]> = {
+      avisoPrivacidad: ["aviso-de-privacidad-v1.0.md", "4d2b93c646d6e81ad295a641be2029621499db59e02783372748083e7104204a"],
+      terminos: ["terminos-y-condiciones-v1.0.md", "68b072acafcf08adcfe0ec7712ad3f964484195cd771fa786a0758738a279b72"],
+    };
+    for (const [tipo, [archivo, huella]] of Object.entries(esperadas)) {
+      const bytes = readFileSync(join(raizFrontend, "..", "docs", "legal", archivo));
+      expect(bytes.includes(13), `${archivo} con fin de línea LF`).toBe(false);
+      expect(createHash("sha256").update(bytes).digest("hex"), archivo).toBe(huella);
+      expect(documentosIniciales.find((d) => d.tipo === tipo)?.huellaContenido, tipo).toBe(huella);
+    }
   });
 
   test("ningún endpoint recibe el id del alumno (INV-07)", async () => {
