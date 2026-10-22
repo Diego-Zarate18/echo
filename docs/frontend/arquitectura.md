@@ -110,7 +110,8 @@ echo/                          ← repositorio Diego-Zarate18/echo
    └─ src/
       ├─ app/                  ← solo rutas (§5); cada page.tsx es delgada
       ├─ areas/                ← lógica por área, mismo nombre que los MOD-* del grafo
-      │  ├─ aviso/             ← Aviso de privacidad SCR-05: contenido fijo (contenido.ts)
+      │  ├─ aviso/             ← Aviso de privacidad SCR-05: texto de docs/legal (contenido.ts)
+      │  ├─ terminos/          ← Términos y condiciones SCR-20: texto de docs/legal (contenido.ts)
       │  ├─ ayuda/             ← Ayuda SCR-17: preguntas fijas (contenido.ts) y acordeón
       │  ├─ inicio/            ← sitio público SCR-18 (DEC-83): Encabezado, Presentacion,
       │  │                        QueEsEcho, QueEncontraras, PorQueEcho, QuienesSomos, Llamado
@@ -127,10 +128,13 @@ echo/                          ← repositorio Diego-Zarate18/echo
       │  ├─ marca/             ← Logo, Moris
       │  └─ estructura/        ← Encabezado, MenuPrincipal, BarraInferior (DEC-80),
       │                           Pie, SaltarAlContenido, AvisoSesion, EncabezadoInterno,
-      │                           IndicePagina («En esta página» del aviso y de Ayuda)
+      │                           IndicePagina («En esta página» del aviso, los términos y Ayuda),
+      │                           PaginaDeDocumentoLegal (aviso y términos)
       ├─ lib/
       │  ├─ api/               ← esquema.d.ts (generado), operaciones.ts, cliente.ts, servidor.ts,
       │  │                        navegador.ts, errores.ts, mensajes.ts (código de error → texto en español)
+      │  ├─ markdown/          ← convertidor mínimo de Markdown a elementos de React (DEC-57)
+      │  ├─ contacto.ts        ← correos de soporte y de privacidad (DEC-68)
       │  ├─ sesion.ts          ← obtenerSesion() en el servidor
       │  └─ fechas.ts          ← Intl en es-MX, America/Mexico_City, DD/MM/AAAA, 24 h (INV-03)
       ├─ estilos/
@@ -154,6 +158,7 @@ Los grupos entre paréntesis no aparecen en la URL; solo eligen el `layout`.
 |---|---|---|---|
 | `/` | SCR-18 Inicio público | `(publico)` | No |
 | `/aviso-de-privacidad` | SCR-05 Aviso | `(publico)` | No |
+| `/terminos-y-condiciones` | SCR-20 Términos y condiciones | `(publico)` | No |
 | `/ayuda` | SCR-17 Ayuda | `(publico)`; si hay sesión muestra el encabezado de la app | No |
 | `/iniciar-sesion` | SCR-01 | `(acceso)` | No (con sesión → `/modulos`) |
 | `/registro` | SCR-02 | `(acceso)` | No |
@@ -195,7 +200,7 @@ Cada grupo tiene sus propios `loading.tsx`, `error.tsx` y `not-found.tsx` en esp
 
 **Datos y caché:**
 - Todo lo del alumno es dinámico (`cache: 'no-store'`), porque depende de la sesión.
-- Las páginas públicas (`/`, aviso, ayuda) son estáticas.
+- Las páginas públicas (`/`, aviso, términos, ayuda) son estáticas. Los textos legales se leen de `docs/legal/` al compilar.
 - Se conserva `cacheComponents: true`, que trae la plantilla de Next 16.4.2. Las páginas públicas quedan estáticas; las lecturas que dependen de la sesión (`cookies()`, datos del alumno) van dentro de `<Suspense>` y **nunca** se marcan con `'use cache'`. Antes de usarlo, leer `node_modules/next/dist/docs/01-app/02-guides/authentication-with-cache-components.md`.
 
 **Mutaciones:** desde el cliente con `navegador.ts` (`fetch` a `/api`). Después se llama a `router.refresh()` para que los componentes de servidor vuelvan a leer. **[por aprobar]** No se usan Server Actions. Así hay un solo camino hacia la API, y el `Set-Cookie` del backend llega intacto al navegador.
@@ -382,7 +387,7 @@ Esto sirve de entrada para definir el backend:
 4. **Errores con forma fija.** `{ codigo, mensaje }`, donde `codigo` sale de la lista cerrada `CodigoError` de `docs/api/openapi.yaml` (la tabla completa está en `docs/api/README.md`).
 5. **Un OpenAPI equivalente al contrato.** Mientras no existe el backend, `docs/api/openapi.yaml` es la fuente de verdad (DEC-90). El que genere Nest debe ser equivalente: mismas rutas, `operationId`, esquemas y códigos. El frontend genera sus tipos con `openapi-typescript`, así un cambio en la API rompe la compilación y no la pantalla.
 6. **Google OAuth.** `GET /api/auth/google` y `GET /api/auth/google/callback`. La redirect URI registrada en Google es la del dominio del frontend.
-7. **Contenido de lecciones en Markdown (DEC-57).** `seccion.cuerpo` llega como texto Markdown sin HTML. Cómo se convierte a HTML seguro (sin `dangerouslySetInnerHTML` sobre texto sin limpiar) se decide en la vista de Lección.
+7. **Contenido de lecciones en Markdown (DEC-57).** `seccion.cuerpo` llega como texto Markdown sin HTML. El frontend tiene un convertidor propio en `src/lib/markdown/` que produce elementos de React, nunca HTML en cadena ni `dangerouslySetInnerHTML`. Hoy cubre el subconjunto de los textos legales (títulos, párrafos, negritas, listas, casillas, citas y tablas) y falla con el número de línea ante lo que no reconoce. La vista de Lección lo ampliará con imágenes.
 
 ---
 

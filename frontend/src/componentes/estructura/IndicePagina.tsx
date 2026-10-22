@@ -69,14 +69,18 @@ function useApartadoActual(apartados: readonly ApartadoIndice[]) {
 }
 
 /**
- * Índice «En esta página» de las páginas de lectura: Aviso de privacidad (84:789) y Ayuda (84:880).
+ * Índice «En esta página» de las páginas de lectura: Aviso de privacidad (84:789), Términos y condiciones y Ayuda
+ * (84:880).
  * En escritorio queda fijo al bajar; en móvil es una lista compacta al inicio. Marca el apartado actual
  * con `aria-current="location"` y un solo indicador que se desliza entre enlaces (recortado con
  * `clip-path`, como el del encabezado del inicio). Con movimiento reducido cambia sin deslizarse.
+ * Si no cabe en la ventana (los textos legales tienen hasta 19 apartados), el índice se desplaza por dentro y
+ * mantiene a la vista el apartado actual sin mover la página.
  */
 export function IndicePagina({ apartados }: { apartados: readonly ApartadoIndice[] }) {
   const { actual, elegir } = useApartadoActual(apartados);
   const lista = useRef<HTMLDivElement>(null);
+  const panel = useRef<HTMLElement>(null);
   const [recorte, setRecorte] = useState<Recorte | null>(null);
 
   useLayoutEffect(() => {
@@ -90,6 +94,16 @@ export function IndicePagina({ apartados }: { apartados: readonly ApartadoIndice
       });
     }
     medir();
+    // Solo se desplaza el índice, nunca la página.
+    const marco = panel.current;
+    const enlace = contenedor?.querySelector<HTMLElement>(`a[href="#${actual}"]`);
+    if (marco && enlace && marco.scrollHeight > marco.clientHeight) {
+      const caja = enlace.getBoundingClientRect();
+      const visible = marco.getBoundingClientRect();
+      if (caja.top < visible.top || caja.bottom > visible.bottom) {
+        marco.scrollTop += caja.top - visible.top - (marco.clientHeight - caja.height) / 2;
+      }
+    }
     window.addEventListener("resize", medir);
     return () => window.removeEventListener("resize", medir);
   }, [actual]);
@@ -101,8 +115,9 @@ export function IndicePagina({ apartados }: { apartados: readonly ApartadoIndice
 
   return (
     <nav
+      ref={panel}
       aria-labelledby="titulo-indice"
-      className="rounded-globo bg-superficie-elevada p-4 shadow-relieve lg:sticky lg:top-6 lg:self-start lg:p-5"
+      className="rounded-globo bg-superficie-elevada p-4 shadow-relieve lg:sticky lg:top-6 lg:max-h-[calc(100svh-3rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:p-5"
     >
       <p id="titulo-indice" className="font-titulo text-detalle font-bold text-texto-secundario">
         En esta página

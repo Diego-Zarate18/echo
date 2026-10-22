@@ -5,10 +5,11 @@ import { PiePublico } from "@/componentes/estructura/PiePublico";
 
 export const metadata: Metadata = {
   title: "Aviso de privacidad",
-  description: "Cómo cuida Echo tus datos personales: responsable, datos, finalidades, derechos ARCO y conservación.",
+  description:
+    "Aviso de privacidad integral de Echo: responsable, datos, finalidades, encargados, derechos ARCO, cookies, seguridad, conservación y registro de aceptación.",
 };
 
-/** SCR-05 · Aviso de privacidad (DEC-28, DEC-68). Contenido fijo y estático. */
+/** SCR-05 · Aviso de privacidad integral (DEC-28, DEC-68). Contenido fijo y estático. */
 export default function PaginaAvisoDePrivacidad() {
   return (
     <>

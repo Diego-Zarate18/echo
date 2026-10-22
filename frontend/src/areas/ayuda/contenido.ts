@@ -31,11 +31,8 @@ export const MINUTOS_ENLACE = 30;
 export const INTENTOS_ANTES_DE_PAUSA = 5;
 export const MINUTOS_PAUSA = 15;
 
-/** Contacto para pedir ayuda o reportar un problema, incluido uno de accesibilidad (DEC-68 › correo_soporte). */
-export const CORREO_SOPORTE = "echo.soporte@gmail.com";
-
-/** Contacto para dudas sobre datos personales (DEC-68 › correo_privacidad; resuelve PEND-12). */
-export const CORREO_PRIVACIDAD = "privacidad.echo@gmail.com";
+/** Contactos de soporte y de privacidad (DEC-68), compartidos con el aviso y los términos. */
+export { CORREO_PRIVACIDAD, CORREO_SOPORTE } from "@/lib/contacto";
 
 /**
  * Preguntas de la Ayuda, en el orden de Figma (84:813). El `id` es el ancla del índice y de la URL;
