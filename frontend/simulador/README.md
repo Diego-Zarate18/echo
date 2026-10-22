@@ -21,6 +21,10 @@ Variables opcionales del simulador:
 - `PUERTO` (4000);
 - `ORIGENES_PERMITIDOS` (`http://localhost:3000,http://localhost:3100`), los únicos `Origin` aceptados en mutaciones;
 - `LIMITE_POR_IP` (60 cada 10 minutos en inicio de sesión, registro, reenvío, recuperación y cambio de correo).
+- `PROXIES_CONFIABLES` (`0`): cuántos proxies propios agregan una entrada a `X-Forwarded-For` entre el navegador y el
+  simulador. La IP del cliente es la entrada que agregó el primero, contando desde la derecha (DEC-92); la primera la
+  escribe el cliente y nunca se usa. En desarrollo es `0`: `next start` reenvía el encabezado tal como llega y no agrega
+  la suya, así que se usa la dirección del socket (la de Next, que es la del mismo equipo).
 
 ## Por qué `.mjs` con JSDoc y no `.ts`
 Node 22.15 solo ejecuta TypeScript con la bandera experimental `--experimental-strip-types`. Con `.mjs` corre con

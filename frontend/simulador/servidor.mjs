@@ -1,6 +1,7 @@
 // API simulada de Echo (DEC-90): cumple docs/api/openapi.yaml para que el frontend trabaje como lo hará con NestJS
 // (rewrite de /api, cookie __Host-echo_sesion y red). Node puro: node:http y node:crypto, sin dependencias.
-// Uso: npm run simulador (puerto 4000; PUERTO y ORIGENES_PERMITIDOS se pueden cambiar con variables de entorno).
+// Uso: npm run simulador (puerto 4000; PUERTO, ORIGENES_PERMITIDOS, LIMITE_POR_IP y PROXIES_CONFIABLES se pueden cambiar
+// con variables de entorno).
 // Nunca entra al build de producción: nada de src/ lo importa (regla de ESLint y prueba de build).
 import http from "node:http";
 import { pathToFileURL } from "node:url";
@@ -37,10 +38,25 @@ function leerCookies(encabezado = "") {
   return cookies;
 }
 
-/** IP del cliente: la primera de X-Forwarded-For (la pone el proxy: Next en desarrollo, Railway en producción). */
-function ipDe(solicitud) {
-  const reenviada = solicitud.headers["x-forwarded-for"];
-  const ip = (Array.isArray(reenviada) ? reenviada[0] : reenviada)?.split(",")[0]?.trim() || solicitud.socket.remoteAddress || "";
+/**
+ * Proxies propios que agregan una entrada a X-Forwarded-For entre el cliente y esta API (DEC-92). `next start` reenvía
+ * el encabezado tal como llega y no agrega la suya (comprobado el 21/10), así que en desarrollo es 0: la IP es la del
+ * socket. En producción el borde de Railway agrega la del cliente; el número se fija al desplegar (PEND-14).
+ */
+const PROXIES_CONFIABLES = Math.max(0, Number(process.env.PROXIES_CONFIABLES ?? 0) || 0);
+
+/**
+ * IP del cliente (DEC-92): la entrada de X-Forwarded-For que agregó el primer proxy propio, contando desde la derecha.
+ * Nunca la primera, que escribe el cliente. Con 0 saltos, sin el encabezado o con menos entradas que saltos, la del
+ * socket.
+ */
+export function ipDe(solicitud, saltos = PROXIES_CONFIABLES) {
+  const encabezado = solicitud.headers["x-forwarded-for"];
+  const entradas = (Array.isArray(encabezado) ? encabezado.join(",") : encabezado ?? "")
+    .split(",")
+    .map((entrada) => entrada.trim())
+    .filter(Boolean);
+  const ip = saltos > 0 && entradas.length >= saltos ? entradas[entradas.length - saltos] : solicitud.socket.remoteAddress ?? "";
   return ip.replace(/^::ffff:/, "");
 }
 

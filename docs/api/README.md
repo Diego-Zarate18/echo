@@ -154,6 +154,16 @@ OP-38 (cierre del proyecto). Son internas del backend, del Cron o de scripts con
   se elimina con sus enlaces y aceptaciones y se crea una cuenta nueva desde Google, con las casillas que acaba de marcar
   la persona. Así quien registró un correo ajeno con su propia contraseña no puede entrar después de que la dueña real
   entre con Google (pre-secuestro de cuenta).
+- **La IP del cliente sale del proxy de confianza (DEC-92).** La IP de las aceptaciones (DEC-28) y del límite por IP
+  (DEC-26) es la entrada de `X-Forwarded-For` que agregó el primer proxy propio, contando desde la derecha tantos saltos
+  como indique `PROXIES_CONFIABLES`. Nunca la primera entrada: esa la escribe el cliente y se puede falsificar. Sin el
+  encabezado se usa la dirección del socket.
+  - En desarrollo la cadena es navegador → Next (rewrite) → API, y `PROXIES_CONFIABLES=0`: `next start` reenvía
+    `X-Forwarded-For` tal como lo manda el cliente y **no agrega su propia entrada** (comprobado el 21/10), así que se
+    usa la dirección del socket.
+  - En producción la cadena es navegador → borde de Railway → Next → backend. Next sigue sin agregar entrada, así que el
+    número cuenta solo los proxies que la agregan (en principio, el borde de Railway: `1`). Se fija al desplegar,
+    después de comprobar qué entradas llegan (PEND-14).
 
 ## Reglas del grafo que el contrato hace visibles
 | Regla | Dónde |

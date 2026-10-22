@@ -396,6 +396,57 @@ test.describe("API simulada a través del rewrite de Next", () => {
     await visitante.cerrar();
   });
 
+  test("DEC-92: un X-Forwarded-For puesto por el cliente no cambia la IP registrada ni salta el límite", async () => {
+    test.setTimeout(60_000);
+    const visitante = await Alumno.nuevo();
+    const registro = await visitante.pedir("POST", "/api/cuenta/registro", {
+      encabezados: { "x-forwarded-for": "203.0.113.9" },
+      cuerpo: {
+        nombre: "Ivo",
+        apellidos: "Ejemplo",
+        correo: "ivo@example.com",
+        contrasena: "Segura2026",
+        versionAviso: "1.0",
+        versionTerminos: "1.0",
+        aceptaAviso: true,
+        aceptaTerminos: true,
+        mayorDeEdad: true,
+        negativaEncuesta: false,
+        negativaEstadisticas: false,
+      },
+    });
+    expect(registro.status()).toBe(202);
+    const deIvo = (await aceptaciones()).filter((a) => a.usuario === "ivo@example.com");
+    expect(deIvo).toHaveLength(2);
+    for (const aceptacion of deIvo) {
+      // La IP real: Next no agrega entrada, así que es la del socket (el mismo equipo).
+      expect(aceptacion.direccionIp).not.toContain("203.0.113.9");
+      expect(aceptacion.direccionIp).toMatch(/^(::1|127\.0\.0\.1)$/);
+    }
+
+    // Cambiar el encabezado en cada petición no reinicia el límite por IP (60 cada 10 minutos, DEC-26).
+    let ultima = 0;
+    for (let i = 0; i < 61; i++) {
+      const respuesta = await visitante.pedir("POST", "/api/cuenta/verificacion/reenvio", {
+        encabezados: { "x-forwarded-for": `198.51.100.${i}` },
+        cuerpo: { correo: "nadie@example.com" },
+      });
+      ultima = respuesta.status();
+    }
+    expect(ultima, "la petición 62 de esta IP (con el registro) se rechaza").toBe(429);
+    await visitante.cerrar();
+  });
+
+  test("DEC-92: la IP sale de la entrada que agregó el proxy de confianza, contando desde la derecha", async () => {
+    const { ipDe } = await importarDelSimulador<{ ipDe: (s: unknown, saltos: number) => string }>("servidor.mjs");
+    const solicitud = (xff?: string) => ({ headers: xff ? { "x-forwarded-for": xff } : {}, socket: { remoteAddress: "::ffff:10.0.0.7" } });
+    expect(ipDe(solicitud("203.0.113.9, 198.51.100.4"), 1), "un salto: la última").toBe("198.51.100.4");
+    expect(ipDe(solicitud("203.0.113.9, 198.51.100.4, 10.0.0.2"), 2), "dos saltos: la penúltima").toBe("198.51.100.4");
+    expect(ipDe(solicitud("203.0.113.9"), 2), "menos entradas que saltos: el socket").toBe("10.0.0.7");
+    expect(ipDe(solicitud("203.0.113.9"), 0), "cero saltos: el socket").toBe("10.0.0.7");
+    expect(ipDe(solicitud(), 1), "sin encabezado: el socket").toBe("10.0.0.7");
+  });
+
   test("INV-30: con una versión nueva todo responde ACEPTACION_PENDIENTE hasta aceptarla", async () => {
     const alumna = await (await Alumno.nuevo()).entrar();
     await escenario("version-nueva");
