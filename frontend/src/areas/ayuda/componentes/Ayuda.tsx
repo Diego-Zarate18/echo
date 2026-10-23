@@ -35,6 +35,15 @@ function Correo({ direccion }: { direccion: string }) {
   );
 }
 
+/** Enlace a otra página pública (aviso o términos) dentro de una respuesta. */
+function EnlacePagina({ href, children }: { href: "/aviso-de-privacidad" | "/terminos-y-condiciones"; children: ReactNode }) {
+  return (
+    <Link href={href} className="font-semibold underline underline-offset-4 hover:decoration-2">
+      {children}
+    </Link>
+  );
+}
+
 /** Respuestas redactadas con las decisiones del grafo (tabla de la Tarea 04). Tuteo y frases cortas. */
 const respuestas: Record<PreguntaAyuda["id"], ReactNode> = {
   // DEC-02, DEC-03
@@ -90,7 +99,9 @@ const respuestas: Record<PreguntaAyuda["id"], ReactNode> = {
     <>
       <Parrafo>
         Creas tu cuenta con tu correo y una contraseña de {CARACTERES_MINIMOS_CONTRASENA} caracteres o más, con al menos
-        una letra y un número, o entras con Google. Si usas contraseña, confirma tu correo con el enlace que te enviamos:
+        una letra y un número, o entras con Google. Al crear tu cuenta aceptas el{" "}
+        <EnlacePagina href="/aviso-de-privacidad">Aviso de privacidad</EnlacePagina> y los{" "}
+        <EnlacePagina href="/terminos-y-condiciones">Términos y condiciones</EnlacePagina>. Si usas contraseña, confirma tu correo con el enlace que te enviamos:
         vale {HORAS_VERIFICACION} horas, y las cuentas sin confirmar se eliminan pasado ese tiempo. Tras{" "}
         {INTENTOS_ANTES_DE_PAUSA} intentos fallidos al iniciar sesión, el acceso se pausa {MINUTOS_PAUSA} minutos. Tu
         sesión se cierra tras {MINUTOS_SESION} minutos sin actividad; {MINUTOS_AVISO_SESION} minutos antes te avisamos
@@ -119,12 +130,7 @@ const respuestas: Record<PreguntaAyuda["id"], ReactNode> = {
       {TEXTO_PILOTO} Después de entregar las calificaciones, anonimizamos o eliminamos la base de datos, apagamos la
       plataforma y borramos sus respaldos. Si lo prefieres, puedes eliminar tu cuenta antes desde tu Perfil. Los
       detalles están en el{" "}
-      <Link
-        href="/aviso-de-privacidad"
-        className="font-semibold underline underline-offset-4 hover:decoration-2"
-      >
-        Aviso de privacidad
-      </Link>
+      <EnlacePagina href="/aviso-de-privacidad">Aviso de privacidad</EnlacePagina>
       , y para cualquier duda sobre tus datos personales puedes escribir a <Correo direccion={CORREO_PRIVACIDAD} />.
     </Parrafo>
   ),
