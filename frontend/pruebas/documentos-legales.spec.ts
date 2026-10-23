@@ -84,16 +84,19 @@ for (const documento of DOCUMENTOS) {
     });
 
     test("cada tabla tiene caption y encabezados con scope, y desplaza dentro de su contenedor", async ({ page }) => {
-      const tablas = page.locator("main table");
-      expect(await tablas.count()).toBeGreaterThan(0);
-      for (const tabla of await tablas.all()) {
-        await expect(tabla.locator("caption")).toHaveCount(1);
-        expect((await tabla.locator("caption").textContent())!.trim()).not.toBe("");
-        const encabezados = tabla.locator("th");
-        for (const th of await encabezados.all()) await expect(th).toHaveAttribute("scope", /^(col|row)$/);
-        const contenedor = tabla.locator("xpath=..");
-        await expect(contenedor).toHaveAttribute("role", "region");
-        await expect(contenedor).toHaveAttribute("tabindex", "0");
+      // Todo en una sola lectura de la página: el aviso tiene 12 tablas y decenas de encabezados.
+      const tablas = await page.locator("main table").evaluateAll((lista) =>
+        lista.map((tabla) => ({
+          caption: tabla.querySelector("caption")?.textContent?.trim() ?? "",
+          sinScope: [...tabla.querySelectorAll("th")].filter((th) => !["col", "row"].includes(th.getAttribute("scope") ?? "")).length,
+          contenedor: [tabla.parentElement?.getAttribute("role"), tabla.parentElement?.getAttribute("tabindex")],
+        })),
+      );
+      expect(tablas.length).toBeGreaterThan(0);
+      for (const [i, tabla] of tablas.entries()) {
+        expect(tabla.caption, `tabla ${i + 1}: caption`).not.toBe("");
+        expect(tabla.sinScope, `tabla ${i + 1}: encabezados sin scope`).toBe(0);
+        expect(tabla.contenedor, `tabla ${i + 1}: contenedor`).toEqual(["region", "0"]);
       }
       // Ninguna tabla desborda la página: si no cabe, se desplaza dentro de su contenedor.
       const medidas = await page.evaluate(() => ({

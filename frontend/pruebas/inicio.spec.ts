@@ -177,6 +177,18 @@ test.describe("SCR-18 · Retícula", () => {
   });
 });
 
+test.describe("SCR-18 · Barra de desplazamiento", () => {
+  test("en el inicio el carril es café; en las páginas claras sigue el hundido", async ({ page }) => {
+    const color = () => page.evaluate(() => getComputedStyle(document.documentElement).scrollbarColor);
+    await page.goto("/");
+    // Pulgar superficie/hundida (#f1e6d7) sobre carril marca/cafe (#3d2213).
+    expect(await color()).toBe("rgb(241, 230, 215) rgb(61, 34, 19)");
+    await page.goto("/aviso-de-privacidad");
+    // Pulgar texto/secundario (#6b4a36) sobre carril superficie/hundida (#f1e6d7).
+    expect(await color()).toBe("rgb(107, 74, 54) rgb(241, 230, 215)");
+  });
+});
+
 test.describe("SCR-18 · Encabezado fijo", () => {
   test("se queda fijo al salir del hero y marca la sección actual", async ({ page }, info) => {
     test.skip(info.project.name !== "escritorio", "Las anclas del encabezado solo se ven desde 1280 px");

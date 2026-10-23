@@ -439,6 +439,15 @@
     scrollbar-color: var(--color-texto-secundario) var(--color-superficie-hundida);
   }
 
+  /*
+   * Solo en el inicio público, que es café casi de punta a punta: carril café con pulgar claro. Así, a la derecha del
+   * hero se ve la tarjeta, la línea crema de 8 px y la barra oscura, como espejo del borde izquierdo (Figma 84:476 no
+   * tiene barra). Contraste del pulgar con el carril: 11.9:1 (WCAG 1.4.11 pide 3:1).
+   */
+  html:has(#portada) {
+    scrollbar-color: var(--color-superficie-hundida) var(--color-marca-cafe);
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
