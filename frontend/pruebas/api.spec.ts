@@ -146,8 +146,13 @@ test.describe("Contrato de la API (docs/api/openapi.yaml)", () => {
   });
 
   test("ningún endpoint recibe el id del alumno (INV-07)", async () => {
-    const texto = leerTexto(rutaContrato);
-    expect(texto).not.toMatch(/\b(usuarioId|usuario_id|alumnoId|idAlumno|direccionIp|ip):/);
+    // Ninguna entrada (esquemas *Entrada) trae el id del alumno ni una IP: la IP la pone el servidor (DEC-92).
+    const esquemas = (contrato.components as Json).schemas as Json;
+    for (const [nombre, esquema] of Object.entries(esquemas)) {
+      if (!nombre.endsWith("Entrada")) continue;
+      const campos = Object.keys((esquema as Json).properties ?? {});
+      expect(campos.filter((c) => /usuario|alumno|^ip$|direccionIp/i.test(c)), nombre).toEqual([]);
+    }
     for (const op of operaciones) {
       for (const parametro of op.parametros) {
         const nombre = String(parametro.name ?? parametro.$ref ?? "");
@@ -462,6 +467,45 @@ test.describe("API simulada a través del rewrite de Next", () => {
     expect(ipDe(solicitud("203.0.113.9"), 2), "menos entradas que saltos: el socket").toBe("10.0.0.7");
     expect(ipDe(solicitud("203.0.113.9"), 0), "cero saltos: el socket").toBe("10.0.0.7");
     expect(ipDe(solicitud(), 1), "sin encabezado: el socket").toBe("10.0.0.7");
+  });
+
+  test("OP-41: la exportación trae todos los datos propios, con IP, sin secretos ni soluciones", async () => {
+    test.setTimeout(60_000);
+    // La alumna reprueba el examen: su exportación no puede traer la respuesta correcta (DEC-11).
+    await escenario("examen-en-espera");
+    const alumna = await (await Alumno.nuevo()).entrar();
+    const exportacion = await alumna.json<Json>("GET", "/api/perfil/exportacion");
+    expect(exportacion.estado).toBe(200);
+    const hoyEnMexico = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(new Date());
+    expect(exportacion.respuesta.headers()["content-disposition"]).toBe(`attachment; filename="echo-mis-datos-${hoyEnMexico}.json"`);
+
+    const datos = exportacion.cuerpo;
+    expect(Object.keys(datos).sort()).toEqual(["aceptaciones", "cuenta", "generadoEn", "insignias", "intentos", "preferencias", "progreso", "sesiones"]);
+    expect(datos.cuenta).toMatchObject({ correo: ALUMNA, nombre: "Alma", metodoAcceso: "correo" });
+    expect(datos.aceptaciones).toHaveLength(2);
+    for (const aceptacion of datos.aceptaciones) expect(aceptacion.direccionIp, "con la IP").toBeTruthy();
+    expect(datos.sesiones.length).toBeGreaterThan(0);
+    expect(datos.progreso.length).toBeGreaterThan(0);
+    const examen = datos.intentos.find((i: Json) => i.tipo === "examen");
+    expect(examen).toMatchObject({ estado: "enviado", aprobado: false });
+    expect(examen.respuestas.length).toBe(5);
+    for (const respuesta of examen.respuestas) expect(respuesta.respuesta.length).toBeGreaterThan(0);
+
+    // Nada de secretos, del identificador de Google ni de soluciones.
+    const prohibidas = ["hashContrasena", "hash", "tokenHash", "token", "codigo", "googleSub", "google_sub", "valor", "correcta", "derechaCorrecta", "retroalimentacion", "fundamento", "opciones", "uniones"];
+    expect(llavesPresentes(datos, prohibidas)).toEqual([]);
+    const texto = JSON.stringify(datos);
+    expect(texto).not.toMatch(/__Host-echo_sesion|scrypt|[0-9a-f]{32}:[0-9a-f]{64}/);
+
+    // Solo lo propio: nada de la otra alumna.
+    expect(texto).not.toContain(OTRA_ALUMNA);
+
+    // Permitida con una aceptación pendiente (derecho de acceso, INV-30).
+    await escenario("version-nueva");
+    expect((await alumna.json("GET", "/api/modulos")).estado).toBe(403);
+    expect((await alumna.json("GET", "/api/perfil/exportacion")).estado).toBe(200);
+    await alumna.cerrar();
+    expect((await (await Alumno.nuevo()).json("GET", "/api/perfil/exportacion")).estado, "sin sesión").toBe(401);
   });
 
   test("INV-30: con una versión nueva todo responde ACEPTACION_PENDIENTE hasta aceptarla", async () => {

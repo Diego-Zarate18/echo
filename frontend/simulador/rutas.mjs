@@ -480,6 +480,89 @@ function eliminarCuenta(ctx) {
   return { estado: 204 };
 }
 
+/**
+ * OP-41 · Exportar mis datos (DEC-94, fn_exportar_datos_usuario): todo lo del alumno de la sesión, con la IP de sus
+ * aceptaciones. Nunca hashes, códigos ni google_sub (INV-08); de los intentos, lo que respondió y su puntaje, nunca la
+ * respuesta correcta (INV-04, DEC-11).
+ */
+function exportarMisDatos(ctx) {
+  const { bd, usuario, ahora } = ctx;
+  const vigencia = bd.duracionSesionMs;
+  const intentos = [...bd.intentos.values()]
+    .filter((i) => i.usuarioId === usuario.id)
+    .sort((a, b) => new Date(a.iniciadoEn) - new Date(b.iniciadoEn))
+    .map((intento) => {
+      const cuestionario = R.cuestionarioPorId(intento.cuestionarioId);
+      const enviado = intento.estado === "enviado";
+      return {
+        id: intento.id,
+        tipo: cuestionario.tipo,
+        cuestionario: { id: cuestionario.id, titulo: cuestionario.titulo },
+        numero: intento.numero,
+        estado: intento.estado,
+        iniciadoEn: intento.iniciadoEn,
+        enviadoEn: intento.enviadoEn,
+        calificacion: enviado ? intento.calificacion : null,
+        aprobado: enviado && cuestionario.tipo === "examen" ? intento.aprobado : null,
+        respuestas: R.preguntasDe(cuestionario.id)
+          .filter((p) => intento.respuestas.has(p.id))
+          .map((p) => ({
+            preguntaId: p.id,
+            enunciado: p.enunciado,
+            // Solo lo que eligió el alumno (el mismo texto que el examen reprobado, sin solución).
+            respuesta: R.preguntaSinSolucion(p, intento.respuestas.get(p.id), 0).respuestaElegida,
+            puntaje: enviado ? dosDecimalesExportados(intento.puntajes.get(p.id) ?? 0) : null,
+          })),
+      };
+    });
+  const fecha = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Mexico_City" }).format(ahora);
+  return {
+    estado: 200,
+    encabezados: { "Content-Disposition": `attachment; filename="echo-mis-datos-${fecha}.json"` },
+    cuerpo: {
+      generadoEn: ahora.toISOString(),
+      cuenta: {
+        nombre: usuario.nombre,
+        apellidos: usuario.apellidos ?? null,
+        correo: usuario.correo,
+        metodoAcceso: metodoAcceso(usuario),
+        registradoEn: usuario.creadoEn,
+        correoVerificadoEn: usuario.correoVerificadoEn,
+        mayoriaEdadConfirmadaEn: usuario.mayoriaEdadConfirmadaEn,
+      },
+      preferencias: { negativaEncuesta: usuario.negativaEncuesta, negativaEstadisticas: usuario.negativaEstadisticas },
+      aceptaciones: bd.aceptaciones
+        .filter((a) => a.usuarioId === usuario.id)
+        .map((a) => {
+          const documento = bd.documentos.find((d) => d.id === a.documentoId);
+          return { documento: documento.tipo, version: documento.version, aceptadoEn: a.aceptadoEn, direccionIp: a.direccionIp };
+        }),
+      sesiones: [...bd.sesiones.values()]
+        .filter((sesion) => sesion.usuarioId === usuario.id && !sesion.revocadaEn && ahora - new Date(sesion.ultimaActividadEn) < vigencia)
+        .map((sesion) => ({ iniciadaEn: sesion.creadaEn, ultimaActividadEn: sesion.ultimaActividadEn, navegador: sesion.agenteUsuario || null })),
+      progreso: [...bd.progreso.entries()]
+        .filter(([llave]) => llave.startsWith(`${usuario.id}:`))
+        .map(([llave, progreso]) => {
+          const leccion = R.leccionPorId(Number(llave.split(":")[1]));
+          return {
+            leccion: R.referencia(leccion),
+            curso: R.referencia(R.cursoDe(leccion)),
+            abiertaEn: progreso.abiertaEn,
+            ultimaSeccion: progreso.ultimaSeccion,
+            terminadaEn: progreso.terminadaEn,
+          };
+        }),
+      intentos,
+      insignias: R.modulosEnOrden()
+        .map((modulo) => ({ modulo, insignia: R.insigniaDeModulo(bd, usuario.id, modulo.id) }))
+        .filter(({ insignia }) => insignia?.obtenidaEn)
+        .map(({ modulo, insignia }) => ({ modulo: R.referencia(modulo), nombre: insignia.nombre, obtenidaEn: insignia.obtenidaEn })),
+    },
+  };
+}
+
+const dosDecimalesExportados = (numero) => Math.round(numero * 100) / 100;
+
 // ── Contenido ───────────────────────────────────────────────────────────────────────────────────────────────
 function resumenEvaluable(ctx, cuestionario) {
   const { bd, usuario } = ctx;
@@ -997,6 +1080,7 @@ export const rutas = [
   { metodo: "POST", ruta: "/api/contrasena/restablecimiento", operationId: "restablecerContrasena", sesion: "opcional", conPendiente: true, manejar: restablecerContrasena },
   { metodo: "GET", ruta: "/api/perfil", operationId: "obtenerPerfil", sesion: "requerida", conPendiente: true, manejar: (ctx) => ({ estado: 200, cuerpo: perfilVisible(ctx, ctx.usuario) }) },
   { metodo: "PATCH", ruta: "/api/perfil", operationId: "editarNombre", sesion: "requerida", manejar: editarNombre },
+  { metodo: "GET", ruta: "/api/perfil/exportacion", operationId: "exportarMisDatos", sesion: "requerida", conPendiente: true, manejar: exportarMisDatos },
   { metodo: "PATCH", ruta: "/api/perfil/privacidad", operationId: "cambiarPreferenciasPrivacidad", sesion: "requerida", manejar: cambiarPreferenciasPrivacidad },
   { metodo: "PUT", ruta: "/api/perfil/contrasena", operationId: "cambiarContrasena", sesion: "requerida", manejar: cambiarContrasena },
   { metodo: "POST", ruta: "/api/perfil/correo", operationId: "cambiarCorreo", sesion: "requerida", limitada: true, manejar: cambiarCorreo },

@@ -20,6 +20,7 @@ export const operacionesApi = {
   restablecerContrasena: { metodo: "POST", ruta: "/api/contrasena/restablecimiento" },
   obtenerPerfil: { metodo: "GET", ruta: "/api/perfil" },
   editarNombre: { metodo: "PATCH", ruta: "/api/perfil" },
+  exportarMisDatos: { metodo: "GET", ruta: "/api/perfil/exportacion" },
   cambiarPreferenciasPrivacidad: { metodo: "PATCH", ruta: "/api/perfil/privacidad" },
   cambiarContrasena: { metodo: "PUT", ruta: "/api/perfil/contrasena" },
   cambiarCorreo: { metodo: "POST", ruta: "/api/perfil/correo" },

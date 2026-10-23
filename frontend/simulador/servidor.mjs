@@ -239,6 +239,7 @@ async function atender(solicitud, respuesta) {
     };
 
     const resultado = await ruta.manejar(ctx);
+    if (resultado.encabezados) Object.assign(encabezados, resultado.encabezados);
     if (actual) encabezados["X-Sesion-Expira"] = ctx.expiraEn();
     if (resultado.estado === 302) {
       encabezados.Location = resultado.ubicacion;

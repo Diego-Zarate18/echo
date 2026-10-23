@@ -70,6 +70,7 @@ ser equivalente: mismas rutas, `operationId`, esquemas y códigos de error.
 | OP-07 | `POST /api/contrasena/restablecimiento` | `restablecerContrasena` |
 | OP-08 | `GET /api/perfil` | `obtenerPerfil` |
 | OP-09 | `PATCH /api/perfil` | `editarNombre` |
+| OP-41 | `GET /api/perfil/exportacion` | `exportarMisDatos` |
 | OP-39 | `PATCH /api/perfil/privacidad` | `cambiarPreferenciasPrivacidad` |
 | OP-10 | `PUT /api/perfil/contrasena` | `cambiarContrasena` |
 | OP-11 | `POST /api/perfil/correo` | `cambiarCorreo` |
@@ -147,6 +148,25 @@ OP-38 (cierre del proyecto). Son internas del backend, del Cron o de scripts con
 - `GET /api/sesion`, `POST /api/sesion/renovar`, `DELETE /api/sesion` y `DELETE /api/sesiones`;
 - `GET /api/documentos`, `POST /api/cuenta/aceptacion`, `GET /api/perfil` y `POST /api/perfil/eliminacion`;
 - las de cuenta sin sesión (registro, verificación, recuperación, confirmación de correo y Google).
+
+## Exportación (DEC-94)
+`GET /api/perfil/exportacion` (`exportarMisDatos`, OP-41) entrega en un archivo JSON todos los datos del alumno de la
+sesión, como el resultado de `fn_exportar_datos_usuario`: el derecho de acceso sin pasar por el equipo.
+- **Descarga:** `Content-Disposition: attachment; filename="echo-mis-datos-AAAA-MM-DD.json"`, con la fecha de la Ciudad de
+  México.
+- **Se permite con `ACEPTACION_PENDIENTE`:** es el derecho de acceso (INV-30). Solo trae lo propio (INV-07).
+- **Contenido** (`ExportacionDatos`):
+  - la cuenta;
+  - las preferencias;
+  - las aceptaciones **con su IP** (aquí sí, porque son datos del propio alumno);
+  - las sesiones abiertas (inicio, última actividad y navegador);
+  - el progreso por lección;
+  - los intentos, con lo que respondió en cada pregunta y su puntaje;
+  - las insignias.
+- **Nunca incluye** hashes de contraseña, huellas o códigos de sesión y de enlaces (`token_hash`) ni `google_sub` (INV-08).
+- **Nunca incluye la respuesta correcta** ni la retroalimentación de ningún intento: de un examen reprobado tampoco
+  (INV-04, DEC-11). Exporta lo que el alumno eligió y su puntaje, no las claves.
+- **Frontend:** `apiNavegador.exportarMisDatos()` devuelve el JSON y el componente del Perfil lo guarda como archivo.
 
 ## Seguridad de la cuenta
 - **Google no hereda cuentas sin verificar (DEC-93).** `volverDeGoogle` y `aceptarDocumentos` solo vinculan Google con una

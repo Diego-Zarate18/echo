@@ -420,6 +420,36 @@ paths:
           $ref: "#/components/responses/Prohibido"
         "422":
           $ref: "#/components/responses/DatosInvalidos"
+  /api/perfil/exportacion:
+    get:
+      tags: [perfil]
+      operationId: exportarMisDatos
+      x-grafo: OP-41
+      summary: Descargar todos mis datos (derecho de acceso)
+      description: >-
+        Devuelve en un archivo JSON todos los datos del alumno de la sesión (DEC-94, fn_exportar_datos_usuario): cuenta,
+        preferencias, aceptaciones con su IP, sesiones abiertas, progreso, intentos con lo que respondió e insignias.
+        Solo los propios (INV-07). Se permite con una aceptación pendiente, porque es el derecho de acceso (INV-30).
+        Nunca incluye hashes, códigos de sesión o de enlaces ni el identificador de Google (INV-08). De los intentos
+        exporta lo que el alumno respondió y su puntaje, nunca la respuesta correcta (INV-04, DEC-11).
+      security:
+        - cookieSesion: []
+      responses:
+        "200":
+          description: Descarga «echo-mis-datos-AAAA-MM-DD.json», con la fecha de la Ciudad de México.
+          headers:
+            Content-Disposition:
+              description: attachment; filename="echo-mis-datos-AAAA-MM-DD.json"
+              schema:
+                type: string
+            X-Sesion-Expira:
+              $ref: "#/components/headers/SesionExpira"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportacionDatos"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
   /api/perfil/privacidad:
     patch:
       tags: [perfil]
@@ -1478,6 +1508,178 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AceptacionRegistrada"
+    ExportacionDatos:
+      type: object
+      required: [generadoEn, cuenta, preferencias, aceptaciones, sesiones, progreso, intentos, insignias]
+      additionalProperties: false
+      description: >-
+        Todos los datos del alumno (DEC-94). Sin hashes, códigos ni google_sub; de los intentos, solo lo que respondió y
+        su puntaje.
+      properties:
+        generadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        cuenta:
+          type: object
+          required: [nombre, apellidos, correo, metodoAcceso, registradoEn, correoVerificadoEn, mayoriaEdadConfirmadaEn]
+          additionalProperties: false
+          properties:
+            nombre:
+              type: string
+            apellidos:
+              type: [string, "null"]
+            correo:
+              type: string
+            metodoAcceso:
+              $ref: "#/components/schemas/MetodoAcceso"
+            registradoEn:
+              $ref: "#/components/schemas/FechaHora"
+            correoVerificadoEn:
+              oneOf:
+                - $ref: "#/components/schemas/FechaHora"
+                - type: "null"
+            mayoriaEdadConfirmadaEn:
+              oneOf:
+                - $ref: "#/components/schemas/FechaHora"
+                - type: "null"
+        preferencias:
+          $ref: "#/components/schemas/Preferencias"
+        aceptaciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/AceptacionExportada"
+        sesiones:
+          type: array
+          description: Sesiones abiertas.
+          items:
+            $ref: "#/components/schemas/SesionExportada"
+        progreso:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgresoExportado"
+        intentos:
+          type: array
+          items:
+            $ref: "#/components/schemas/IntentoExportado"
+        insignias:
+          type: array
+          items:
+            $ref: "#/components/schemas/InsigniaExportada"
+    AceptacionExportada:
+      type: object
+      required: [documento, version, aceptadoEn, direccionIp]
+      additionalProperties: false
+      description: Con la IP, porque es el acceso a sus propios datos (DEC-94).
+      properties:
+        documento:
+          $ref: "#/components/schemas/TipoDocumento"
+        version:
+          $ref: "#/components/schemas/Version"
+        aceptadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        direccionIp:
+          type: [string, "null"]
+    SesionExportada:
+      type: object
+      required: [iniciadaEn, ultimaActividadEn, navegador]
+      additionalProperties: false
+      properties:
+        iniciadaEn:
+          $ref: "#/components/schemas/FechaHora"
+        ultimaActividadEn:
+          $ref: "#/components/schemas/FechaHora"
+        navegador:
+          type: [string, "null"]
+          description: Agente de usuario que envió el navegador.
+    ProgresoExportado:
+      type: object
+      required: [leccion, curso, abiertaEn, ultimaSeccion, terminadaEn]
+      additionalProperties: false
+      properties:
+        leccion:
+          $ref: "#/components/schemas/Referencia"
+        curso:
+          $ref: "#/components/schemas/Referencia"
+        abiertaEn:
+          $ref: "#/components/schemas/FechaHora"
+        ultimaSeccion:
+          type: integer
+          minimum: 1
+        terminadaEn:
+          oneOf:
+            - $ref: "#/components/schemas/FechaHora"
+            - type: "null"
+    RespuestaExportada:
+      type: object
+      required: [preguntaId, enunciado, respuesta, puntaje]
+      additionalProperties: false
+      description: Lo que respondió el alumno; nunca la respuesta correcta.
+      properties:
+        preguntaId:
+          type: integer
+        enunciado:
+          type: string
+        respuesta:
+          type: array
+          description: Textos elegidos (en relación de columnas, «izquierda → derecha»).
+          items:
+            type: string
+        puntaje:
+          type: [number, "null"]
+          minimum: 0
+          maximum: 1
+          description: Nulo mientras el intento sigue en curso.
+    IntentoExportado:
+      type: object
+      required: [id, tipo, cuestionario, numero, estado, iniciadoEn, enviadoEn, calificacion, aprobado, respuestas]
+      additionalProperties: false
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+        tipo:
+          $ref: "#/components/schemas/TipoCuestionario"
+        cuestionario:
+          type: object
+          required: [id, titulo]
+          additionalProperties: false
+          properties:
+            id:
+              type: integer
+            titulo:
+              type: string
+        numero:
+          type: integer
+          minimum: 1
+        estado:
+          type: string
+          enum: [enCurso, enviado]
+        iniciadoEn:
+          $ref: "#/components/schemas/FechaHora"
+        enviadoEn:
+          oneOf:
+            - $ref: "#/components/schemas/FechaHora"
+            - type: "null"
+        calificacion:
+          oneOf:
+            - $ref: "#/components/schemas/Porcentaje"
+            - type: "null"
+        aprobado:
+          type: [boolean, "null"]
+          description: Solo en exámenes enviados.
+        respuestas:
+          type: array
+          items:
+            $ref: "#/components/schemas/RespuestaExportada"
+    InsigniaExportada:
+      type: object
+      required: [modulo, nombre, obtenidaEn]
+      additionalProperties: false
+      properties:
+        modulo:
+          $ref: "#/components/schemas/Referencia"
+        nombre:
+          type: string
+        obtenidaEn:
+          $ref: "#/components/schemas/FechaHora"
     NombreEntrada:
       type: object
       required: [nombre, apellidos]

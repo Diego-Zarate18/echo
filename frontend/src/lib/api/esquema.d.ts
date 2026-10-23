@@ -264,6 +264,26 @@ export interface paths {
         patch: operations["editarNombre"];
         trace?: never;
     };
+    "/api/perfil/exportacion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Descargar todos mis datos (derecho de acceso)
+         * @description Devuelve en un archivo JSON todos los datos del alumno de la sesión (DEC-94, fn_exportar_datos_usuario): cuenta, preferencias, aceptaciones con su IP, sesiones abiertas, progreso, intentos con lo que respondió e insignias. Solo los propios (INV-07). Se permite con una aceptación pendiente, porque es el derecho de acceso (INV-30). Nunca incluye hashes, códigos de sesión o de enlaces ni el identificador de Google (INV-08). De los intentos exporta lo que el alumno respondió y su puntaje, nunca la respuesta correcta (INV-04, DEC-11).
+         */
+        get: operations["exportarMisDatos"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/perfil/privacidad": {
         parameters: {
             query?: never;
@@ -797,6 +817,77 @@ export interface components {
             registradoEn: components["schemas"]["FechaHora"];
             preferencias: components["schemas"]["Preferencias"];
             aceptaciones: components["schemas"]["AceptacionRegistrada"][];
+        };
+        /** @description Todos los datos del alumno (DEC-94). Sin hashes, códigos ni google_sub; de los intentos, solo lo que respondió y su puntaje. */
+        ExportacionDatos: {
+            generadoEn: components["schemas"]["FechaHora"];
+            cuenta: {
+                nombre: string;
+                apellidos: string | null;
+                correo: string;
+                metodoAcceso: components["schemas"]["MetodoAcceso"];
+                registradoEn: components["schemas"]["FechaHora"];
+                correoVerificadoEn: components["schemas"]["FechaHora"] | null;
+                mayoriaEdadConfirmadaEn: components["schemas"]["FechaHora"] | null;
+            };
+            preferencias: components["schemas"]["Preferencias"];
+            aceptaciones: components["schemas"]["AceptacionExportada"][];
+            /** @description Sesiones abiertas. */
+            sesiones: components["schemas"]["SesionExportada"][];
+            progreso: components["schemas"]["ProgresoExportado"][];
+            intentos: components["schemas"]["IntentoExportado"][];
+            insignias: components["schemas"]["InsigniaExportada"][];
+        };
+        /** @description Con la IP, porque es el acceso a sus propios datos (DEC-94). */
+        AceptacionExportada: {
+            documento: components["schemas"]["TipoDocumento"];
+            version: components["schemas"]["Version"];
+            aceptadoEn: components["schemas"]["FechaHora"];
+            direccionIp: string | null;
+        };
+        SesionExportada: {
+            iniciadaEn: components["schemas"]["FechaHora"];
+            ultimaActividadEn: components["schemas"]["FechaHora"];
+            /** @description Agente de usuario que envió el navegador. */
+            navegador: string | null;
+        };
+        ProgresoExportado: {
+            leccion: components["schemas"]["Referencia"];
+            curso: components["schemas"]["Referencia"];
+            abiertaEn: components["schemas"]["FechaHora"];
+            ultimaSeccion: number;
+            terminadaEn: components["schemas"]["FechaHora"] | null;
+        };
+        /** @description Lo que respondió el alumno; nunca la respuesta correcta. */
+        RespuestaExportada: {
+            preguntaId: number;
+            enunciado: string;
+            /** @description Textos elegidos (en relación de columnas, «izquierda → derecha»). */
+            respuesta: string[];
+            /** @description Nulo mientras el intento sigue en curso. */
+            puntaje: number | null;
+        };
+        IntentoExportado: {
+            id: components["schemas"]["Uuid"];
+            tipo: components["schemas"]["TipoCuestionario"];
+            cuestionario: {
+                id: number;
+                titulo: string;
+            };
+            numero: number;
+            /** @enum {string} */
+            estado: "enCurso" | "enviado";
+            iniciadoEn: components["schemas"]["FechaHora"];
+            enviadoEn: components["schemas"]["FechaHora"] | null;
+            calificacion: components["schemas"]["Porcentaje"] | null;
+            /** @description Solo en exámenes enviados. */
+            aprobado: boolean | null;
+            respuestas: components["schemas"]["RespuestaExportada"][];
+        };
+        InsigniaExportada: {
+            modulo: components["schemas"]["Referencia"];
+            nombre: string;
+            obtenidaEn: components["schemas"]["FechaHora"];
         };
         NombreEntrada: {
             nombre: string;
@@ -1722,6 +1813,30 @@ export interface operations {
             401: components["responses"]["NoAutenticado"];
             403: components["responses"]["Prohibido"];
             422: components["responses"]["DatosInvalidos"];
+        };
+    };
+    exportarMisDatos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Descarga «echo-mis-datos-AAAA-MM-DD.json», con la fecha de la Ciudad de México. */
+            200: {
+                headers: {
+                    /** @description attachment; filename="echo-mis-datos-AAAA-MM-DD.json" */
+                    "Content-Disposition"?: string;
+                    "X-Sesion-Expira": components["headers"]["SesionExpira"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportacionDatos"];
+                };
+            };
+            401: components["responses"]["NoAutenticado"];
         };
     };
     cambiarPreferenciasPrivacidad: {
