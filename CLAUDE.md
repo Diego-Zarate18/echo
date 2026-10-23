@@ -67,7 +67,7 @@ El proyecto de backend aún no existe. Al crearlo, agrega aquí los comandos rea
 - Todo cambio de esquema es una migración versionada; nada se cambia a mano (INV-10).
 - La app se conecta como `echo_app`, las migraciones como `echo_migracion` y la carga de contenido como `echo_contenido`.
   Nunca uses el superusuario (INV-09).
-- La lógica de BD se limita a las 5 funciones, 2 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
+- La lógica de BD se limita a las 6 funciones, 2 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
 
 ## Reglas no negociables
 1. El historial nunca se borra: eliminar una cuenta es anonimizarla con `fn_anonimizar_usuario` (INV-01).

@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.4.0",
+    "version": "1.5.1",
     "actualizado": "2026-10-21",
-    "fase": "Sitio público hecho (inicio, aviso y ayuda). Aviso de privacidad integral y términos v1.0 redactados. Siguiente: contrato de la API y API simulada (Tarea 05), luego aviso y términos en el sitio y las vistas de cuenta.",
+    "fase": "Aviso y términos v1.0 en el sitio y carril de la barra del inicio hechos (Tarea 06 y ajustes). Siguiente: Tarea 07 (exportación de datos, textos legales corregidos) y las vistas de cuenta.",
     "historial": [
       {
         "version": "0.1.0",
@@ -59,6 +59,21 @@
         "version": "1.4.0",
         "fecha": "2026-10-21",
         "cambio": "Aviso de privacidad versionado con aceptación registrada: fecha, hora, IP y versión (DEC-28 revisada; FDA-15 descartado; OP-13 recuperada; tablas documento_legal y aceptacion_documento; INV-30). Responsable único Brian Luis Ruiz Pérez, ley de 2025 y autoridad garante (DEC-68 revisada); PEND-12 resuelto. Términos y condiciones (DEC-87, SCR-20), finalidades secundarias con negativa (DEC-88, OP-39), solo mayores de edad (DEC-89), pantalla de aceptación (SCR-19), consulta de documentos vigentes (OP-40). Arquitectura del frontend aprobada: mismo origen (DEC-85), convenciones (DEC-86), contrato OpenAPI y API simulada (DEC-90), INV-29. Modelo de 21 tablas y 30 relaciones."
+      },
+      {
+        "version": "1.4.1",
+        "fecha": "2026-10-21",
+        "cambio": "Revisión de la Tarea 05: intento de actividades al enviar (OP-22/23); cuestionario por id; clave opaca en relación de columnas (DEC-91); DEC-54 con 21 tablas; reingreso con Google para eliminar (OP-14); excepciones de INV-30; lista cerrada de códigos de error (DEC-85); límite por IP (DEC-26) e IP desde el proxy de confianza (DEC-92, PEND-14); ruta del cambio de correo (SCR-03); métodos de acceso (OP-08); Google no hereda cuentas sin verificar (DEC-93)."
+      },
+      {
+        "version": "1.5.0",
+        "fecha": "2026-10-21",
+        "cambio": "Reporte técnico de BD actualizado con las diapositivas del docente: exportación de datos para derechos ARCO (DEC-94, FN-EXPORTAR, OP-41; 6 funciones de BD), ciclo de borrado, respaldos y registros (DEC-95), proveedores externos y sus DPA (DEC-96, PEND-15), aceptaciones inalterables para echo_app (DEC-28, ROL-APP)."
+      },
+      {
+        "version": "1.5.1",
+        "fecha": "2026-10-23",
+        "cambio": "Revisión de la Tarea 06: PROXIES_CONFIABLES vale 0 en desarrollo porque Next no agrega entrada a X-Forwarded-For (DEC-92); correo de soporte soporte.echo@gmail.com (DEC-68)."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -161,30 +176,30 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 451,
-      "aristas": 1261,
+      "nodos": 461,
+      "aristas": 1315,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 5,
         "tecnologia": 32,
-        "decision": 90,
+        "decision": 96,
         "invariante": 30,
         "tabla": 21,
         "rol_bd": 5,
-        "funcion_bd": 5,
+        "funcion_bd": 6,
         "disparador": 2,
         "vista_bd": 2,
         "consulta": 13,
         "modulo": 8,
-        "operacion": 40,
+        "operacion": 41,
         "pantalla": 20,
         "requerimiento": 83,
         "hueco": 34,
         "fuera_de_alcance": 20,
         "riesgo_aceptado": 9,
-        "pregunta_abierta": 13
+        "pregunta_abierta": 15
       }
     }
   },
@@ -412,7 +427,7 @@
       "id": "TEC-OAUTH",
       "tipo": "tecnologia",
       "nombre": "Google OAuth 2.0 / OpenID Connect",
-      "descripcion": "Registro e inicio de sesión con Google (RF-ACC-02). Se guarda el sub permanente, no el correo como identificador.",
+      "descripcion": "Registro e inicio de sesión con Google (RF-ACC-02). Se guarda el sub permanente, no el correo como identificador. Alcances: openid, email y profile (DEC-96).",
       "estado": "decidido"
     },
     {
@@ -660,7 +675,8 @@
         "origen": "S-11, P-21; corrige RF-ACC-06, RF-ACC-07 (expiración «configurable» → 30 min fijos)",
         "descartados": [
           "JWT autocontenido (TEC-JWT)"
-        ]
+        ],
+        "aviso_de_expiracion": "AvisoSesion lee X-Sesion-Expira de cada respuesta; nunca consulta GET /api/sesion periódicamente, porque eso renueva la sesión"
       }
     },
     {
@@ -801,7 +817,8 @@
       "descripcion": "Tras 5 fallos seguidos la cuenta queda bloqueada 15 minutos (usuario.intentos_fallidos, usuario.bloqueado_hasta). El contador se reinicia al entrar bien o al vencer el bloqueo. Los intentos contra correos inexistentes los frena un límite de peticiones por IP en la memoria del servidor. Durante el bloqueo no se evalúa la contraseña ni se reinicia ni extiende el plazo; la respuesta es la genérica (DEC-77).",
       "estado": "decidido",
       "detalles": {
-        "origen": "P-22 (versión final: columnas en usuario, sin tabla intento_acceso)"
+        "origen": "P-22 (versión final: columnas en usuario, sin tabla intento_acceso)",
+        "limite_por_ip": "60 peticiones cada 10 minutos por IP en las rutas de cuenta (registro, sesión, recuperación, reenvío); 429 DEMASIADAS_SOLICITUDES con Retry-After"
       }
     },
     {
@@ -824,9 +841,10 @@
         "origen": "Rúbrica del docente y aviso de privacidad integral v1.0 (21/10); revierte la versión del 17/10 (página fija con consentimiento tácito, sin registro)",
         "revisada": "1.4.0 (21/10): el docente exige registrar fecha, hora, IP y versión aceptada",
         "ley": "LFPDPPP (DEC-68)",
-        "texto_fuente": "docs/legal/ (aviso integral v1.0, 21/10/2026)",
+        "texto_fuente": "docs/legal/*.md (Markdown, fin de línea LF; la huella SHA-256 se calcula sobre ese archivo) (aviso integral v1.0, 21/10/2026)",
         "aviso_de_cambios": "Aviso en la interfaz 30 días, correo al registrado y nueva aceptación cuando se requiera",
-        "registro_con_google": "El callback de Google no crea la cuenta: guarda sub, nombre, apellido y correo en una cookie temporal cifrada y firmada (HttpOnly, 10 minutos, sin BD); la cuenta se crea al aceptar en SCR-19"
+        "registro_con_google": "El callback de Google no crea la cuenta: guarda sub, nombre, apellido y correo en una cookie temporal cifrada y firmada (HttpOnly, 10 minutos, sin BD); la cuenta se crea al aceptar en SCR-19",
+        "permisos": "echo_app: SELECT e INSERT sobre aceptacion_documento; ningún rol de la app la actualiza ni la borra"
       }
     },
     {
@@ -1036,7 +1054,7 @@
       "id": "DEC-54",
       "tipo": "decision",
       "nombre": "Diagrama ER oficial en draw.io",
-      "descripcion": "docs/echo_db.drawio es la versión oficial del modelo físico (19 tablas, 28 relaciones). El diagrama de Figma de 23 tablas está desactualizado.",
+      "descripcion": "docs/echo_db.drawio es la versión oficial del modelo físico (21 tablas, 30 relaciones). El diagrama de Figma de 23 tablas está desactualizado.",
       "estado": "decidido"
     },
     {
@@ -2876,7 +2894,7 @@
       "id": "ROL-APP",
       "tipo": "rol_bd",
       "nombre": "echo_app",
-      "descripcion": "Servidor de la aplicación (DATABASE_URL de Prisma Client). SELECT sobre contenido; SELECT, INSERT y UPDATE sobre usuario, intento, respuesta_opcion, respuesta_pareja, progreso_leccion e insignia_usuario; SELECT, INSERT, UPDATE y DELETE sobre sesion y token_correo; EXECUTE sobre las funciones; SELECT sobre v_avance_curso. No puede modificar contenido, borrar historial ni cambiar la estructura.",
+      "descripcion": "Servidor de la aplicación (DATABASE_URL de Prisma Client). SELECT sobre contenido; SELECT, INSERT y UPDATE sobre usuario, intento, respuesta_opcion, respuesta_pareja, progreso_leccion e insignia_usuario; SELECT, INSERT, UPDATE y DELETE sobre sesion y token_correo; EXECUTE sobre las funciones; SELECT sobre v_avance_curso. No puede modificar contenido, borrar historial ni cambiar la estructura. Sobre aceptacion_documento solo SELECT e INSERT: no puede modificar ni borrar aceptaciones (las cambia solo fn_anonimizar_usuario).",
       "estado": "decidido"
     },
     {
@@ -3228,7 +3246,7 @@
         "tipo_acceso": "L",
         "frecuencia": "Baja",
         "recibe": "Sesión",
-        "devuelve": "Nombre, apellidos, correo, método de acceso, fecha de registro, preferencias de finalidades secundarias y aceptaciones registradas (documento, versión, fecha y hora)"
+        "devuelve": "Nombre, apellidos, correo, método de acceso (correo, google o ambos), fecha de registro, preferencias de finalidades secundarias y aceptaciones registradas (documento, versión, fecha y hora)"
       }
     },
     {
@@ -3291,7 +3309,7 @@
       "id": "OP-14",
       "tipo": "operacion",
       "nombre": "Eliminar cuenta",
-      "descripcion": "Anonimiza; no borra historial. Borra la IP de sus aceptaciones (DEC-28).",
+      "descripcion": "Anonimiza; no borra historial. Borra la IP de sus aceptaciones (DEC-28). Con Google, el reingreso es GET /api/auth/google?proposito=eliminar: el callback marca la sesión durante 5 minutos; sin esa marca responde REINGRESO_REQUERIDO.",
       "estado": "decidido",
       "detalles": {
         "origen": "O-14 de la tabla de operaciones corregida",
@@ -3403,28 +3421,30 @@
       "id": "OP-22",
       "tipo": "operacion",
       "nombre": "Abrir actividad o caso",
-      "descripcion": "Lección leída; actividad y casos en el orden definido; crea o retoma el intento.",
+      "descripcion": "Lección leída; actividad y casos en el orden definido. Sin efectos: devuelve instrucciones, preguntas y opciones sin valores (INV-04); no crea intento.",
       "estado": "decidido",
       "detalles": {
         "origen": "O-22 de la tabla de operaciones corregida",
-        "tipo_acceso": "L+E",
+        "tipo_acceso": "L",
         "frecuencia": "Media",
         "recibe": "Actividad o caso",
-        "devuelve": "Instrucciones, preguntas y opciones (SIN sus valores)"
+        "devuelve": "Instrucciones, preguntas y opciones (SIN sus valores)",
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
       }
     },
     {
       "id": "OP-23",
       "tipo": "operacion",
       "nombre": "Enviar actividad o caso",
-      "descripcion": "Todas respondidas; guarda el intento; actualiza el avance. Reintentar = repetir OP-22 y OP-23.",
+      "descripcion": "Todas respondidas; guarda el intento; actualiza el avance. Reintentar = repetir OP-22 y OP-23. Crea el intento con fn_iniciar_intento y lo califica con fn_enviar_intento en la misma petición: las actividades y los casos se responden de una vez y no tienen espera.",
       "estado": "decidido",
       "detalles": {
         "origen": "O-23 de la tabla de operaciones corregida",
         "tipo_acceso": "L+E",
         "frecuencia": "Media",
         "recibe": "Respuesta de cada pregunta",
-        "devuelve": "Calificación, retroalimentación por pregunta (con la correcta en actividades), etiqueta de decisión y consecuencia en casos"
+        "devuelve": "Calificación, retroalimentación por pregunta (con la correcta en actividades), etiqueta de decisión y consecuencia en casos",
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
       }
     },
     {
@@ -3438,7 +3458,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Media",
         "recibe": "Examen",
-        "devuelve": "Instrucciones, número de preguntas, calificación mínima, estado, minutos de espera restantes, intentos previos"
+        "devuelve": "Instrucciones, número de preguntas, calificación mínima, estado, minutos de espera restantes, intentos previos",
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
       }
     },
     {
@@ -3452,7 +3473,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Media",
         "recibe": "Examen",
-        "devuelve": "Preguntas en el orden de la semilla y respuestas ya guardadas"
+        "devuelve": "Preguntas en el orden de la semilla y respuestas ya guardadas",
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
       }
     },
     {
@@ -3466,7 +3488,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Alta",
         "recibe": "Intento, pregunta, opción elegida o parejas",
-        "devuelve": "Confirmación de guardado"
+        "devuelve": "Confirmación de guardado",
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
       }
     },
     {
@@ -3480,7 +3503,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Media",
         "recibe": "Intento",
-        "devuelve": "Calificación, aprobado o no, aciertos y errores, retroalimentación (sin respuestas correctas si reprobó), lecciones a repasar, minutos de espera, insignia nueva"
+        "devuelve": "Calificación, aprobado o no, aciertos y errores, retroalimentación (sin respuestas correctas si reprobó), lecciones a repasar, minutos de espera, insignia nueva",
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
       }
     },
     {
@@ -3660,7 +3684,8 @@
         "origen": "V-03",
         "estados_a_disenar": "Enlace vencido, enlace ya usado",
         "requiere_sesion": false,
-        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
+        "ruta": "/verificar-correo?codigo= (OP-02) y /verificar-correo?tipo=cambio-correo&codigo= (OP-12)"
       }
     },
     {
@@ -3824,7 +3849,7 @@
       "id": "SCR-16",
       "tipo": "pantalla",
       "nombre": "Perfil",
-      "descripcion": "Datos personales, editar nombre, cambiar contraseña o correo, cerrar sesión en todos lados, eliminar cuenta. Sección «Privacidad»: casillas de las finalidades secundarias (OP-39) y lista de aceptaciones registradas (documento, versión, fecha y hora).",
+      "descripcion": "Datos personales, editar nombre, cambiar contraseña o correo, cerrar sesión en todos lados, eliminar cuenta. Sección «Privacidad»: casillas de las finalidades secundarias (OP-39) y lista de aceptaciones registradas (documento, versión, fecha y hora). Botón «Descargar mis datos» (OP-41).",
       "estado": "decidido",
       "detalles": {
         "origen": "V-16",
@@ -5265,7 +5290,7 @@
         "responsable": "Brian Luis Ruiz Pérez",
         "domicilio_notificaciones": "Carretera Tuxtla Gutiérrez – Portillo Zaragoza km 21+500, col. Las Brisas, Suchiapa, Chiapas, C.P. 29145, a la atención de Brian Luis Ruiz Pérez (Echo)",
         "correo_privacidad": "privacidad.echo@gmail.com",
-        "correo_soporte": "echo.soporte@gmail.com"
+        "correo_soporte": "soporte.echo@gmail.com"
       }
     },
     {
@@ -5385,7 +5410,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Antes de cada migración y carga de contenido, y semanal",
         "recibe": "Credenciales de echo_migracion",
-        "devuelve": "Archivo .7z cifrado fuera del repositorio"
+        "devuelve": "Archivo .7z cifrado fuera del repositorio",
+        "restauracion": "Ver DEC-95: reaplicar fn_anonimizar_usuario a las cuentas anonimizadas después de la fecha del respaldo antes de reabrir"
       }
     },
     {
@@ -5613,7 +5639,30 @@
       "descripcion": "El navegador solo habla con el dominio del frontend: /api/* se reescribe hacia API_URL_INTERNA (red privada de Railway). Cookie de sesión __Host-echo_sesion (HttpOnly, Secure, SameSite=Lax, Path=/, sin Domain); el backend rechaza mutaciones cuyo Origin no sea el del frontend; sin CORS ni NEXT_PUBLIC_*. Errores con forma { codigo, mensaje }. Google OAuth en /api/auth/google y su callback.",
       "estado": "decidido",
       "detalles": {
-        "origen": "docs/frontend/arquitectura.md §3 y §14, aprobada el 21/10"
+        "origen": "docs/frontend/arquitectura.md §3 y §14, aprobada el 21/10",
+        "codigos_error": [
+          "NO_AUTENTICADO",
+          "CREDENCIALES_INVALIDAS",
+          "CORREO_SIN_VERIFICAR",
+          "ENLACE_INVALIDO",
+          "CONTRASENA_INCORRECTA",
+          "REINGRESO_REQUERIDO",
+          "REGISTRO_GOOGLE_VENCIDO",
+          "NO_DISPONIBLE_CON_GOOGLE",
+          "DATOS_INVALIDOS",
+          "RESPUESTAS_INCOMPLETAS",
+          "NO_ENCONTRADO",
+          "BLOQUEADO_POR_AVANCE",
+          "EN_ESPERA",
+          "EXAMEN_APROBADO",
+          "INTENTO_CERRADO",
+          "ORIGEN_NO_PERMITIDO",
+          "DEMASIADAS_SOLICITUDES",
+          "ACEPTACION_PENDIENTE",
+          "VERSION_NO_VIGENTE",
+          "ERROR_INTERNO"
+        ],
+        "contrato": "docs/api/openapi.yaml (DEC-90); textos para el alumno en frontend/src/lib/api/mensajes.ts"
       }
     },
     {
@@ -5635,7 +5684,7 @@
       "estado": "decidido",
       "detalles": {
         "origen": "Entregable de la asignatura (21/10)",
-        "texto_fuente": "docs/legal/ (términos v1.0, 21/10/2026)",
+        "texto_fuente": "docs/legal/*.md (Markdown, fin de línea LF; la huella SHA-256 se calcula sobre ese archivo) (términos v1.0, 21/10/2026)",
         "jurisdiccion": "Tribunales de Tuxtla Gutiérrez, Chiapas"
       }
     },
@@ -5681,7 +5730,7 @@
       "id": "INV-30",
       "tipo": "invariante",
       "nombre": "No hay cuenta sin aceptación registrada",
-      "descripcion": "Toda cuenta se crea en la misma transacción que sus aceptaciones del aviso de privacidad y de los términos vigentes, con fecha, hora, IP y versión, y con la confirmación de mayoría de edad. Las rutas de la app rechazan con ACEPTACION_PENDIENTE a quien deba aceptar una versión nueva, salvo aceptar, consultar los documentos, ver o eliminar la cuenta y cerrar sesión.",
+      "descripcion": "Toda cuenta se crea en la misma transacción que sus aceptaciones del aviso de privacidad y de los términos vigentes, con fecha, hora, IP y versión, y con la confirmación de mayoría de edad. Las rutas de la app rechazan con ACEPTACION_PENDIENTE a quien deba aceptar una versión nueva, salvo validar y renovar la sesión, aceptar, consultar los documentos, ver, exportar o eliminar la cuenta y cerrar sesión.",
       "estado": "obligatorio"
     },
     {
@@ -5916,6 +5965,130 @@
       "nombre": "Tailwind CSS 4",
       "descripcion": "Estilos del frontend; las variables de Figma son tokens en @theme (DEC-84).",
       "estado": "decidido"
+    },
+    {
+      "id": "DEC-91",
+      "tipo": "decision",
+      "nombre": "Clave opaca en la relación de columnas",
+      "descripcion": "En una pregunta de relacionar columnas, la API nunca expone los ids de pareja en la columna derecha, porque coincidirían con los de la izquierda y revelarían la respuesta (INV-04). Cada elemento derecho lleva una clave opaca: HMAC-SHA-256 del alumno, la pregunta y la pareja, con un secreto del servidor; al guardar, el backend la traduce a pareja_derecha_id. No cambia el esquema.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Hallazgo de la Tarea 05 (21/10)"
+      }
+    },
+    {
+      "id": "DEC-92",
+      "tipo": "decision",
+      "nombre": "IP del cliente desde el proxy de confianza",
+      "descripcion": "La IP del cliente (aceptaciones de DEC-28 y límite por IP de DEC-26) se toma de X-Forwarded-For contando desde la derecha tantos saltos como proxies de confianza haya (variable PROXIES_CONFIABLES): la entrada que agregó el primer proxy propio. Nunca la primera entrada, que el cliente puede falsificar. En producción la cadena es navegador → borde de Railway → Next (rewrite) → backend; el número exacto se verifica al desplegar (PEND-14). PROXIES_CONFIABLES cuenta solo los proxies que agregan una entrada: el rewrite de Next no agrega ninguna (reenvía el encabezado del cliente), así que en desarrollo vale 0 (se usa el socket) y en producción, en principio, 1 (el borde de Railway).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de la Tarea 05 (21/10)",
+        "valores": {
+          "desarrollo": 0,
+          "produccion": "1, por confirmar al desplegar (PEND-14)"
+        }
+      }
+    },
+    {
+      "id": "PEND-14",
+      "tipo": "pregunta_abierta",
+      "nombre": "Saltos de proxy en Railway",
+      "descripcion": "Al desplegar: cuántas entradas agrega a X-Forwarded-For el borde de Railway y el rewrite de Next, para fijar PROXIES_CONFIABLES (DEC-92).",
+      "estado": "pendiente"
+    },
+    {
+      "id": "DEC-93",
+      "tipo": "decision",
+      "nombre": "Google no hereda cuentas sin verificar",
+      "descripcion": "Si alguien entra con Google y existe una cuenta pendiente (sin verificar) con el mismo correo, esa cuenta y sus enlaces y aceptaciones se eliminan y se crea una nueva desde Google tras aceptar (OP-13). Nunca se vincula ni se activa: su contraseña la pudo haber puesto otra persona (pre-secuestro de cuenta). Solo se vincula con una cuenta activa y verificada del mismo correo (OP-03, INV-16).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión de la Tarea 05 (21/10): el simulador activaba la cuenta pendiente con su contraseña"
+      }
+    },
+    {
+      "id": "DEC-94",
+      "tipo": "decision",
+      "nombre": "Exportación de datos para derechos ARCO",
+      "descripcion": "El estudiante descarga todos sus datos en JSON desde su Perfil («Descargar mis datos»), sin pasar por el equipo. fn_exportar_datos_usuario arma el documento en una sola consulta con vista consistente: cuenta, preferencias, aceptaciones (con IP), sesiones abiertas, progreso, intentos con respuestas y calificaciones, e insignias. Nunca incluye hashes ni códigos de sesión o de enlaces. Para solicitudes ARCO por correo se entrega el mismo JSON y un PDF generado a partir de él.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Diapositivas del docente y reporte técnico de BD actualizado (21/10)",
+        "ruta_api": "GET /api/perfil/exportacion",
+        "formato": "application/json, descarga echo-mis-datos-AAAA-MM-DD.json"
+      }
+    },
+    {
+      "id": "FN-EXPORTAR",
+      "tipo": "funcion_bd",
+      "nombre": "fn_exportar_datos_usuario(usuario)",
+      "descripcion": "Devuelve un JSONB con todos los datos del estudiante (DEC-94), sin hashes ni códigos. Solo lectura.",
+      "estado": "decidido",
+      "detalles": {
+        "invocacion": "prisma.$queryRaw",
+        "seguridad": "SECURITY INVOKER (echo_app ya puede leer esas tablas); STABLE"
+      }
+    },
+    {
+      "id": "OP-41",
+      "tipo": "operacion",
+      "nombre": "Exportar mis datos",
+      "descripcion": "Solo con sesión y solo los datos propios (INV-07); se permite con aceptación pendiente (derecho de acceso). Ejecuta fn_exportar_datos_usuario.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Nueva 1.5.0 (DEC-94)",
+        "tipo_acceso": "L",
+        "frecuencia": "Muy baja",
+        "recibe": "Sesión",
+        "devuelve": "Archivo JSON con todos los datos del estudiante"
+      }
+    },
+    {
+      "id": "DEC-95",
+      "tipo": "decision",
+      "nombre": "Ciclo de borrado, respaldos y registros",
+      "descripcion": "Estrategia híbrida: se anonimiza lo que tiene historial (cuentas, DEC-27) y se borra físicamente lo que no (cuentas pendientes, sesiones y enlaces vencidos); el contenido respondido se retira con activa = false; la base completa se borra al cierre (DEC-74). Los respaldos no se editan: una cuenta anonimizada sale de ellos por rotación (6 días los de Railway, 7 semanas los manuales). Al restaurar un respaldo, antes se toma de la base actual la lista de cuentas anonimizadas después de la fecha del respaldo (solo UUID y fecha) y se vuelve a ejecutar fn_anonimizar_usuario sobre ellas antes de reabrir el servicio. Los registros de la aplicación no llevan nombre, correo, contraseñas ni códigos (el estudiante se identifica por UUID); los registros HTTP de Railway (IP y navegador) se borran solos a los 7 días.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Diapositivas del docente y reporte técnico de BD actualizado (21/10)",
+        "retencion": {
+          "cuenta_pendiente": "24 h",
+          "enlace_verificacion": "24 h o al usarse",
+          "enlace_recuperacion_cambio_correo": "30 min o al usarse",
+          "sesion": "30 min sin actividad o al cerrarse",
+          "cuenta_activa": "hasta que se elimine o hasta el cierre",
+          "registros_http_railway": "7 días",
+          "respaldo_railway": "6 días",
+          "respaldo_manual": "7 copias semanales"
+        }
+      }
+    },
+    {
+      "id": "DEC-96",
+      "tipo": "decision",
+      "nombre": "Proveedores externos y sus acuerdos",
+      "descripcion": "Railway (alojamiento, base y respaldos) y Resend (correo) son encargados: Railway con su DPA, que se firma por DocuSign antes de abrir el piloto (PEND-15); Resend con su DPA, incluido en sus términos. Google es responsable independiente: Echo solo pide los alcances openid, email y profile y no le envía datos. Echo no usa servicios de pago ni de analítica.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Diapositivas del docente y reporte técnico de BD actualizado (21/10)",
+        "alcances_google": [
+          "openid",
+          "email",
+          "profile"
+        ],
+        "dpa": {
+          "railway": "railway.com/legal/dpa (firma por DocuSign)",
+          "resend": "resend.com/legal/dpa (incluido en sus términos)"
+        }
+      }
+    },
+    {
+      "id": "PEND-15",
+      "tipo": "pregunta_abierta",
+      "nombre": "Firmar el DPA de Railway",
+      "descripcion": "El responsable firma el acuerdo de procesamiento de datos de Railway (DocuSign) antes de abrir el piloto (DEC-96).",
+      "estado": "pendiente"
     }
   ],
   "aristas": [
@@ -12319,6 +12492,276 @@
       "origen": "DEC-88",
       "destino": "ACT-01",
       "relacion": "protege_a"
+    },
+    {
+      "origen": "INV-04",
+      "destino": "DEC-91",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "OP-22",
+      "destino": "DEC-91",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-25",
+      "destino": "DEC-91",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-26",
+      "destino": "DEC-91",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-92",
+      "destino": "DEC-85",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-28",
+      "destino": "DEC-92",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-26",
+      "destino": "DEC-92",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "DEC-92",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "DEC-92",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-04",
+      "destino": "DEC-92",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "PEND-14",
+      "destino": "DEC-92",
+      "relacion": "afina"
+    },
+    {
+      "origen": "OP-03",
+      "destino": "DEC-93",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-13",
+      "destino": "DEC-93",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-93",
+      "destino": "ACT-01",
+      "relacion": "protege_a"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-SESION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-PROGRESO-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-INTENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-RESPUESTA-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-RESPUESTA-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-INSIGNIA-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-CUESTIONARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-PREGUNTA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "TBL-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "DEC-94",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "ROL-APP",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "OP-41",
+      "destino": "MOD-CUENTA",
+      "relacion": "pertenece_a"
+    },
+    {
+      "origen": "OP-41",
+      "destino": "ACT-01",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "OP-41",
+      "destino": "FN-EXPORTAR",
+      "relacion": "ejecuta"
+    },
+    {
+      "origen": "OP-41",
+      "destino": "DEC-94",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "SCR-16",
+      "destino": "OP-41",
+      "relacion": "invoca"
+    },
+    {
+      "origen": "DEC-94",
+      "destino": "DEC-29",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-94",
+      "destino": "ACT-01",
+      "relacion": "protege_a"
+    },
+    {
+      "origen": "DEC-95",
+      "destino": "DEC-27",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-95",
+      "destino": "DEC-69",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-95",
+      "destino": "DEC-74",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-95",
+      "destino": "DEC-63",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-37",
+      "destino": "DEC-95",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-14",
+      "destino": "DEC-95",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-34",
+      "destino": "DEC-95",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "FN-ANONIMIZAR",
+      "destino": "DEC-95",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-LIMPIEZA",
+      "destino": "DEC-95",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "DEC-96",
+      "destino": "TEC-RAILWAY",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-96",
+      "destino": "TEC-RESEND",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-96",
+      "destino": "TEC-OAUTH",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-96",
+      "destino": "DEC-68",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-03",
+      "destino": "DEC-96",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-33",
+      "destino": "DEC-96",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "PEND-15",
+      "destino": "DEC-96",
+      "relacion": "afina"
     }
   ]
 }
