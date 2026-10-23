@@ -84,13 +84,17 @@ function Tabla({ bloque, titulo, opciones }: { bloque: Extract<Bloque, { tipo: "
   );
 }
 
-/** Una cita es un recuadro aparte. Si empieza con un párrafo todo en negritas, ese párrafo es su título. */
+/**
+ * Una cita es un recuadro aparte: una nota (`role="note"`) dentro de su sección, no un `<aside>`, que sería un punto de
+ * referencia anidado en `main`. Si empieza con un párrafo todo en negritas, ese párrafo es su título.
+ */
 function Cita({ bloque, opciones }: { bloque: Extract<Bloque, { tipo: "cita" }>; opciones: OpcionesDeDibujo }) {
   const [primero, ...resto] = bloque.bloques;
   const titulada = primero?.tipo === "parrafo" && primero.contenido.length === 1 && primero.contenido[0].tipo === "negrita";
   const idTitulo = `${opciones.prefijo}-cita-${bloque.linea}`;
   return (
-    <aside
+    <div
+      role="note"
       aria-labelledby={titulada ? idTitulo : undefined}
       aria-label={titulada ? undefined : "Nota"}
       className="flex max-w-[62ch] flex-col gap-3 rounded-globo border border-marca-cafe/22 bg-superficie-elevada px-5 py-5 md:px-6"
@@ -101,7 +105,7 @@ function Cita({ bloque, opciones }: { bloque: Extract<Bloque, { tipo: "cita" }>;
         </p>
       ) : null}
       {dibujarBloques(titulada ? resto : bloque.bloques, opciones)}
-    </aside>
+    </div>
   );
 }
 

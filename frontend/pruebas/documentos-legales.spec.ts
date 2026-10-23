@@ -42,7 +42,16 @@ const DOCUMENTOS = [
 
 async function revisarAccesibilidad(pagina: Page) {
   await pagina.emulateMedia({ reducedMotion: "reduce" });
-  const resultado = await new AxeBuilder({ page: pagina }).withTags(ETIQUETAS_WCAG).analyze();
+  // Además de WCAG, que ningún recuadro quede como `complementary` dentro de otro punto de referencia.
+  // `withTags` y `withRules` se pisan: la regla se agrega a las etiquetas con `options`.
+  const resultado = await new AxeBuilder({ page: pagina })
+    .options({
+      runOnly: { type: "tag", values: ETIQUETAS_WCAG },
+      rules: { "landmark-complementary-is-top-level": { enabled: true } },
+    })
+    .analyze();
+  const corridas = [...resultado.passes, ...resultado.inapplicable, ...resultado.violations].map((r) => r.id);
+  expect(corridas).toContain("landmark-complementary-is-top-level");
   const resumen = resultado.violations.map((v) => ({ regla: v.id, impacto: v.impact, nodos: v.nodes.map((n) => n.target.join(" ")) }));
   expect(resumen, JSON.stringify(resumen, null, 2)).toEqual([]);
 }
@@ -141,7 +150,7 @@ test.describe("Aviso de privacidad: lo que antes era provisional", () => {
     const anexo = page.locator("#anexo-a-aviso-de-privacidad-simplificado-y-casillas-del-formulario-de-registro");
     await expect(anexo.locator("input")).toHaveCount(0);
     await expect(anexo.locator("li [aria-hidden=true] svg")).toHaveCount(4);
-    await expect(page.getByRole("complementary", { name: "Resumen en cinco puntos" })).toBeVisible();
+    await expect(page.getByRole("note", { name: "Resumen en cinco puntos" })).toBeVisible();
     await expect(page.locator("#conservacion-y-eliminacion-de-los-datos")).toContainText("Echo es un piloto que termina a principios de diciembre de 2026");
   });
 

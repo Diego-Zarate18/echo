@@ -66,7 +66,8 @@ test.describe("Convertidor de Markdown (lib/markdown)", () => {
 
   test("citas: un recuadro aparte titulado por su primer párrafo en negritas", () => {
     const html = dibujar("> **Resumen**\n>\n> 1. Uno.\n>\n> 2. Dos.");
-    expect(html).toMatch(/^<div><aside aria-labelledby="prueba-cita-1"/);
+    expect(html).toMatch(/^<div><div role="note" aria-labelledby="prueba-cita-1"/);
+    expect(html).not.toContain("<aside");
     expect(html).toContain('id="prueba-cita-1"');
     expect(html).toContain("<ol");
   });
