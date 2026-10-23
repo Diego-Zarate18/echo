@@ -76,7 +76,7 @@ for (const documento of DOCUMENTOS) {
       expect(documento.textos.length).toBeGreaterThan(80);
       await expect(page.locator('main a[href="mailto:privacidad.echo@gmail.com"]').first()).toBeVisible();
       if (documento.ruta === "/terminos-y-condiciones") {
-        await expect(page.locator('main a[href="mailto:echo.soporte@gmail.com"]').first()).toBeAttached();
+        await expect(page.locator('main a[href="mailto:soporte.echo@gmail.com"]').first()).toBeAttached();
       }
       // El espacio reservado de PEND-12 ya no existe.
       expect(texto).not.toContain("[correo de contacto ARCO");

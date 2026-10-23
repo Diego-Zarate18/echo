@@ -183,13 +183,13 @@ El detalle completo —finalidades, encargados, conservación, cookies, medidas 
 
 ## 15. Accesibilidad
 
-Echo se diseña para cumplir las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.2 nivel AA: se puede usar con teclado y lector de pantalla, toda imagen tiene texto alternativo y las preguntas de relacionar columnas se pueden responder sin arrastrar. Si encuentras una barrera de accesibilidad, escríbenos a echo.soporte@gmail.com con el asunto «Accesibilidad»; la atenderemos como prioridad. No necesitas informarnos ninguna condición personal para usar estas funciones.
+Echo se diseña para cumplir las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.2 nivel AA: se puede usar con teclado y lector de pantalla, toda imagen tiene texto alternativo y las preguntas de relacionar columnas se pueden responder sin arrastrar. Si encuentras una barrera de accesibilidad, escríbenos a soporte.echo@gmail.com con el asunto «Accesibilidad»; la atenderemos como prioridad. No necesitas informarnos ninguna condición personal para usar estas funciones.
 
 ## 16. Comunicaciones y contacto
 
 | Asunto | Medio |
 |---|---|
-| Dudas, soporte técnico, accesibilidad y estos Términos | echo.soporte@gmail.com |
+| Dudas, soporte técnico, accesibilidad y estos Términos | soporte.echo@gmail.com |
 | Privacidad, derechos ARCO y seguridad | privacidad.echo@gmail.com |
 | Notificaciones por escrito | Carretera Tuxtla Gutiérrez – Portillo Zaragoza km 21+500, colonia Las Brisas, municipio de Suchiapa, Chiapas, México, C.P. 29145, a la atención de Brian Luis Ruiz Pérez (Echo) |
 
@@ -209,7 +209,7 @@ Estos Términos se rigen e interpretan conforme a las leyes federales de los **E
 
 ### 18.2 Solución de controversias y tribunales competentes
 
-1. **Negociación directa:** antes de cualquier otra vía, escríbenos a echo.soporte@gmail.com describiendo el problema. Te responderemos dentro de los 15 días hábiles siguientes para buscar una solución.
+1. **Negociación directa:** antes de cualquier otra vía, escríbenos a soporte.echo@gmail.com describiendo el problema. Te responderemos dentro de los 15 días hábiles siguientes para buscar una solución.
 2. **Mediación:** si no se llega a un acuerdo, las partes podrán acudir de forma voluntaria a la mediación ante un centro público de mecanismos alternativos de solución de controversias del Estado de Chiapas, conforme a la Ley General de Mecanismos Alternativos de Solución de Controversias.
 3. **Tribunales:** si la controversia no se resuelve por las vías anteriores, las partes se someten a la jurisdicción de los **tribunales competentes de Tuxtla Gutiérrez, Chiapas**, y renuncian a cualquier otro fuero que pudiera corresponderles por razón de su domicilio presente o futuro.
 

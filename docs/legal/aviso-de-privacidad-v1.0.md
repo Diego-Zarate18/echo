@@ -73,7 +73,7 @@ Obtenemos tus datos de tres formas: **directamente de ti**, cuando llenas el for
 
 ### 2.4 Registro de aceptación del aviso
 
-Cuando aceptas este aviso guardamos **la fecha y la hora (con la hora del servidor), la dirección IP desde la que lo aceptaste y la versión del aviso aceptada**. Lo mismo ocurre cuando aceptas una versión nueva. El detalle está en el apartado 12.
+Cuando aceptas este aviso guardamos **la fecha y la hora (con la hora del servidor), la dirección IP desde la que lo aceptaste y la versión del aviso aceptada**. Lo mismo se registra, por separado, cuando aceptas los términos y condiciones, y cuando aceptas una versión nueva de cualquiera de los dos. El detalle está en el apartado 12.
 
 ### 2.5 Datos de pago
 
@@ -204,9 +204,15 @@ Como las finalidades primarias son indispensables para el servicio, oponerte a e
 
 ### 5.4 Qué pasa cuando eliminas tu cuenta
 
-| Se elimina de inmediato | Se conserva sin forma de identificarte |
+| Dato | Qué pasa |
 |---|---|
-| Nombre, apellidos y correo; Hash de la contraseña e identificador de Google; Todas tus sesiones y enlaces pendientes; Dirección IP del registro de aceptación | Avance, intentos y calificaciones, como historial académico anónimo para las estadísticas del piloto; Fecha, hora y versión de cada aviso aceptado, ligadas solo a la cuenta anonimizada; Tu negativa a las estadísticas, si la diste, para que tu historial anónimo siga fuera de ellas |
+| Nombre, apellidos y correo | Se eliminan de inmediato |
+| Hash de la contraseña e identificador de Google | Se eliminan de inmediato |
+| Sesiones y enlaces pendientes | Se eliminan de inmediato |
+| Dirección IP de tus aceptaciones | Se elimina de inmediato |
+| Avance, intentos y calificaciones | Se conservan sin forma de identificarte, como historial académico anónimo para las estadísticas del piloto |
+| Fecha, hora y versión de cada aceptación | Se conservan, ligadas solo a la cuenta anonimizada |
+| Tu negativa a las estadísticas, si la diste | Se conserva, para que tu historial anónimo siga fuera de ellas |
 
 El correo queda libre para crear una cuenta nueva desde cero. Los respaldos que aún contengan tus datos se eliminan conforme a los plazos del apartado 11, y en ningún caso después del cierre del proyecto.
 
@@ -235,7 +241,7 @@ Echo usa **una sola cookie**, necesaria para el inicio de sesión. Sin ella no e
 |---|---|---|---|
 | __Host-echo_sesion | Mantener tu sesión iniciada. Contiene un código aleatorio de 256 bits; en la base de datos solo se guarda su huella SHA-256. Es de origen propio, con los atributos HttpOnly, Secure y SameSite=Lax, por lo que ningún script puede leerla. | Propia, estrictamente necesaria | Hasta que cierres sesión o pasen 30 minutos sin actividad |
 
-Las páginas públicas (inicio, aviso de privacidad y ayuda) no instalan ninguna cookie. Tampoco guardamos datos personales en el almacenamiento local de tu navegador.
+Las páginas públicas (inicio, aviso de privacidad, términos y condiciones y ayuda) no instalan ninguna cookie. Tampoco guardamos datos personales en el almacenamiento local de tu navegador.
 
 ### 8.2 Cookies analíticas, de terceros y web beacons
 
@@ -314,7 +320,7 @@ Al aceptar, otorgas tu **consentimiento expreso** para el tratamiento de tus dat
 |---|---|
 | Fecha y hora | Momento exacto de la aceptación, tomado del reloj del servidor de la base de datos en tiempo universal (UTC) y mostrado en la hora de la Ciudad de México. |
 | Dirección IP | La dirección desde la que aceptaste. |
-| Versión del aviso | El número de versión aceptado (en este documento, la 1.0). |
+| Versión | El documento y el número de versión aceptados: este aviso (en este documento, la 1.0) y, en un registro aparte, los términos y condiciones. |
 | Cuenta | La cuenta a la que corresponde la aceptación. |
 
 Este registro se usa solo como prueba del consentimiento y no se combina con otros datos para ninguna otra finalidad. Puedes consultarlo ejerciendo tu derecho de acceso.
@@ -364,7 +370,7 @@ Este es el texto que se muestra en el formulario de registro y en la pantalla de
 
 El formulario incluye además, por separado, la casilla «He leído y acepto los Términos y condiciones», para que cada consentimiento sea específico.
 
-## Anexo C. Correspondencia con el artículo 15 de la LFPDPPP y la Guía del INAI
+## Anexo B. Correspondencia con el artículo 15 de la LFPDPPP y la Guía del INAI
 
 | Elemento | Apartado |
 |---|---|

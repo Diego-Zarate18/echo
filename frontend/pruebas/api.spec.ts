@@ -134,8 +134,8 @@ test.describe("Contrato de la API (docs/api/openapi.yaml)", () => {
   test("la huella de los documentos del simulador sale de docs/legal y coincide con la publicada (DEC-28)", async () => {
     const { documentosIniciales } = await importarDelSimulador<{ documentosIniciales: { tipo: string; huellaContenido: string }[] }>("contenido.mjs");
     const esperadas: Record<string, [string, string]> = {
-      avisoPrivacidad: ["aviso-de-privacidad-v1.0.md", "4d2b93c646d6e81ad295a641be2029621499db59e02783372748083e7104204a"],
-      terminos: ["terminos-y-condiciones-v1.0.md", "68b072acafcf08adcfe0ec7712ad3f964484195cd771fa786a0758738a279b72"],
+      avisoPrivacidad: ["aviso-de-privacidad-v1.0.md", "ceddc64a15f635a7592e6e4ad206b2191953bd5e3e694358ec3af211121a15ea"],
+      terminos: ["terminos-y-condiciones-v1.0.md", "04ffb9073d3c6b13a0a1f9b68134f732c0a891de482a01aec213d038104d66c1"],
     };
     for (const [tipo, [archivo, huella]] of Object.entries(esperadas)) {
       const bytes = readFileSync(join(raizFrontend, "..", "docs", "legal", archivo));

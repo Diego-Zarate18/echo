@@ -120,8 +120,8 @@ test.describe("SCR-17 · Ayuda", () => {
     await expect(page.locator("#cuenta-y-sesion")).toContainText("8 caracteres o más, con al menos una letra y un número");
     await expect(page.locator("#cuenta-y-sesion")).toContainText("vence en 30 minutos, igual que el que confirma un cambio de correo");
     // «Accesibilidad» empieza cerrada: su enlace existe aunque no se vea.
-    await expect(page.locator('#accesibilidad a[href="mailto:echo.soporte@gmail.com"]')).toHaveText(
-      "echo.soporte@gmail.com",
+    await expect(page.locator('#accesibilidad a[href="mailto:soporte.echo@gmail.com"]')).toHaveText(
+      "soporte.echo@gmail.com",
     );
     await expect(page.locator('#cierre-del-piloto a[href="mailto:privacidad.echo@gmail.com"]')).toHaveText(
       "privacidad.echo@gmail.com",
