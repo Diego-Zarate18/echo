@@ -1,3 +1,4 @@
+import { CarrilSegunFondo } from "@/areas/inicio/componentes/CarrilSegunFondo";
 import { DibujoDeIconos } from "@/areas/inicio/componentes/DibujoDeIconos";
 import { PiePublico } from "@/componentes/estructura/PiePublico";
 import { EncabezadoPublico } from "@/areas/inicio/componentes/EncabezadoPublico";
@@ -23,6 +24,7 @@ export default function Inicio() {
       </main>
       <PiePublico variante="oscuro" />
       <DibujoDeIconos />
+      <CarrilSegunFondo />
     </div>
   );
 }

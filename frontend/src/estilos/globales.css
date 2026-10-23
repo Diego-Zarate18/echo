@@ -448,6 +448,14 @@
     scrollbar-color: var(--color-superficie-hundida) var(--color-marca-cafe);
   }
 
+  /*
+   * El carril sigue el fondo de la sección que llena la vista (CarrilSegunFondo.tsx): sobre las secciones crema, carril
+   * crema y pulgar café (contraste 13.3:1). Sin JavaScript queda el café de arriba.
+   */
+  html:has(#portada)[data-carril="claro"] {
+    scrollbar-color: var(--color-marca-cafe) var(--color-marca-crema);
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;

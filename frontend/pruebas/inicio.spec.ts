@@ -189,6 +189,91 @@ test.describe("SCR-18 · Barra de desplazamiento", () => {
   });
 });
 
+test.describe("SCR-18 · Carril que sigue el fondo de la sección (ajuste 2)", () => {
+  const carril = (page: Page) => page.evaluate(() => document.documentElement.dataset.carril ?? null);
+
+  /** Desplaza al instante y espera a que se mida (un cuadro después del evento de desplazamiento). */
+  async function irA(page: Page, y: number) {
+    await page.evaluate(async (destino) => {
+      window.scrollTo({ top: destino, behavior: "instant" });
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    }, y);
+  }
+
+  /** Cuánto de la zona bajo la barra fija ocupa la sección crema de «Lo que encontrarás», con la página en `y`. */
+  async function scrollParaCobertura(page: Page, cobertura: number) {
+    return page.evaluate((fraccion) => {
+      const barra = document.querySelector('header[data-flotante="true"] > div')!.getBoundingClientRect().bottom;
+      const zona = window.innerHeight - barra;
+      const crema = document.getElementById("que-encontraras")!.closest("section")!;
+      const arribaCrema = crema.getBoundingClientRect().top + window.scrollY;
+      // La frontera café → crema queda donde la crema ocupa `fraccion` de la zona (contando desde abajo).
+      return Math.round(arribaCrema - (window.innerHeight - zona * fraccion));
+    }, cobertura);
+  }
+
+  for (const [ancho, alto] of [[1536, 705], [1440, 900], [390, 844]]) {
+    test(`${ancho}×${alto}: cada ancla deja el carril del fondo de su sección, sin cambios a medias`, async ({ page }, info) => {
+      test.skip(info.project.name !== "escritorio", "Cada prueba fija su ventana");
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.setViewportSize({ width: ancho, height: alto });
+      await page.goto("/");
+      await irA(page, 0);
+      // El atributo lo escribe el componente al hidratarse.
+      await expect.poll(() => carril(page), { message: "sobre el hero" }).toBe("oscuro");
+
+      // Por ancla, en un orden que alterna café y crema.
+      for (const id of ["que-encontraras", "que-es-echo", "quienes-somos", "por-que-echo", "que-encontraras"]) {
+        await page.evaluate((i) => {
+          window.location.hash = i;
+        }, id);
+        const fondo = await page.evaluate((i) => document.getElementById(i)!.closest("section")!.dataset.fondo, id);
+        await expect.poll(() => carril(page), { timeout: 3000, message: `#${id}` }).toBe(fondo);
+      }
+
+      // Frontera café («Qué es Echo») → crema («Lo que encontrarás»), bajando desde lo café (café al 95 % de la zona).
+      await irA(page, await scrollParaCobertura(page, 0.05));
+      expect(await carril(page)).toBe("oscuro");
+      await irA(page, await scrollParaCobertura(page, 0.5));
+      expect(await carril(page), "frontera a la mitad: no cambia").toBe("oscuro");
+      await irA(page, await scrollParaCobertura(page, 0.8));
+      expect(await carril(page), "crema al 80 %: cambia").toBe("claro");
+
+      // Ida y vuelta de unos píxeles alrededor del 75 %: no oscila.
+      const punto = await scrollParaCobertura(page, 0.75);
+      const vistos = new Set<string | null>();
+      for (const desplazamiento of [-4, 4, -3, 3, -2, 2, -1, 1, 0]) {
+        await irA(page, punto + desplazamiento);
+        vistos.add(await carril(page));
+      }
+      expect([...vistos], "se queda en crema").toEqual(["claro"]);
+      // De regreso hacia lo café, con la frontera a la mitad: sigue crema.
+      await irA(page, await scrollParaCobertura(page, 0.5));
+      expect(await carril(page)).toBe("claro");
+      await irA(page, await scrollParaCobertura(page, 0.2));
+      expect(await carril(page), "café al 80 %: vuelve a café").toBe("oscuro");
+
+      // Al final de la página, el llamado y el pie (café) mandan.
+      await irA(page, await page.evaluate(() => document.documentElement.scrollHeight));
+      expect(await carril(page)).toBe("oscuro");
+    });
+  }
+
+  test("con el menú, el carril queda con el fondo de la sección destino", async ({ page }, info) => {
+    test.skip(info.project.name !== "escritorio", "Las anclas del encabezado se ven desde 1280 px");
+    await page.goto("/");
+    for (const [texto, fondo] of [["Qué encontrarás", "claro"], ["Por qué Echo", "oscuro"], ["Quiénes somos", "claro"], ["Qué es Echo", "oscuro"]]) {
+      await page.getByRole("banner").getByRole("link", { name: texto }).click();
+      await expect.poll(() => carril(page), { timeout: 3000, message: texto }).toBe(fondo);
+    }
+  });
+
+  test("las demás páginas no tienen data-carril", async ({ page }) => {
+    await page.goto("/ayuda");
+    expect(await carril(page)).toBeNull();
+  });
+});
+
 test.describe("SCR-18 · Encabezado fijo", () => {
   test("se queda fijo al salir del hero y marca la sección actual", async ({ page }, info) => {
     test.skip(info.project.name !== "escritorio", "Las anclas del encabezado solo se ven desde 1280 px");
