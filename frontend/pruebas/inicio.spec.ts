@@ -140,7 +140,7 @@ test.describe("SCR-18 · Movimiento", () => {
           .getAnimations()
           .map((a) => (a as CSSAnimation).animationName || (a as CSSTransition).transitionProperty),
       );
-    expect(animacionesEncabezado.every((nombre) => nombre === "desvanecer" || nombre === "opacity")).toBe(true);
+    expect(animacionesEncabezado.every((nombre) => nombre === "desvanecer" || nombre === "opacity"), animacionesEncabezado.join(", ")).toBe(true);
   });
 });
 
@@ -310,10 +310,15 @@ test.describe("SCR-18 · Barra fija siempre visible", () => {
     { id: "quienes-somos", texto: "Quiénes somos" },
   ];
 
-  /** Rectángulo de la barra fija y su opacidad; `null` sobre el hero (ahí es el encabezado normal). */
+  /**
+   * Rectángulo de la barra fija y su opacidad; `null` sobre el hero (ahí es el encabezado normal).
+   * Espera a que terminen las transiciones del encabezado (220 ms): con la máquina ocupada, la espera fija tras la
+   * rueda no siempre alcanza y se medía la barra a medio aparecer (opacidad 0.9999).
+   */
   async function barra(page: Page) {
-    return page.evaluate(() => {
+    return page.evaluate(async () => {
       const encabezado = document.querySelector("header")!;
+      await Promise.all(encabezado.getAnimations({ subtree: true }).map((animacion) => animacion.finished.catch(() => null)));
       if (encabezado.dataset.flotante !== "true") return null;
       const caja = encabezado.querySelector(":scope > div")!.getBoundingClientRect();
       return { arriba: caja.top, abajo: caja.bottom, alto: caja.height, opacidad: getComputedStyle(encabezado).opacity };
