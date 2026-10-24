@@ -7,6 +7,19 @@ const URL_SIMULADOR = `http://localhost:${PUERTO_SIMULADOR}`;
 
 /** Pruebas de la API (contrato e invariantes), del build y del convertidor de Markdown: no usan pantallas y corren aparte. */
 const PRUEBAS_DE_API = /(api|build|markdown)\.spec\.ts$/;
+/**
+ * Pantallas que cambian el estado de la API simulada (inicio de sesión, escenarios, reinicios). El simulador es uno
+ * solo para todos, así que corren después de las de API y una después de otra, nunca al mismo tiempo.
+ */
+const PRUEBAS_CON_SIMULADOR = /acceso\.spec\.ts$/;
+
+const MOVIL = {
+  ...devices["Desktop Chrome"],
+  viewport: { width: 390, height: 844 },
+  isMobile: true,
+  hasTouch: true,
+  deviceScaleFactor: 3,
+};
 
 /**
  * Pruebas de extremo a extremo con Playwright y axe.
@@ -28,24 +41,30 @@ export default defineConfig({
   projects: [
     {
       name: "escritorio",
-      testIgnore: PRUEBAS_DE_API,
+      testIgnore: [PRUEBAS_DE_API, PRUEBAS_CON_SIMULADOR],
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
       name: "movil",
-      testIgnore: PRUEBAS_DE_API,
-      use: {
-        ...devices["Desktop Chrome"],
-        viewport: { width: 390, height: 844 },
-        isMobile: true,
-        hasTouch: true,
-        deviceScaleFactor: 3,
-      },
+      testIgnore: [PRUEBAS_DE_API, PRUEBAS_CON_SIMULADOR],
+      use: MOVIL,
     },
     {
       name: "api",
       testMatch: PRUEBAS_DE_API,
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "acceso-escritorio",
+      testMatch: PRUEBAS_CON_SIMULADOR,
+      dependencies: ["api"],
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: "acceso-movil",
+      testMatch: PRUEBAS_CON_SIMULADOR,
+      dependencies: ["acceso-escritorio"],
+      use: MOVIL,
     },
   ],
   webServer: [
