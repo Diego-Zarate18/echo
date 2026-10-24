@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "actualizado": "2026-10-21",
-    "fase": "Aviso y términos v1.0 en el sitio y carril de la barra del inicio hechos (Tarea 06 y ajustes). Siguiente: Tarea 07 (exportación de datos, textos legales corregidos) y las vistas de cuenta.",
+    "fase": "Exportación de datos en el contrato y el simulador (Tarea 07). Siguiente: vistas de cuenta, empezando por Iniciar sesión (Tarea 08).",
     "historial": [
       {
         "version": "0.1.0",
@@ -74,6 +74,11 @@
         "version": "1.5.1",
         "fecha": "2026-10-23",
         "cambio": "Revisión de la Tarea 06: PROXIES_CONFIABLES vale 0 en desarrollo porque Next no agrega entrada a X-Forwarded-For (DEC-92); correo de soporte soporte.echo@gmail.com (DEC-68)."
+      },
+      {
+        "version": "1.5.2",
+        "fecha": "2026-10-23",
+        "cambio": "Revisión de la Tarea 07: correo de soporte corregido en PEND-12; DEC-94 precisa qué sesiones se exportan."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -5439,7 +5444,7 @@
       "id": "PEND-12",
       "tipo": "pregunta_abierta",
       "nombre": "Correo de contacto ARCO",
-      "descripcion": "Qué correo del equipo aparece en el aviso de privacidad para solicitudes ARCO. Resuelto (21/10): privacidad.echo@gmail.com, exclusivo para privacidad, derechos ARCO y seguridad; soporte y accesibilidad en echo.soporte@gmail.com.",
+      "descripcion": "Qué correo del equipo aparece en el aviso de privacidad para solicitudes ARCO. Resuelto (21/10): privacidad.echo@gmail.com, exclusivo para privacidad, derechos ARCO y seguridad; soporte y accesibilidad en soporte.echo@gmail.com.",
       "estado": "resuelto"
     },
     {
@@ -6011,7 +6016,7 @@
       "id": "DEC-94",
       "tipo": "decision",
       "nombre": "Exportación de datos para derechos ARCO",
-      "descripcion": "El estudiante descarga todos sus datos en JSON desde su Perfil («Descargar mis datos»), sin pasar por el equipo. fn_exportar_datos_usuario arma el documento en una sola consulta con vista consistente: cuenta, preferencias, aceptaciones (con IP), sesiones abiertas, progreso, intentos con respuestas y calificaciones, e insignias. Nunca incluye hashes ni códigos de sesión o de enlaces. Para solicitudes ARCO por correo se entrega el mismo JSON y un PDF generado a partir de él.",
+      "descripcion": "El estudiante descarga todos sus datos en JSON desde su Perfil («Descargar mis datos»), sin pasar por el equipo. fn_exportar_datos_usuario arma el documento en una sola consulta con vista consistente: cuenta, preferencias, aceptaciones (con IP), sesiones abiertas, progreso, intentos con respuestas y calificaciones, e insignias. Nunca incluye hashes ni códigos de sesión o de enlaces. Para solicitudes ARCO por correo se entrega el mismo JSON y un PDF generado a partir de él. Las sesiones exportadas son todas las filas que aún existan en sesion (abiertas y las cerradas o vencidas que la limpieza diaria todavía no borra).",
       "estado": "decidido",
       "detalles": {
         "origen": "Diapositivas del docente y reporte técnico de BD actualizado (21/10)",
