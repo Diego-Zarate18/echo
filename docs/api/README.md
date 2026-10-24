@@ -159,7 +159,8 @@ sesión, como el resultado de `fn_exportar_datos_usuario`: el derecho de acceso 
   - la cuenta;
   - las preferencias;
   - las aceptaciones **con su IP** (aquí sí, porque son datos del propio alumno);
-  - las sesiones abiertas (inicio, última actividad y navegador);
+  - las sesiones que aún existan, abiertas, cerradas o vencidas, hasta que la limpieza diaria las borre (inicio, última
+    actividad y navegador);
   - el progreso por lección;
   - los intentos, con lo que respondió en cada pregunta y su puntaje;
   - las insignias.

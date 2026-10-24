@@ -487,7 +487,6 @@ function eliminarCuenta(ctx) {
  */
 function exportarMisDatos(ctx) {
   const { bd, usuario, ahora } = ctx;
-  const vigencia = bd.duracionSesionMs;
   const intentos = [...bd.intentos.values()]
     .filter((i) => i.usuarioId === usuario.id)
     .sort((a, b) => new Date(a.iniciadoEn) - new Date(b.iniciadoEn))
@@ -538,7 +537,8 @@ function exportarMisDatos(ctx) {
           return { documento: documento.tipo, version: documento.version, aceptadoEn: a.aceptadoEn, direccionIp: a.direccionIp };
         }),
       sesiones: [...bd.sesiones.values()]
-        .filter((sesion) => sesion.usuarioId === usuario.id && !sesion.revocadaEn && ahora - new Date(sesion.ultimaActividadEn) < vigencia)
+        // Todas las filas que aún existan: abiertas, cerradas y vencidas (DEC-94, grafo 1.5.2).
+        .filter((sesion) => sesion.usuarioId === usuario.id)
         .map((sesion) => ({ iniciadaEn: sesion.creadaEn, ultimaActividadEn: sesion.ultimaActividadEn, navegador: sesion.agenteUsuario || null })),
       progreso: [...bd.progreso.entries()]
         .filter(([llave]) => llave.startsWith(`${usuario.id}:`))

@@ -473,6 +473,10 @@ test.describe("API simulada a través del rewrite de Next", () => {
     test.setTimeout(60_000);
     // La alumna reprueba el examen: su exportación no puede traer la respuesta correcta (DEC-11).
     await escenario("examen-en-espera");
+    // Una sesión cerrada también se exporta mientras exista la fila (DEC-94).
+    const anterior = await (await Alumno.nuevo()).entrar();
+    expect((await anterior.pedir("DELETE", "/api/sesion")).status()).toBe(204);
+    await anterior.cerrar();
     const alumna = await (await Alumno.nuevo()).entrar();
     const exportacion = await alumna.json<Json>("GET", "/api/perfil/exportacion");
     expect(exportacion.estado).toBe(200);
@@ -484,7 +488,7 @@ test.describe("API simulada a través del rewrite de Next", () => {
     expect(datos.cuenta).toMatchObject({ correo: ALUMNA, nombre: "Alma", metodoAcceso: "correo" });
     expect(datos.aceptaciones).toHaveLength(2);
     for (const aceptacion of datos.aceptaciones) expect(aceptacion.direccionIp, "con la IP").toBeTruthy();
-    expect(datos.sesiones.length).toBeGreaterThan(0);
+    expect(datos.sesiones.length, "la abierta y la cerrada").toBeGreaterThanOrEqual(2);
     expect(datos.progreso.length).toBeGreaterThan(0);
     const examen = datos.intentos.find((i: Json) => i.tipo === "examen");
     expect(examen).toMatchObject({ estado: "enviado", aprobado: false });

@@ -273,7 +273,7 @@ export interface paths {
         };
         /**
          * Descargar todos mis datos (derecho de acceso)
-         * @description Devuelve en un archivo JSON todos los datos del alumno de la sesión (DEC-94, fn_exportar_datos_usuario): cuenta, preferencias, aceptaciones con su IP, sesiones abiertas, progreso, intentos con lo que respondió e insignias. Solo los propios (INV-07). Se permite con una aceptación pendiente, porque es el derecho de acceso (INV-30). Nunca incluye hashes, códigos de sesión o de enlaces ni el identificador de Google (INV-08). De los intentos exporta lo que el alumno respondió y su puntaje, nunca la respuesta correcta (INV-04, DEC-11).
+         * @description Devuelve en un archivo JSON todos los datos del alumno de la sesión (DEC-94, fn_exportar_datos_usuario): cuenta, preferencias, aceptaciones con su IP, sesiones, progreso, intentos con lo que respondió e insignias. Solo los propios (INV-07). Se permite con una aceptación pendiente, porque es el derecho de acceso (INV-30). Nunca incluye hashes, códigos de sesión o de enlaces ni el identificador de Google (INV-08). De los intentos exporta lo que el alumno respondió y su puntaje, nunca la respuesta correcta (INV-04, DEC-11).
          */
         get: operations["exportarMisDatos"];
         put?: never;
@@ -832,7 +832,7 @@ export interface components {
             };
             preferencias: components["schemas"]["Preferencias"];
             aceptaciones: components["schemas"]["AceptacionExportada"][];
-            /** @description Sesiones abiertas. */
+            /** @description Todas las sesiones que aún existan, abiertas, cerradas o vencidas, mientras la limpieza diaria no las borre (DEC-94). */
             sesiones: components["schemas"]["SesionExportada"][];
             progreso: components["schemas"]["ProgresoExportado"][];
             intentos: components["schemas"]["IntentoExportado"][];

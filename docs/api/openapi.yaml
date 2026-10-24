@@ -428,7 +428,7 @@ paths:
       summary: Descargar todos mis datos (derecho de acceso)
       description: >-
         Devuelve en un archivo JSON todos los datos del alumno de la sesión (DEC-94, fn_exportar_datos_usuario): cuenta,
-        preferencias, aceptaciones con su IP, sesiones abiertas, progreso, intentos con lo que respondió e insignias.
+        preferencias, aceptaciones con su IP, sesiones, progreso, intentos con lo que respondió e insignias.
         Solo los propios (INV-07). Se permite con una aceptación pendiente, porque es el derecho de acceso (INV-30).
         Nunca incluye hashes, códigos de sesión o de enlaces ni el identificador de Google (INV-08). De los intentos
         exporta lo que el alumno respondió y su puntaje, nunca la respuesta correcta (INV-04, DEC-11).
@@ -1549,7 +1549,7 @@ components:
             $ref: "#/components/schemas/AceptacionExportada"
         sesiones:
           type: array
-          description: Sesiones abiertas.
+          description: Todas las sesiones que aún existan, abiertas, cerradas o vencidas, mientras la limpieza diaria no las borre (DEC-94).
           items:
             $ref: "#/components/schemas/SesionExportada"
         progreso:
