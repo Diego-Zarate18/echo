@@ -102,6 +102,8 @@
   --animate-regresar: regresar 900ms var(--ease-llegada) both;
   --animate-trazar: trazar 900ms var(--ease-llegada) both;
   --animate-encender: encender 500ms var(--ease-llegada) both;
+  /* Respuesta de un formulario: el recuadro llega corto y desde arriba, cerca de donde se mira (Iniciar sesión). */
+  --animate-alerta: alerta 220ms var(--ease-respuesta) both;
 }
 
 /*
@@ -241,6 +243,17 @@
   }
   100% {
     translate: 0 0;
+  }
+}
+
+@keyframes alerta {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

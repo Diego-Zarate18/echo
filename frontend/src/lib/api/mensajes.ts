@@ -56,6 +56,14 @@ export const avisosDeCuenta = {
   cambioDeCorreoEnviado: "Revisa tu correo nuevo para confirmar el cambio. El enlace vence en 30 minutos.",
 } as const;
 
+/** Avisos de Iniciar sesión (SCR-01) que llegan por la URL, no por una respuesta de la API. */
+export const avisosDeAcceso = {
+  /** `?motivo=expirada`: el layout de `(app)` recibió 401 (§7.2). */
+  sesionExpirada: "Tu sesión terminó por inactividad. Inicia sesión de nuevo.",
+  /** `?error=google`: Google falló o la persona canceló (OP-03). No dice si el correo tiene cuenta (DEC-77). */
+  errorGoogle: "No pudimos entrar con tu cuenta de Google. Inténtalo de nuevo o entra con tu correo y contraseña.",
+} as const;
+
 /** Mensaje de un error, con los datos que lo precisan (los minutos de la espera). */
 export function mensajeDeError(error: ErrorApi): string {
   if (error.codigo === "EN_ESPERA" && error.minutosRestantes) {
