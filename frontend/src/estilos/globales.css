@@ -273,6 +273,11 @@
 
 /* Al pasar el puntero sobre Moris, `Ondas.tsx` reinicia estas mismas animaciones. */
 
+/* Sin ondas al cargar (Iniciar sesión): la animación empieza ya terminada y espera al puntero. */
+.onda-en-reposo {
+  animation-delay: -2600ms;
+}
+
 /*
  * Respuesta del acordeón de la Ayuda (`PreguntasAyuda.tsx`, receta de acordeón de `animate`): se anima el alto
  * con la fila de la cuadrícula (0fr ↔ 1fr), sin medir en JavaScript. Es una transición, así que se puede

@@ -9,8 +9,10 @@ const PASO_REPETICION_MS = 220;
  * Ondas que salen de Moris al cargar la página: el sonido que se va y regresa.
  * Tres anillos, una sola vez (sin bucle, WCAG 2.2.2). Con puntero, vuelven a sonar cada vez que
  * el puntero entra en Moris; si la entrada todavía está sonando, no se interrumpe.
+ * Con `alCargar={false}` (Iniciar sesión) no suenan al cargar: empiezan terminadas (`.onda-en-reposo`) y solo
+ * suenan con el puntero.
  */
-export function Ondas() {
+export function Ondas({ alCargar = true }: { alCargar?: boolean }) {
   const contenedorRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export function Ondas() {
         <span
           key={orden}
           style={{ "--orden": orden } as CSSProperties}
-          className="onda absolute top-[60%] left-1/2 aspect-square w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-marca-crema/30"
+          className={`onda ${alCargar ? "" : "onda-en-reposo "}absolute top-[60%] left-1/2 aspect-square w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-marca-crema/30`}
         />
       ))}
     </span>

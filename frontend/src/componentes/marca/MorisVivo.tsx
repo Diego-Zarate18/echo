@@ -13,19 +13,20 @@ function acotar(valor: number) {
 }
 
 /**
- * Moris del hero con vida propia:
- * - al terminar la entrada da un solo salto corto (`.saludo`, solo traslación vertical);
- * - con ratón, se asoma unos píxeles hacia el puntero dentro del hero y vuelve a su lugar al salir.
+ * Moris con vida propia, en el hero del inicio y en el panel de Iniciar sesión:
+ * - con `saludo`, al terminar la entrada del hero da un solo salto corto (`.saludo`, solo traslación vertical);
+ * - con ratón, se asoma unos píxeles hacia el puntero dentro de su tarjeta café (el contenedor con
+ *   `data-fondo="oscuro"`) y vuelve a su lugar al salir.
  *   Es una transición de CSS: cada movimiento nuevo parte del valor actual, así que se interrumpe sin saltos.
  * Con movimiento reducido o pantalla táctil no se mueve. Nunca escala ni rota a Moris.
  */
-export function MorisVivo({ children }: { children: ReactNode }) {
+export function MorisVivo({ children, saludo = true }: { children: ReactNode; saludo?: boolean }) {
   const moris = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const elemento = moris.current;
     const ancla = elemento?.parentElement;
-    const portada = elemento?.closest("section");
+    const portada = elemento?.closest<HTMLElement>('[data-fondo="oscuro"]');
     if (!elemento || !ancla || !portada) return;
 
     const apta = window.matchMedia(CONSULTA_APTA);
@@ -63,7 +64,7 @@ export function MorisVivo({ children }: { children: ReactNode }) {
   return (
     <span
       ref={moris}
-      className="saludo relative isolate block transition-transform duration-500 ease-(--ease-respuesta)"
+      className={`${saludo ? "saludo " : ""}relative isolate block transition-transform duration-500 ease-(--ease-respuesta)`}
     >
       {children}
     </span>
