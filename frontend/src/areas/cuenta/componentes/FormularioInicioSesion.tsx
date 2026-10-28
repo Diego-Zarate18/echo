@@ -259,7 +259,7 @@ export function FormularioInicioSesion({ botonGoogle }: { botonGoogle: ReactNode
 
       <p className="flex flex-wrap items-center justify-center gap-x-1.5 text-menor text-texto-secundario">
         ¿Aún no tienes cuenta?
-        <Link href="/registro" className={`inline-flex min-h-6 items-center ${claseEnlace}`}>
+        <Link href="/crear-cuenta" className={`inline-flex min-h-6 items-center ${claseEnlace}`}>
           Crear cuenta
         </Link>
       </p>

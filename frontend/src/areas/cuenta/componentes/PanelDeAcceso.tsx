@@ -11,6 +11,8 @@ type PropsPanelDeAcceso = {
   saludo: readonly [string, string];
   /** Párrafo bajo el saludo; solo en escritorio. */
   entrada: string;
+  /** Saludo largo («Empieza tu ruta»): en móvil va a 28 px, como en 68:312, para que quepa en dos renglones. */
+  saludoCompacto?: boolean;
 };
 
 /**
@@ -21,7 +23,7 @@ type PropsPanelDeAcceso = {
  * trazados. Solo hay una entrada sobria, una vez: Moris y el saludo suben 24 px mientras aparecen. Con ratón, Moris se
  * asoma hacia el puntero y las ondas suenan al pasar sobre él, igual que en el hero.
  */
-export function PanelDeAcceso({ saludo, entrada }: PropsPanelDeAcceso) {
+export function PanelDeAcceso({ saludo, entrada, saludoCompacto = false }: PropsPanelDeAcceso) {
   return (
     <header
       data-fondo="oscuro"
@@ -62,7 +64,9 @@ export function PanelDeAcceso({ saludo, entrada }: PropsPanelDeAcceso) {
       </div>
 
       <div className="mt-auto flex animate-aparecer flex-col gap-4 [animation-delay:80ms]">
-        <p className="max-w-[220px] font-titulo text-[30px] leading-[1.08] font-black tracking-[-0.015em] lg:max-w-[520px] lg:text-[46px]">
+        <p
+          className={`font-titulo leading-[1.08] font-black tracking-[-0.015em] lg:max-w-[520px] lg:text-[46px] ${saludoCompacto ? "max-w-[230px] text-[28px]" : "max-w-[220px] text-[30px]"}`}
+        >
           <span className="block">{saludo[0]}</span>
           <span className="block">{saludo[1]}</span>
         </p>

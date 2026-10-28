@@ -283,7 +283,7 @@ export function EncabezadoPublico() {
           >
             Iniciar sesión
           </Link>
-          <Boton variante="crema" tamano="mediano" href="/registro">
+          <Boton variante="crema" tamano="mediano" href="/crear-cuenta">
             Crear cuenta
           </Boton>
         </div>

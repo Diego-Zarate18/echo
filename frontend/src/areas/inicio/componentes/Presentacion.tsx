@@ -120,7 +120,7 @@ export function Presentacion() {
               consecuencias que alcanzan a otras personas. Aquí aprendes a anticiparlas.
             </p>
             <div className="mt-[18px] flex animate-aparecer flex-col gap-2.5 [animation-delay:780ms] md:flex-row md:gap-4 lg:mt-[26px]">
-              <Boton variante="crema" conFlecha href="/registro" className="w-full md:w-[200px]">
+              <Boton variante="crema" conFlecha href="/crear-cuenta" className="w-full md:w-[200px]">
                 Crear cuenta
               </Boton>
               <Boton variante="contorno" href="#que-encontraras" className="w-full md:w-[200px]">

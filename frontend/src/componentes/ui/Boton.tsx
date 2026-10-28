@@ -7,8 +7,9 @@ import { IconoFlechaDiagonal } from "@/componentes/ui/iconos/iconos";
  * - `crema`: Botón/Crema (60:346), principal sobre fondo oscuro. Café sobre crema 13.3:1.
  * - `contorno`: Botón/Contorno sobre oscuro (45:125), secundario sobre fondo oscuro.
  * - `cafe`: Botón/Café (66:35), principal sobre fondo claro. Crema sobre café 13.3:1.
+ * - `contornoClaro`: Botón/Contorno sobre claro (45:127), secundario sobre fondo claro.
  */
-export type VarianteBoton = "crema" | "contorno" | "cafe";
+export type VarianteBoton = "crema" | "contorno" | "cafe" | "contornoClaro";
 export type TamanoBoton = "mediano" | "grande";
 
 type PropsComunes = {
@@ -40,6 +41,7 @@ const variantes: Record<VarianteBoton, string> = {
   contorno:
     "justify-center border-[1.5px] border-marca-crema px-7 text-marca-crema hover:bg-marca-crema/8",
   cafe: "justify-center bg-marca-cafe px-7 text-marca-crema hover:bg-texto-secundario",
+  contornoClaro: "justify-center border-[1.5px] border-marca-cafe px-7 text-marca-cafe hover:bg-superficie-hundida",
 };
 
 const tamanos: Record<TamanoBoton, string> = {

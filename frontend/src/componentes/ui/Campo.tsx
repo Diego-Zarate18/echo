@@ -8,8 +8,26 @@ type PropsCampo = Omit<InputHTMLAttributes<HTMLInputElement>, "id" | "className"
   etiqueta: string;
   /** Texto del error; liga el campo con `aria-describedby` y lo marca como inválido. */
   error?: string | null;
+  /** Ayuda bajo la etiqueta («Al menos el primero»), también ligada con `aria-describedby`. */
+  ayuda?: string;
+  /** Otros elementos que describen el campo (la lista de requisitos de la contraseña). */
+  describe?: string;
   ref?: Ref<HTMLInputElement>;
 };
+
+/** `aria-describedby` con el error, la ayuda y lo demás que describa el campo, en ese orden. */
+function descripciones(id: string, { error, ayuda, describe }: Pick<PropsCampo, "error" | "ayuda" | "describe">) {
+  const ids = [error ? `${id}-error` : null, ayuda ? `${id}-ayuda` : null, describe ?? null].filter(Boolean);
+  return ids.length ? ids.join(" ") : undefined;
+}
+
+function Ayuda({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <p id={id} className="-mt-1 text-detalle text-texto-secundario">
+      {children}
+    </p>
+  );
+}
 
 /**
  * Caja de Campo/Normal (66:4): crema elevada, borde de 1.5 px en texto secundario (6.4:1) y 14 px de radio.
@@ -51,17 +69,18 @@ function MensajeDeError({ id, children }: { id: string; children: ReactNode }) {
 }
 
 /** Campo de texto con etiqueta visible y error junto al campo (§8). Permite pegar y autocompletar (WCAG 3.3.8). */
-export function Campo({ id, etiqueta, error, ref, ...entrada }: PropsCampo) {
+export function Campo({ id, etiqueta, error, ayuda, describe, ref, ...entrada }: PropsCampo) {
   const idError = `${id}-error`;
   return (
     <div className="flex w-full flex-col gap-2">
       <Etiqueta htmlFor={id}>{etiqueta}</Etiqueta>
+      {ayuda ? <Ayuda id={`${id}-ayuda`}>{ayuda}</Ayuda> : null}
       <Caja error={Boolean(error)}>
         <input
           ref={ref}
           id={id}
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? idError : undefined}
+          aria-describedby={descripciones(id, { error, ayuda, describe })}
           className={`${claseEntrada} pr-2.5`}
           {...entrada}
         />
@@ -75,20 +94,21 @@ export function Campo({ id, etiqueta, error, ref, ...entrada }: PropsCampo) {
  * Campo de contraseña con el botón para mostrarla (66:8). El botón conserva su nombre, «Mostrar contraseña», y
  * comunica el estado con `aria-pressed` (no cambia de nombre). Mide 40 px: más que los 24 px de WCAG 2.5.8.
  */
-export function CampoContrasena({ id, etiqueta, error, ref, ...entrada }: Omit<PropsCampo, "type">) {
+export function CampoContrasena({ id, etiqueta, error, ayuda, describe, ref, ...entrada }: Omit<PropsCampo, "type">) {
   const [visible, setVisible] = useState(false);
   const idError = `${id}-error`;
   const Ojo = visible ? IconoOjoTachado : IconoOjo;
   return (
     <div className="flex w-full flex-col gap-2">
       <Etiqueta htmlFor={id}>{etiqueta}</Etiqueta>
+      {ayuda ? <Ayuda id={`${id}-ayuda`}>{ayuda}</Ayuda> : null}
       <Caja error={Boolean(error)}>
         <input
           ref={ref}
           id={id}
           type={visible ? "text" : "password"}
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? idError : undefined}
+          aria-describedby={descripciones(id, { error, ayuda, describe })}
           className={claseEntrada}
           {...entrada}
         />

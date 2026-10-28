@@ -52,7 +52,7 @@ export function EncabezadoInterno({ actual }: PropsEncabezadoInterno) {
           <Link href="/iniciar-sesion" className={`${enlaceTexto} flex font-bold`}>
             Iniciar sesión
           </Link>
-          <Boton variante="crema" conFlecha href="/registro" className="w-[200px]">
+          <Boton variante="crema" conFlecha href="/crear-cuenta" className="w-[200px]">
             Crear cuenta
           </Boton>
         </nav>

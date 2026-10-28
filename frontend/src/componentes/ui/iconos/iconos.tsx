@@ -277,3 +277,22 @@ export function IconoSobre(props: PropsIcono) {
     </Icono>
   );
 }
+
+/** Requisito pendiente: círculo vacío (Requisito/Pendiente 66:72). */
+export function IconoCirculo(props: PropsIcono) {
+  return (
+    <Icono lienzo={18} {...props}>
+      <path d="M15.75 9C15.75 12.7279 12.7279 15.75 9 15.75C5.27208 15.75 2.25 12.7279 2.25 9C2.25 5.27208 5.27208 2.25 9 2.25C12.7279 2.25 15.75 5.27208 15.75 9Z" />
+    </Icono>
+  );
+}
+
+/** Reloj, de la Alerta/Aviso (66:53) y del enlace vencido (83:511). */
+export function IconoReloj(props: PropsIcono) {
+  return (
+    <Icono lienzo={22} {...props}>
+      <path d="M20.1667 11C20.1667 16.0626 16.0626 20.1667 11 20.1667C5.93739 20.1667 1.83333 16.0626 1.83333 11C1.83333 5.93739 5.93739 1.83333 11 1.83333C16.0626 1.83333 20.1667 5.93739 20.1667 11Z" />
+      <path d="M11 5.5V11L14.6667 12.8333" />
+    </Icono>
+  );
+}

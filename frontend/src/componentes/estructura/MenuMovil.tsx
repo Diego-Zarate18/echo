@@ -124,7 +124,7 @@ export function MenuMovil({ enlaces, etiqueta, escritorioDesde }: PropsMenuMovil
           <Boton variante="contorno" href="/iniciar-sesion" onClick={() => cerrar(false)} className="w-full">
             Iniciar sesión
           </Boton>
-          <Boton variante="crema" conFlecha href="/registro" onClick={() => cerrar(false)} className="w-full">
+          <Boton variante="crema" conFlecha href="/crear-cuenta" onClick={() => cerrar(false)} className="w-full">
             Crear cuenta
           </Boton>
         </div>

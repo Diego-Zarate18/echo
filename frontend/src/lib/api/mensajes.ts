@@ -41,6 +41,9 @@ export const mensajesDeCampo = {
 
 /** Casos en que el campo cambia el texto. */
 const mensajesDeCampoPorNombre: Partial<Record<string, Partial<Record<CodigoCampo, string>>>> = {
+  // Textos de Figma 67:380 (Crear cuenta con error).
+  nombre: { OBLIGATORIO: "Escribe tu nombre." },
+  apellidos: { OBLIGATORIO: "Escribe al menos tu primer apellido." },
   correo: { FORMATO_INVALIDO: "Escribe un correo válido, por ejemplo nombre@dominio.com." },
   correoNuevo: { FORMATO_INVALIDO: "Escribe un correo válido, por ejemplo nombre@dominio.com." },
 };
