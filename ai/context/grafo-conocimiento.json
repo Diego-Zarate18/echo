@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.5.2",
-    "actualizado": "2026-10-21",
-    "fase": "Exportación de datos en el contrato y el simulador (Tarea 07). Siguiente: vistas de cuenta, empezando por Iniciar sesión (Tarea 08).",
+    "version": "1.5.3",
+    "actualizado": "2026-10-28",
+    "fase": "Iniciar sesión y sesión en el frontend (Tarea 08). Siguiente: Registro, verificación de correo y aceptación (Tarea 09).",
     "historial": [
       {
         "version": "0.1.0",
@@ -79,6 +79,11 @@
         "version": "1.5.2",
         "fecha": "2026-10-23",
         "cambio": "Revisión de la Tarea 07: correo de soporte corregido en PEND-12; DEC-94 precisa qué sesiones se exportan."
+      },
+      {
+        "version": "1.5.3",
+        "fecha": "2026-10-28",
+        "cambio": "Revisión de la Tarea 08: la exportación marca cerradaEn por sesión (DEC-94); el backend borra la cookie al responder 401 y /aceptar va en su propio grupo (DEC-85, SCR-19)."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -5641,7 +5646,7 @@
       "id": "DEC-85",
       "tipo": "decision",
       "nombre": "Frontend con mismo origen",
-      "descripcion": "El navegador solo habla con el dominio del frontend: /api/* se reescribe hacia API_URL_INTERNA (red privada de Railway). Cookie de sesión __Host-echo_sesion (HttpOnly, Secure, SameSite=Lax, Path=/, sin Domain); el backend rechaza mutaciones cuyo Origin no sea el del frontend; sin CORS ni NEXT_PUBLIC_*. Errores con forma { codigo, mensaje }. Google OAuth en /api/auth/google y su callback.",
+      "descripcion": "El navegador solo habla con el dominio del frontend: /api/* se reescribe hacia API_URL_INTERNA (red privada de Railway). Cookie de sesión __Host-echo_sesion (HttpOnly, Secure, SameSite=Lax, Path=/, sin Domain); el backend rechaza mutaciones cuyo Origin no sea el del frontend; sin CORS ni NEXT_PUBLIC_*. Errores con forma { codigo, mensaje }. Google OAuth en /api/auth/google y su callback. Si una petición con cookie responde 401 NO_AUTENTICADO, el backend también borra la cookie (Set-Cookie con Max-Age=0), para que no queden cookies vencidas en el navegador.",
       "estado": "decidido",
       "detalles": {
         "origen": "docs/frontend/arquitectura.md §3 y §14, aprobada el 21/10",
@@ -5667,7 +5672,8 @@
           "VERSION_NO_VIGENTE",
           "ERROR_INTERNO"
         ],
-        "contrato": "docs/api/openapi.yaml (DEC-90); textos para el alumno en frontend/src/lib/api/mensajes.ts"
+        "contrato": "docs/api/openapi.yaml (DEC-90); textos para el alumno en frontend/src/lib/api/mensajes.ts",
+        "proxy_frontend": "Chequeo optimista de la cookie en src/proxy.ts; la validación real la hace el layout de (app) con obtenerSesion. /aceptar va en su propio grupo (aceptacion): el proxy lo deja pasar con la cookie de sesión o con la cookie temporal de Google; su layout valida sin redirigir por aceptación pendiente."
       }
     },
     {
@@ -5932,7 +5938,9 @@
         "ruta": "/aceptar",
         "requiere_sesion": "No en el caso de Google (cookie temporal); sí en el de versión nueva",
         "estados_a_disenar": "Registro con Google; versión nueva del aviso; versión nueva de los términos; ambas; casilla obligatoria sin marcar; la cookie temporal venció (volver a «Continuar con Google»)",
-        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
+        "ruta_frontend": "Grupo (aceptacion), fuera de (app), para no formar un ciclo con la redirección por ACEPTACION_PENDIENTE",
+        "figma": "Vistas móviles: fila «Acceso, aceptación y páginas públicas» (4 estados); componente Casilla"
       }
     },
     {
@@ -6016,12 +6024,13 @@
       "id": "DEC-94",
       "tipo": "decision",
       "nombre": "Exportación de datos para derechos ARCO",
-      "descripcion": "El estudiante descarga todos sus datos en JSON desde su Perfil («Descargar mis datos»), sin pasar por el equipo. fn_exportar_datos_usuario arma el documento en una sola consulta con vista consistente: cuenta, preferencias, aceptaciones (con IP), sesiones abiertas, progreso, intentos con respuestas y calificaciones, e insignias. Nunca incluye hashes ni códigos de sesión o de enlaces. Para solicitudes ARCO por correo se entrega el mismo JSON y un PDF generado a partir de él. Las sesiones exportadas son todas las filas que aún existan en sesion (abiertas y las cerradas o vencidas que la limpieza diaria todavía no borra).",
+      "descripcion": "El estudiante descarga todos sus datos en JSON desde su Perfil («Descargar mis datos»), sin pasar por el equipo. fn_exportar_datos_usuario arma el documento en una sola consulta con vista consistente: cuenta, preferencias, aceptaciones (con IP), sesiones, progreso, intentos con respuestas y calificaciones, e insignias. Nunca incluye hashes ni códigos de sesión o de enlaces. Para solicitudes ARCO por correo se entrega el mismo JSON y un PDF generado a partir de él. Las sesiones exportadas son todas las filas que aún existan en sesion (abiertas y las cerradas o vencidas que la limpieza diaria todavía no borra). Cada sesión exportada lleva cerradaEn: la fecha en que se cerró o venció, o null si sigue abierta.",
       "estado": "decidido",
       "detalles": {
         "origen": "Diapositivas del docente y reporte técnico de BD actualizado (21/10)",
         "ruta_api": "GET /api/perfil/exportacion",
-        "formato": "application/json, descarga echo-mis-datos-AAAA-MM-DD.json"
+        "formato": "application/json, descarga echo-mis-datos-AAAA-MM-DD.json",
+        "sesion_exportada": "iniciadaEn, ultimaActividadEn, cerradaEn (fecha o null), navegador"
       }
     },
     {
