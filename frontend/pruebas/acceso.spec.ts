@@ -62,7 +62,7 @@ test.describe("SCR-01 · Iniciar sesión y sesión del frontend", () => {
     await expect(campoContrasena(page)).toHaveAttribute("autocomplete", "current-password");
     await expect(page.getByRole("link", { name: "Continuar con Google" })).toHaveAttribute("href", "/api/auth/google");
     await expect(page.getByRole("link", { name: "¿Olvidaste tu contraseña?" })).toHaveAttribute("href", "/recuperar-contrasena");
-    await expect(page.getByRole("link", { name: "Crear cuenta" })).toHaveAttribute("href", "/registro");
+    await expect(page.getByRole("link", { name: "Crear cuenta" })).toHaveAttribute("href", "/crear-cuenta");
     // El pie lleva los dos documentos (grafo › SCR-01 › comunes), aunque Figma solo dibuje el aviso.
     const pie = page.getByRole("contentinfo");
     await expect(pie.getByRole("link", { name: "Aviso de privacidad" })).toHaveAttribute("href", "/aviso-de-privacidad");
@@ -78,6 +78,8 @@ test.describe("SCR-01 · Iniciar sesión y sesión del frontend", () => {
 
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await page.waitForURL(/\/iniciar-sesion/);
+    // Sin `volver`: cerrar sesión no es una sesión vencida.
+    expect(new URL(page.url()).search).toBe("");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Iniciar sesión");
     // Sin la cookie, /modulos ya no abre.
     await page.goto("/modulos");

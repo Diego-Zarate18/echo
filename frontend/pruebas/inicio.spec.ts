@@ -64,7 +64,7 @@ test.describe("SCR-18 · Inicio público", () => {
         .getByRole("link", { name: texto, exact: true, includeHidden: true })
         .evaluateAll((enlaces) => [...new Set(enlaces.map((e) => e.getAttribute("href")))]);
 
-    expect(await hrefsPorTexto("Crear cuenta")).toEqual(["/registro"]);
+    expect(await hrefsPorTexto("Crear cuenta")).toEqual(["/crear-cuenta"]);
     expect(await hrefsPorTexto("Iniciar sesión")).toEqual(["/iniciar-sesion"]);
     expect(await hrefsPorTexto("Ya tengo cuenta")).toEqual(["/iniciar-sesion"]);
     expect(await hrefsPorTexto("Ayuda")).toEqual(["/ayuda"]);
@@ -617,7 +617,7 @@ test.describe("SCR-18 · Menú móvil", () => {
 
 test.describe("Página no encontrada", () => {
   test("responde 404 en español con enlace al inicio", async ({ page }) => {
-    const respuesta = await page.goto("/registro");
+    const respuesta = await page.goto("/pagina-que-no-existe");
     expect(respuesta?.status()).toBe(404);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("No encontramos esta página.");
     await expect(page.getByRole("link", { name: "Ir al inicio" })).toHaveAttribute("href", "/");

@@ -1,9 +1,12 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "@playwright/test";
 import { ErrorDeMarkdown, analizarMarkdown } from "../src/lib/markdown/analizar";
 import { idDeSeccion, leerDocumentoLegal } from "../src/lib/markdown/documento";
 import { dibujarBloques } from "../src/lib/markdown/renderizar";
+import { raizFrontend } from "./utilidades/api";
 
 const dibujar = (fuente: string, correos: string[] = []) =>
   renderToStaticMarkup(
@@ -120,5 +123,26 @@ test.describe("Convertidor de Markdown (lib/markdown)", () => {
     expect(idDeSeccion("2. Datos personales que recabamos")).toBe("datos-personales-que-recabamos");
     expect(() => leerDocumentoLegal("# A\n\nsin versión\n")).toThrow(/línea 3/);
     expect(() => leerDocumentoLegal("# A\n\n**Versión:** 1.0 · **Última actualización:** 01/01/2026\n\nAntes del primer apartado.\n")).toThrow(/línea 5/);
+  });
+});
+
+test.describe("Anexo A del aviso de privacidad en Crear cuenta y en la aceptación (SCR-02, SCR-19)", () => {
+  test("el aviso simplificado y las casillas coinciden palabra por palabra con docs/legal", async () => {
+    const { AVISO_SIMPLIFICADO, CASILLAS } = await import("../src/areas/cuenta/textosDeConsentimiento");
+    const archivo = readFileSync(join(raizFrontend, "..", "docs", "legal", "aviso-de-privacidad-v1.0.md"), "utf8");
+    const anexo = archivo.slice(archivo.indexOf("## Anexo A."), archivo.indexOf("## Anexo B."));
+    const cita = anexo
+      .split("\n")
+      .filter((linea) => linea.startsWith(">"))
+      .map((linea) => linea.replace(/^> ?/, "").replaceAll("**", "").trim())
+      .filter(Boolean);
+    expect(cita).toEqual([AVISO_SIMPLIFICADO.titulo, ...AVISO_SIMPLIFICADO.parrafos]);
+
+    const casillas = anexo
+      .split("\n")
+      .filter((linea) => linea.startsWith("- [ ] "))
+      .map((linea) => linea.slice(6).replace(/ \((opcional|obligatoria)\)$/, ""));
+    expect(casillas).toEqual([CASILLAS.negativaEncuesta, CASILLAS.negativaEstadisticas, CASILLAS.mayorDeEdad, CASILLAS.aceptaAviso]);
+    expect(anexo).toContain(`«${CASILLAS.aceptaTerminos.replace(/\.$/, "")}»`);
   });
 });

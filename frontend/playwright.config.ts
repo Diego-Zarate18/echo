@@ -11,7 +11,7 @@ const PRUEBAS_DE_API = /(api|build|markdown)\.spec\.ts$/;
  * Pantallas que cambian el estado de la API simulada (inicio de sesión, escenarios, reinicios). El simulador es uno
  * solo para todos, así que corren después de las de API y una después de otra, nunca al mismo tiempo.
  */
-const PRUEBAS_CON_SIMULADOR = /acceso\.spec\.ts$/;
+const PRUEBAS_CON_SIMULADOR = /(acceso|cuenta)\.spec\.ts$/;
 
 const MOVIL = {
   ...devices["Desktop Chrome"],
@@ -58,12 +58,15 @@ export default defineConfig({
       name: "acceso-escritorio",
       testMatch: PRUEBAS_CON_SIMULADOR,
       dependencies: ["api"],
+      // Un solo worker: los archivos de este proyecto reinician el simulador y no pueden correr a la vez.
+      workers: 1,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
     },
     {
       name: "acceso-movil",
       testMatch: PRUEBAS_CON_SIMULADOR,
       dependencies: ["acceso-escritorio"],
+      workers: 1,
       use: MOVIL,
     },
   ],
