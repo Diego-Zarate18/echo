@@ -1,6 +1,9 @@
 /** Cookie de sesión que pone el backend (DEC-12). El frontend solo mira si existe; nunca lee su valor. */
 export const COOKIE_SESION = "__Host-echo_sesion";
 
+/** Cookie temporal del registro con Google (10 minutos, cifrada por el backend). Solo se mira si existe. */
+export const COOKIE_REGISTRO_GOOGLE = "__Host-echo_registro_google";
+
 /**
  * Encabezado interno con la ruta que pidió el alumno. Lo escribe `proxy.ts` en cada ruta de `(app)` (y pisa el que
  * mande el navegador) para que el layout sepa a dónde volver tras iniciar sesión de nuevo.
