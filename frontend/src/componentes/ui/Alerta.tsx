@@ -1,14 +1,15 @@
 import type { ReactNode, Ref } from "react";
-import { IconoAlerta, IconoInfo, IconoSobre } from "@/componentes/ui/iconos/iconos";
+import { IconoAlerta, IconoInfo, IconoReloj, IconoSobre } from "@/componentes/ui/iconos/iconos";
 
 /**
  * Tonos de Figma:
  * - `error`: Alerta/Error (66:44), borde y título riesgosa. `role="alert"`; al fallar el envío recibe el foco.
  * - `correo`: Alerta/Info (66:59) con el sobre, borde y título bosque. `role="status"`.
  * - `aviso`: la misma Alerta/Info con el ícono de información, para avisos que no son de correo.
- * No existe la Alerta/Aviso «Tu cuenta está en pausa» con hora: la prohíben DEC-77 e INV-28.
+ * - `espera`: Alerta/Aviso (66:52) con el reloj, borde terracota y título café. Solo para «la espera de Google venció»
+ *   (SCR-19); nunca para «Tu cuenta está en pausa» con hora, que prohíben DEC-77 e INV-28.
  */
-export type TonoAlerta = "error" | "correo" | "aviso";
+export type TonoAlerta = "error" | "correo" | "aviso" | "espera";
 
 const estilos: Record<TonoAlerta, { borde: string; titulo: string; icono: ReactNode }> = {
   error: {
@@ -25,6 +26,11 @@ const estilos: Record<TonoAlerta, { borde: string; titulo: string; icono: ReactN
     borde: "border-marca-bosque",
     titulo: "text-marca-bosque",
     icono: <IconoInfo className="size-[22px] text-marca-bosque" />,
+  },
+  espera: {
+    borde: "border-marca-terracota",
+    titulo: "text-marca-cafe",
+    icono: <IconoReloj className="size-[22px] text-marca-terracota" />,
   },
 };
 
