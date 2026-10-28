@@ -18,6 +18,8 @@ export type ErrorApi = {
   disponibleEn?: string;
   /** Solo en RESPUESTAS_INCOMPLETAS. */
   preguntasPendientes?: number[];
+  /** Solo en ENLACE_INVALIDO: «vencido» (también el inexistente) o «usado». */
+  motivo?: "vencido" | "usado";
 };
 
 /** Resultado sin excepciones: los errores esperados de la API son datos, no `throw`. */
@@ -45,6 +47,7 @@ export async function interpretarRespuesta<T>(respuesta: Response): Promise<Resu
   if (typeof cuerpo?.minutosRestantes === "number") error.minutosRestantes = cuerpo.minutosRestantes;
   if (typeof cuerpo?.disponibleEn === "string") error.disponibleEn = cuerpo.disponibleEn;
   if (Array.isArray(cuerpo?.preguntasPendientes)) error.preguntasPendientes = cuerpo.preguntasPendientes as number[];
+  if (cuerpo?.motivo === "vencido" || cuerpo?.motivo === "usado") error.motivo = cuerpo.motivo;
   return { ok: false, error };
 }
 

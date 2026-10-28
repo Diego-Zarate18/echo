@@ -61,7 +61,9 @@ Todos los textos dicen «Contenido de ejemplo».
 - Mensajes que no delatan cuentas, con la pausa de 15 minutos tras 5 fallos (DEC-77, DEC-26). Siempre se calcula un hash,
   exista o no la cuenta. Aquí es scrypt de `node:crypto`; el backend usará Argon2id (DEC-72).
 - Sesión de 30 minutos sin actividad con `X-Sesion-Expira` (DEC-12). En la memoria solo queda la huella SHA-256 del
-  código (INV-08).
+  código (INV-08). Un 401 `NO_AUTENTICADO` que llega con la cookie la borra (DEC-85).
+- Las sesiones cerradas o vencidas se conservan en memoria hasta reiniciar el simulador; en el backend, la limpieza
+  diaria las borra (DEC-95). Por eso la exportación del simulador las trae todas, con `cerradaEn`.
 - Verificación de `Origin` en las mutaciones (DEC-85).
 - El alumno solo ve lo suyo (INV-07).
 - Aceptaciones con fecha, hora, IP (de `X-Forwarded-For`, nunca del cuerpo) y versión, y bloqueo con
@@ -75,7 +77,7 @@ Todos los textos dicen «Contenido de ejemplo».
 | `POST /__simulador/escenario` con `{ "nombre": "…" }` | Cambiar el avance de `alumno@example.com` (ver abajo) |
 | `GET /__simulador/correos` | Los correos que se habrían enviado, con su enlace y su código (no se envía nada) |
 | `GET /__simulador/aceptaciones` | Las aceptaciones registradas: correo, documento, versión, `aceptadoEn` e IP |
-| `POST /__simulador/google` | Cambiar la identidad que devuelve el Google simulado (`sub`, `correo`, `nombre`, `apellidos`) |
+| `POST /__simulador/google` | Cambiar la identidad que devuelve el Google simulado (`sub`, `correo`, `nombre`, `apellidos`). Con `vigenciaMs`, la próxima cookie temporal dura eso (por ejemplo `0`, para probar que venció) |
 
 **Escenarios:**
 - `nuevo`: sin avance.

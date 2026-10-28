@@ -47,7 +47,9 @@ ser equivalente: mismas rutas, `operationId`, esquemas y códigos de error.
   - cada respuesta con sesión trae `X-Sesion-Expira` (ISO 8601);
   - `GET /api/sesion` devuelve `{ nombre, apellidos, metodoAcceso, expiraEn, aceptacionPendiente }`, y
     `POST /api/sesion/renovar` la renueva;
-  - toda petición con sesión renueva la última actividad (C-01).
+  - toda petición con sesión renueva la última actividad (C-01);
+  - si una petición llega con la cookie y responde 401 `NO_AUTENTICADO`, la respuesta también la borra
+    (`Set-Cookie` con `Max-Age=0`), para que no queden cookies vencidas en el navegador (DEC-85).
 - **Mutaciones:** `POST`, `PUT`, `PATCH` y `DELETE` sin el `Origin` del frontend responden 403 `ORIGEN_NO_PERMITIDO` (DEC-85).
 - **Redirecciones:** solo las de Google (`302`); el resto responde JSON o sin cuerpo (`202`, `204`).
 
@@ -62,6 +64,7 @@ ser equivalente: mismas rutas, `operationId`, esquemas y códigos de error.
 | OP-01 | `POST /api/cuenta/registro` | `registrarCuenta` |
 | OP-02 | `POST /api/cuenta/verificacion` | `verificarCorreo` |
 | OP-02 | `POST /api/cuenta/verificacion/reenvio` | `reenviarVerificacion` |
+| OP-13 | `GET /api/cuenta/registro-google` | `obtenerRegistroGoogle` |
 | OP-13 | `POST /api/cuenta/aceptacion` | `aceptarDocumentos` |
 | OP-03 | `GET /api/auth/google` (`?proposito=eliminar` para el reingreso) | `entrarConGoogle` |
 | OP-03 | `GET /api/auth/google/callback` | `volverDeGoogle` |
@@ -115,7 +118,7 @@ OP-38 (cierre del proyecto). Son internas del backend, del Cron o de scripts con
 | `NO_AUTENTICADO` | 401 | Sin sesión o sesión vencida (30 min sin actividad) | DEC-12, C-01 |
 | `CREDENCIALES_INVALIDAS` | 401 | Correo inexistente, contraseña equivocada o pausa tras 5 fallos: el mismo código, mensaje y tiempo | DEC-77, DEC-26, INV-28 |
 | `CORREO_SIN_VERIFICAR` | 403 | Contraseña correcta, sin pausa, con el correo sin verificar | DEC-77 |
-| `ENLACE_INVALIDO` | 400 | Enlace de verificación, recuperación o cambio de correo vencido, usado o inexistente; un solo código para no dar pistas | DEC-13, DEC-24, DEC-25 |
+| `ENLACE_INVALIDO` | 400 | Enlace de verificación, recuperación o cambio de correo vencido, usado o inexistente; un solo código, con `motivo` (`vencido` o `usado`) para mostrar el estado | DEC-13, DEC-24, DEC-25 |
 | `CONTRASENA_INCORRECTA` | 403 | Solo con sesión: la contraseña actual no coincide (cambiar contraseña o correo, eliminar cuenta) | DEC-24, DEC-25, DEC-27 |
 | `REINGRESO_REQUERIDO` | 403 | Eliminar una cuenta de Google sin un reingreso reciente | DEC-27 (propuesta) |
 | `REGISTRO_GOOGLE_VENCIDO` | 401 | La cookie temporal del registro con Google venció (10 min) o no es válida | DEC-28, SCR-19 |
@@ -160,7 +163,7 @@ sesión, como el resultado de `fn_exportar_datos_usuario`: el derecho de acceso 
   - las preferencias;
   - las aceptaciones **con su IP** (aquí sí, porque son datos del propio alumno);
   - las sesiones que aún existan, abiertas, cerradas o vencidas, hasta que la limpieza diaria las borre (inicio, última
-    actividad y navegador);
+    actividad, `cerradaEn` y navegador). `cerradaEn` es cuándo se cerró o venció; `null` si sigue abierta;
   - el progreso por lección;
   - los intentos, con lo que respondió en cada pregunta y su puntaje;
   - las insignias.
@@ -168,6 +171,17 @@ sesión, como el resultado de `fn_exportar_datos_usuario`: el derecho de acceso 
 - **Nunca incluye la respuesta correcta** ni la retroalimentación de ningún intento: de un examen reprobado tampoco
   (INV-04, DEC-11). Exporta lo que el alumno eligió y su puntaje, no las claves.
 - **Frontend:** `apiNavegador.exportarMisDatos()` devuelve el JSON y el componente del Perfil lo guarda como archivo.
+
+## Registro con Google pendiente (Tarea 09)
+- `GET /api/cuenta/registro-google` lee la cookie temporal `__Host-echo_registro_google` y devuelve
+  `{ nombre, correo, expiraEn }`, para que SCR-19 diga con qué cuenta de Google se va a crear la cuenta y muestre el
+  estado «la espera venció» al abrir la página. Sin la cookie, o vencida, responde 401 `REGISTRO_GOOGLE_VENCIDO`.
+- Es una propuesta aprobada el 28/10: el grafo aún no la nombra. Va con OP-13 porque es la lectura de ese mismo caso.
+
+## Enlaces vencidos o usados
+- `ENLACE_INVALIDO` trae `motivo`: `vencido` (también un código inexistente) o `usado`, para que Verificar correo
+  (SCR-03) y Recuperar contraseña (SCR-04) muestren su estado. No delata cuentas: el código del enlace es secreto.
+- Falta cuando el enlace ya no aplica por otra causa, como un cambio de correo cuya dirección nueva ya no está libre.
 
 ## Seguridad de la cuenta
 - **Google no hereda cuentas sin verificar (DEC-93).** `volverDeGoogle` y `aceptarDocumentos` solo vinculan Google con una

@@ -355,6 +355,59 @@ test.describe("API simulada a través del rewrite de Next", () => {
     await navegador.close();
   });
 
+  test("DEC-85: un 401 NO_AUTENTICADO con cookie la borra; sin cookie, no manda Set-Cookie", async () => {
+    const alumna = await (await Alumno.nuevo()).entrar();
+    const otra = await (await Alumno.nuevo()).entrar();
+    expect((await otra.pedir("DELETE", "/api/sesiones")).status()).toBe(204);
+    await otra.cerrar();
+
+    const vencida = await alumna.pedir("GET", "/api/sesion");
+    expect(vencida.status()).toBe(401);
+    const [borrada] = encabezadosSetCookie(vencida);
+    expect(borrada).toMatch(/^__Host-echo_sesion=;/);
+    expect(borrada).toContain("Max-Age=0");
+    expect((await alumna.contexto.storageState()).cookies.filter((c) => c.name === "__Host-echo_sesion")).toEqual([]);
+    await alumna.cerrar();
+
+    const visitante = await Alumno.nuevo();
+    const sinCookie = await visitante.pedir("GET", "/api/sesion");
+    expect(sinCookie.status()).toBe(401);
+    expect(encabezadosSetCookie(sinCookie)).toEqual([]);
+    await visitante.cerrar();
+  });
+
+  test("ENLACE_INVALIDO trae motivo: vencido (también el inexistente) o usado", async () => {
+    const visitante = await Alumno.nuevo();
+    const inventado = await visitante.json<Json>("POST", "/api/cuenta/verificacion", { cuerpo: { codigo: "no-existe" } });
+    expect(inventado).toMatchObject({ estado: 400, cuerpo: { codigo: "ENLACE_INVALIDO", motivo: "vencido" } });
+
+    expect((await visitante.pedir("POST", "/api/cuenta/registro", {
+      cuerpo: { nombre: "Eva", apellidos: "Ejemplo", correo: "eva@example.com", contrasena: "Segura2026", versionAviso: "1.0", versionTerminos: "1.0", aceptaAviso: true, aceptaTerminos: true, mayorDeEdad: true, negativaEncuesta: false, negativaEstadisticas: false },
+    })).status()).toBe(202);
+    const pendiente = (await correos()).find((c) => c.para === "eva@example.com" && c.tipo === "verificacion");
+    expect(pendiente?.codigo, "el enlace de verificación de la cuenta nueva").toBeTruthy();
+    expect((await visitante.json("POST", "/api/cuenta/verificacion", { cuerpo: { codigo: pendiente!.codigo } })).estado).toBe(200);
+    const usado = await (await Alumno.nuevo()).json<Json>("POST", "/api/cuenta/verificacion", { cuerpo: { codigo: pendiente!.codigo } });
+    expect(usado).toMatchObject({ estado: 400, cuerpo: { codigo: "ENLACE_INVALIDO", motivo: "usado" } });
+    await visitante.cerrar();
+  });
+
+  test("registro con Google pendiente: GET /api/cuenta/registro-google con la cookie temporal, 401 sin ella", async () => {
+    const visitante = await Alumno.nuevo();
+    const sinCookie = await visitante.json<Json>("GET", "/api/cuenta/registro-google");
+    expect(sinCookie).toMatchObject({ estado: 401, cuerpo: { codigo: "REGISTRO_GOOGLE_VENCIDO" } });
+
+    // /api/auth/google → callback (deja la cookie temporal) → /aceptar.
+    const ida = await visitante.pedir("GET", "/api/auth/google");
+    const vuelta = await visitante.pedir("GET", ida.headers().location!);
+    expect(vuelta.headers().location).toBe("/aceptar");
+    const registro = await visitante.json<Json>("GET", "/api/cuenta/registro-google");
+    expect(registro.estado).toBe(200);
+    expect(Object.keys(registro.cuerpo).sort()).toEqual(["correo", "expiraEn", "nombre"]);
+    expect(registro.cuerpo).toMatchObject({ nombre: "Gala", correo: "google.alumna@example.com" });
+    await visitante.cerrar();
+  });
+
   test("INV-07: el intento de otro alumno no existe para quien pregunta", async () => {
     const otra = await (await Alumno.nuevo()).entrar(OTRA_ALUMNA);
     const suyos = await otra.json<Json>("GET", "/api/resultados");
@@ -489,6 +542,11 @@ test.describe("API simulada a través del rewrite de Next", () => {
     expect(datos.aceptaciones).toHaveLength(2);
     for (const aceptacion of datos.aceptaciones) expect(aceptacion.direccionIp, "con la IP").toBeTruthy();
     expect(datos.sesiones.length, "la abierta y la cerrada").toBeGreaterThanOrEqual(2);
+    // `cerradaEn`: fecha en la que se cerró la anterior; `null` en la que está abierta (DEC-94, grafo 1.5.3).
+    const cerradas = datos.sesiones.filter((s: Json) => s.cerradaEn !== null);
+    expect(cerradas.length).toBeGreaterThanOrEqual(1);
+    for (const sesion of cerradas) expect(new Date(sesion.cerradaEn).toISOString()).toBe(sesion.cerradaEn);
+    expect(datos.sesiones.filter((s: Json) => s.cerradaEn === null).length).toBe(1);
     expect(datos.progreso.length).toBeGreaterThan(0);
     const examen = datos.intentos.find((i: Json) => i.tipo === "examen");
     expect(examen).toMatchObject({ estado: "enviado", aprobado: false });

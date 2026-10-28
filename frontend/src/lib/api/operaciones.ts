@@ -14,6 +14,7 @@ export const operacionesApi = {
   registrarCuenta: { metodo: "POST", ruta: "/api/cuenta/registro" },
   verificarCorreo: { metodo: "POST", ruta: "/api/cuenta/verificacion" },
   reenviarVerificacion: { metodo: "POST", ruta: "/api/cuenta/verificacion/reenvio" },
+  obtenerRegistroGoogle: { metodo: "GET", ruta: "/api/cuenta/registro-google" },
   aceptarDocumentos: { metodo: "POST", ruta: "/api/cuenta/aceptacion" },
   obtenerDocumentosVigentes: { metodo: "GET", ruta: "/api/documentos" },
   solicitarRecuperacion: { metodo: "POST", ruta: "/api/contrasena/recuperacion" },

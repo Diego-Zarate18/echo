@@ -145,7 +145,9 @@ export const errores = {
   noAutenticado: () => new ErrorApi(401, "NO_AUTENTICADO", "No hay una sesión válida."),
   credenciales: () => new ErrorApi(401, "CREDENCIALES_INVALIDAS", "Correo o contraseña no válidos."),
   sinVerificar: () => new ErrorApi(403, "CORREO_SIN_VERIFICAR", "El correo de la cuenta no está verificado."),
-  enlaceInvalido: () => new ErrorApi(400, "ENLACE_INVALIDO", "El enlace no es válido, ya se usó o venció."),
+  /** `motivo`: «vencido» (también el inexistente) o «usado»; sin motivo cuando el enlace ya no aplica por otra causa. */
+  enlaceInvalido: (motivo) =>
+    new ErrorApi(400, "ENLACE_INVALIDO", "El enlace no es válido, ya se usó o venció.", motivo ? { motivo } : {}),
   contrasenaIncorrecta: () => new ErrorApi(403, "CONTRASENA_INCORRECTA", "La contraseña actual no coincide."),
   reingresoRequerido: () => new ErrorApi(403, "REINGRESO_REQUERIDO", "Falta volver a entrar con Google."),
   registroGoogleVencido: () =>

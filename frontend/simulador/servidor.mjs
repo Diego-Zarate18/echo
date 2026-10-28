@@ -90,6 +90,7 @@ function cuerpoDeError(error) {
   if (error.extra.minutosRestantes) cuerpo.minutosRestantes = error.extra.minutosRestantes;
   if (error.extra.disponibleEn) cuerpo.disponibleEn = error.extra.disponibleEn;
   if (error.extra.preguntasPendientes) cuerpo.preguntasPendientes = error.extra.preguntasPendientes;
+  if (error.extra.motivo) cuerpo.motivo = error.extra.motivo;
   return cuerpo;
 }
 
@@ -145,8 +146,10 @@ async function atenderControl(solicitud, respuesta, url) {
     });
   }
   if (solicitud.method === "POST" && ruta === "/__simulador/google") {
-    const cuerpo = await leerCuerpo(solicitud);
-    bd.identidadGoogle = { ...bd.identidadGoogle, ...cuerpo };
+    const { vigenciaMs, ...identidad } = (await leerCuerpo(solicitud)) ?? {};
+    bd.identidadGoogle = { ...bd.identidadGoogle, ...identidad };
+    // Para probar la cookie temporal vencida: la próxima vuelta de Google la emite con esta vigencia.
+    if (typeof vigenciaMs === "number") bd.vigenciaRegistroGoogleMs = vigenciaMs;
     return responder(respuesta, 204);
   }
   return responder(respuesta, 404, { codigo: "NO_ENCONTRADO", mensaje: "Ruta de control desconocida." });
@@ -250,6 +253,10 @@ async function atender(solicitud, respuesta) {
     const conocido = error instanceof ErrorApi ? error : errores.interno();
     if (!(error instanceof ErrorApi)) console.error(error);
     if (conocido.codigo === "DEMASIADAS_SOLICITUDES") encabezados["Retry-After"] = String(conocido.extra.segundos);
+    // Cookie vencida o revocada: el 401 también la borra, para que no quede en el navegador (DEC-85, grafo 1.5.3).
+    if (conocido.codigo === "NO_AUTENTICADO" && cookies[COOKIE_SESION]) {
+      nuevasCookies.push(`${COOKIE_SESION}=; ${ATRIBUTOS_COOKIE}; Max-Age=0`);
+    }
     if (actual && conocido.estado !== 401) {
       encabezados["X-Sesion-Expira"] = new Date(new Date(actual.sesion.ultimaActividadEn).getTime() + bd.duracionSesionMs).toISOString();
     }

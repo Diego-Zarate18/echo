@@ -115,9 +115,12 @@ function enviarCorreo(ctx, para, tipo, codigo = null) {
 function usarToken(ctx, codigo, tipo) {
   const llave = typeof codigo === "string" ? huella(codigo) : "";
   const token = ctx.bd.tokens.get(llave);
-  if (!token || token.tipo !== tipo || token.usadoEn || new Date(token.expiraEn) <= ctx.ahora) throw errores.enlaceInvalido();
+  // Un enlace inexistente cuenta como vencido: así no se distingue de uno que nunca se emitió.
+  if (!token || token.tipo !== tipo) throw errores.enlaceInvalido("vencido");
+  if (token.usadoEn) throw errores.enlaceInvalido("usado");
+  if (new Date(token.expiraEn) <= ctx.ahora) throw errores.enlaceInvalido("vencido");
   const usuario = ctx.bd.usuarios.get(token.usuarioId);
-  if (!usuario || usuario.estado === "anonimizado") throw errores.enlaceInvalido();
+  if (!usuario || usuario.estado === "anonimizado") throw errores.enlaceInvalido("vencido");
   return { token, usuario };
 }
 function registrarAceptaciones(ctx, usuario, tipos) {
@@ -221,7 +224,7 @@ function registrarCuenta(ctx) {
 
 function verificarCorreo(ctx) {
   const { token, usuario } = usarToken(ctx, ctx.cuerpo?.codigo, "verificacion");
-  if (usuario.estado !== "pendiente") throw errores.enlaceInvalido();
+  if (usuario.estado !== "pendiente") throw errores.enlaceInvalido("usado");
   token.usadoEn = ctx.ahora.toISOString();
   usuario.estado = "activo";
   usuario.correoVerificadoEn = ctx.ahora.toISOString();
@@ -236,6 +239,13 @@ function reenviarVerificacion(ctx) {
   const usuario = usuarioPorCorreo(ctx.bd, correoEntrada);
   if (usuario?.estado === "pendiente") enviarCorreo(ctx, usuario.correo, "verificacion", crearToken(ctx, usuario, "verificacion", usuario.correo));
   return { estado: 202 };
+}
+
+/** Datos del registro con Google en curso (propuesta de la Tarea 09, OP-13): lo que SCR-19 muestra antes de aceptar. */
+function obtenerRegistroGoogle(ctx) {
+  const google = ctx.cookies[COOKIE_REGISTRO_GOOGLE] ? ctx.leerCookieGoogle(ctx.cookies[COOKIE_REGISTRO_GOOGLE]) : null;
+  if (!google || new Date(google.expiraEn) <= ctx.ahora) throw errores.registroGoogleVencido();
+  return { estado: 200, cuerpo: { nombre: google.nombre, correo: google.correo, expiraEn: google.expiraEn } };
 }
 
 function aceptarDocumentos(ctx) {
@@ -349,7 +359,8 @@ function volverDeGoogle(ctx) {
     ctx.abrirSesion(usuario);
     return { estado: 302, ubicacion: "/modulos" };
   }
-  ctx.guardarCookieGoogle(COOKIE_REGISTRO_GOOGLE, { ...google, expiraEn: new Date(ctx.ahora.getTime() + 10 * MINUTO).toISOString() });
+  const vigencia = ctx.bd.vigenciaRegistroGoogleMs ?? 10 * MINUTO;
+  ctx.guardarCookieGoogle(COOKIE_REGISTRO_GOOGLE, { ...google, expiraEn: new Date(ctx.ahora.getTime() + vigencia).toISOString() });
   return { estado: 302, ubicacion: "/aceptar" };
 }
 
@@ -537,9 +548,14 @@ function exportarMisDatos(ctx) {
           return { documento: documento.tipo, version: documento.version, aceptadoEn: a.aceptadoEn, direccionIp: a.direccionIp };
         }),
       sesiones: [...bd.sesiones.values()]
-        // Todas las filas que aún existan: abiertas, cerradas y vencidas (DEC-94, grafo 1.5.2).
+        // Todas las filas que aún existan: abiertas, cerradas y vencidas (DEC-94). `cerradaEn` es la hora en que se
+        // cerró o en que venció por inactividad; `null` si sigue abierta.
         .filter((sesion) => sesion.usuarioId === usuario.id)
-        .map((sesion) => ({ iniciadaEn: sesion.creadaEn, ultimaActividadEn: sesion.ultimaActividadEn, navegador: sesion.agenteUsuario || null })),
+        .map((sesion) => {
+          const vence = new Date(new Date(sesion.ultimaActividadEn).getTime() + bd.duracionSesionMs);
+          const cerradaEn = sesion.revocadaEn ?? (vence <= ahora ? vence.toISOString() : null);
+          return { iniciadaEn: sesion.creadaEn, ultimaActividadEn: sesion.ultimaActividadEn, cerradaEn, navegador: sesion.agenteUsuario || null };
+        }),
       progreso: [...bd.progreso.entries()]
         .filter(([llave]) => llave.startsWith(`${usuario.id}:`))
         .map(([llave, progreso]) => {
@@ -1072,6 +1088,7 @@ export const rutas = [
   { metodo: "POST", ruta: "/api/cuenta/registro", operationId: "registrarCuenta", sesion: "opcional", conPendiente: true, limitada: true, manejar: registrarCuenta },
   { metodo: "POST", ruta: "/api/cuenta/verificacion", operationId: "verificarCorreo", sesion: "opcional", conPendiente: true, manejar: verificarCorreo },
   { metodo: "POST", ruta: "/api/cuenta/verificacion/reenvio", operationId: "reenviarVerificacion", sesion: "opcional", conPendiente: true, limitada: true, manejar: reenviarVerificacion },
+  { metodo: "GET", ruta: "/api/cuenta/registro-google", operationId: "obtenerRegistroGoogle", sesion: "opcional", conPendiente: true, manejar: obtenerRegistroGoogle },
   { metodo: "POST", ruta: "/api/cuenta/aceptacion", operationId: "aceptarDocumentos", sesion: "opcional", conPendiente: true, manejar: aceptarDocumentos },
   { metodo: "GET", ruta: "/api/auth/google", operationId: "entrarConGoogle", sesion: "opcional", conPendiente: true, manejar: entrarConGoogle },
   { metodo: "GET", ruta: "/api/auth/google/callback", operationId: "volverDeGoogle", sesion: "opcional", conPendiente: true, manejar: volverDeGoogle },

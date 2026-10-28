@@ -219,6 +219,27 @@ paths:
           $ref: "#/components/responses/DatosInvalidos"
         "429":
           $ref: "#/components/responses/DemasiadasSolicitudes"
+  /api/cuenta/registro-google:
+    get:
+      tags: [cuenta]
+      operationId: obtenerRegistroGoogle
+      x-grafo: OP-13
+      summary: Datos del registro con Google en curso
+      description: >-
+        Sin sesión, con la cookie temporal __Host-echo_registro_google. Devuelve el nombre y el correo que mandó
+        Google, para que SCR-19 diga con qué cuenta se va a crear, y cuándo vence la cookie. Sin la cookie, o vencida,
+        responde REGISTRO_GOOGLE_VENCIDO.
+      security:
+        - cookieRegistroGoogle: []
+      responses:
+        "200":
+          description: Registro con Google pendiente de aceptar.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistroGoogle"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
   /api/cuenta/aceptacion:
     post:
       tags: [cuenta]
@@ -1291,6 +1312,12 @@ components:
           description: Solo en RESPUESTAS_INCOMPLETAS.
           items:
             type: integer
+        motivo:
+          type: string
+          enum: [vencido, usado]
+          description: >-
+            Solo en ENLACE_INVALIDO, para que SCR-03 y SCR-04 muestren su estado. Un enlace inexistente cuenta como
+            vencido. Falta cuando el enlace ya no aplica por otra causa (por ejemplo, el correo nuevo ya no está libre).
     MetodoAcceso:
       type: string
       enum: [correo, google, ambos]
@@ -1395,6 +1422,17 @@ components:
         negativaEstadisticas:
           type: boolean
           description: Casilla opcional «No deseo…» de las estadísticas anónimas (DEC-88).
+    RegistroGoogle:
+      type: object
+      required: [nombre, correo, expiraEn]
+      additionalProperties: false
+      properties:
+        nombre:
+          type: string
+        correo:
+          type: string
+        expiraEn:
+          $ref: "#/components/schemas/FechaHora"
     AceptacionEntrada:
       type: object
       description: >-
@@ -1580,13 +1618,18 @@ components:
           type: [string, "null"]
     SesionExportada:
       type: object
-      required: [iniciadaEn, ultimaActividadEn, navegador]
+      required: [iniciadaEn, ultimaActividadEn, cerradaEn, navegador]
       additionalProperties: false
       properties:
         iniciadaEn:
           $ref: "#/components/schemas/FechaHora"
         ultimaActividadEn:
           $ref: "#/components/schemas/FechaHora"
+        cerradaEn:
+          description: Cuándo se cerró la sesión o venció por inactividad; nulo si sigue abierta (DEC-94).
+          oneOf:
+            - $ref: "#/components/schemas/FechaHora"
+            - type: "null"
         navegador:
           type: [string, "null"]
           description: Agente de usuario que envió el navegador.

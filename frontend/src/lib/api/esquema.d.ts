@@ -123,6 +123,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cuenta/registro-google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Datos del registro con Google en curso
+         * @description Sin sesión, con la cookie temporal __Host-echo_registro_google. Devuelve el nombre y el correo que mandó Google, para que SCR-19 diga con qué cuenta se va a crear, y cuándo vence la cookie. Sin la cookie, o vencida, responde REGISTRO_GOOGLE_VENCIDO.
+         */
+        get: operations["obtenerRegistroGoogle"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cuenta/aceptacion": {
         parameters: {
             query?: never;
@@ -721,6 +741,11 @@ export interface components {
             disponibleEn?: components["schemas"]["FechaHora"];
             /** @description Solo en RESPUESTAS_INCOMPLETAS. */
             preguntasPendientes?: number[];
+            /**
+             * @description Solo en ENLACE_INVALIDO, para que SCR-03 y SCR-04 muestren su estado. Un enlace inexistente cuenta como vencido. Falta cuando el enlace ya no aplica por otra causa (por ejemplo, el correo nuevo ya no está libre).
+             * @enum {string}
+             */
+            motivo?: "vencido" | "usado";
         };
         /** @enum {string} */
         MetodoAcceso: "correo" | "google" | "ambos";
@@ -766,6 +791,11 @@ export interface components {
             negativaEncuesta: boolean;
             /** @description Casilla opcional «No deseo…» de las estadísticas anónimas (DEC-88). */
             negativaEstadisticas: boolean;
+        };
+        RegistroGoogle: {
+            nombre: string;
+            correo: string;
+            expiraEn: components["schemas"]["FechaHora"];
         };
         /** @description Igual que el registro sin nombre, correo ni contraseña. Caso Google: todas las casillas obligatorias. Caso versión nueva: solo las de los documentos pendientes; mayorDeEdad y las negativas se ignoran. */
         AceptacionEntrada: {
@@ -848,6 +878,8 @@ export interface components {
         SesionExportada: {
             iniciadaEn: components["schemas"]["FechaHora"];
             ultimaActividadEn: components["schemas"]["FechaHora"];
+            /** @description Cuándo se cerró la sesión o venció por inactividad; nulo si sigue abierta (DEC-94). */
+            cerradaEn: components["schemas"]["FechaHora"] | null;
             /** @description Agente de usuario que envió el navegador. */
             navegador: string | null;
         };
@@ -1619,6 +1651,27 @@ export interface operations {
             403: components["responses"]["Prohibido"];
             422: components["responses"]["DatosInvalidos"];
             429: components["responses"]["DemasiadasSolicitudes"];
+        };
+    };
+    obtenerRegistroGoogle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Registro con Google pendiente de aceptar. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistroGoogle"];
+                };
+            };
+            401: components["responses"]["NoAutenticado"];
         };
     };
     aceptarDocumentos: {
