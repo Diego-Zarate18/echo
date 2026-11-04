@@ -3,12 +3,17 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+const urlBase = process.env["DATABASE_URL_MIGRACION"] ?? process.env["DATABASE_URL"];
+const urlMigracion = urlBase
+  ? `${urlBase}${urlBase.includes("?") ? "&" : "?"}schema=public&options=-c%20search_path%3Dpublic`
+  : undefined;
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: urlMigracion,
   },
 });

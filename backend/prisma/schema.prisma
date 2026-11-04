@@ -1,13 +1,375 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
-generator client {
+generator cliente {
   provider = "prisma-client"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+   schemas  = ["public"]
+}
+
+model Usuario {
+  id                      String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  nombre                  String?   @db.Text
+  apellidos               String?   @db.Text
+  correo                  String?   @unique @db.Text
+  correoVerificadoEn      DateTime? @map("correo_verificado_en") @db.Timestamptz(6)
+  estado                  String    @default("pendiente") @db.Text
+  hashContrasena          String?   @map("hash_contrasena") @db.Text
+  googleSub               String?   @unique @map("google_sub") @db.Text
+  intentosFallidos        Int       @default(0) @map("intentos_fallidos")
+  bloqueadoHasta          DateTime? @map("bloqueado_hasta") @db.Timestamptz(6)
+  creadoEn                DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+  anonimizadoEn           DateTime? @map("anonimizado_en") @db.Timestamptz(6)
+  mayoriaEdadConfirmadaEn DateTime? @map("mayoria_edad_confirmada_en") @db.Timestamptz(6)
+  negativaEncuesta        Boolean   @default(false) @map("negativa_encuesta")
+  negativaEstadisticas    Boolean   @default(false) @map("negativa_estadisticas")
+
+  sesiones     Sesion[]
+  tokensCorreo TokenCorreo[]
+  aceptaciones AceptacionDocumento[]
+  intentos     Intento[]
+  progresos    ProgresoLeccion[]
+  insignias    InsigniaUsuario[]
+
+  @@map("usuario")
+  @@schema("public")
+}
+
+model Sesion {
+  id                String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  usuarioId         String    @map("usuario_id") @db.Uuid
+  tokenHash         String    @unique @map("token_hash") @db.Text
+  creadaEn          DateTime  @default(now()) @map("creada_en") @db.Timestamptz(6)
+  ultimaActividadEn DateTime  @default(now()) @map("ultima_actividad_en") @db.Timestamptz(6)
+  revocadaEn        DateTime? @map("revocada_en") @db.Timestamptz(6)
+  agenteUsuario     String?   @map("agente_usuario") @db.Text
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([usuarioId])
+  @@map("sesion")
+  @@schema("public")
+}
+
+model TokenCorreo {
+  id            String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  usuarioId     String    @map("usuario_id") @db.Uuid
+  tipo          String    @db.Text
+  tokenHash     String    @unique @map("token_hash") @db.Text
+  correoDestino String    @map("correo_destino") @db.Text
+  expiraEn      DateTime  @map("expira_en") @db.Timestamptz(6)
+  usadoEn       DateTime? @map("usado_en") @db.Timestamptz(6)
+  creadoEn      DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([usuarioId])
+  @@map("token_correo")
+  @@schema("public")
+}
+
+model DocumentoLegal {
+  id                 BigInt   @id @default(autoincrement())
+  tipo               String   @db.Text
+  version            String   @db.Text
+  publicadoEn        DateTime @default(now()) @map("publicado_en") @db.Timestamptz(6)
+  requiereAceptacion Boolean  @default(true) @map("requiere_aceptacion")
+  huellaContenido    String   @map("huella_contenido") @db.Text
+  resumenCambios     String   @map("resumen_cambios") @db.Text
+
+  aceptaciones AceptacionDocumento[]
+
+  @@unique([tipo, version])
+  @@map("documento_legal")
+  @@schema("public")
+}
+
+model AceptacionDocumento {
+  id          String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  usuarioId   String   @map("usuario_id") @db.Uuid
+  documentoId BigInt   @map("documento_id")
+  aceptadoEn  DateTime @default(now()) @map("aceptado_en") @db.Timestamptz(6)
+  direccionIp String?  @map("direccion_ip") @db.Inet
+
+  usuario   Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  documento DocumentoLegal @relation(fields: [documentoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@unique([usuarioId, documentoId])
+  @@map("aceptacion_documento")
+  @@schema("public")
+}
+
+model Modulo {
+  id          BigInt  @id @default(autoincrement())
+  slug        String  @unique @db.Text
+  titulo      String  @db.Text
+  descripcion String  @db.Text
+  orden       Int     @unique
+  publicado   Boolean @default(false)
+
+  cursos   Curso[]
+  insignia Insignia?
+
+  @@map("modulo")
+  @@schema("public")
+}
+
+model Curso {
+  id          BigInt  @id @default(autoincrement())
+  moduloId    BigInt  @map("modulo_id")
+  slug        String  @unique @db.Text
+  titulo      String  @db.Text
+  descripcion String  @db.Text
+  orden       Int
+  publicado   Boolean @default(false)
+
+  modulo        Modulo         @relation(fields: [moduloId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  lecciones     Leccion[]
+  cuestionarios Cuestionario[]
+
+  @@unique([moduloId, orden])
+  @@map("curso")
+  @@schema("public")
+}
+
+model Leccion {
+  id          BigInt    @id @default(autoincrement())
+  cursoId     BigInt    @map("curso_id")
+  slug        String    @unique @db.Text
+  titulo      String    @db.Text
+  resumen     String?   @db.Text
+  orden       Int
+  publicado   Boolean   @default(false)
+  publicadoEn DateTime? @map("publicado_en") @db.Timestamptz(6)
+
+  curso           Curso             @relation(fields: [cursoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  secciones       Seccion[]
+  cuestionarios   Cuestionario[]
+  preguntasRepaso Pregunta[]        @relation("LeccionRepaso")
+  progresos       ProgresoLeccion[]
+
+  @@unique([cursoId, orden])
+  @@map("leccion")
+  @@schema("public")
+}
+
+model Seccion {
+  id        BigInt  @id @default(autoincrement())
+  leccionId BigInt  @map("leccion_id")
+  orden     Int
+  titulo    String  @db.Text
+  cuerpo    String  @db.Text
+  imagenId  BigInt? @map("imagen_id")
+
+  leccion Leccion @relation(fields: [leccionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  imagen  Imagen? @relation(fields: [imagenId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@unique([leccionId, orden])
+  @@map("seccion")
+  @@schema("public")
+}
+
+model Imagen {
+  id               BigInt  @id @default(autoincrement())
+  ruta             String  @unique @db.Text
+  textoAlternativo String  @map("texto_alternativo") @db.Text
+  pie              String? @db.Text
+
+  secciones Seccion[]
+  insignias Insignia[]
+
+  @@map("imagen")
+  @@schema("public")
+}
+
+model Fundamento {
+  id          BigInt  @id @default(autoincrement())
+  tipo        String  @db.Text
+  nombre      String  @db.Text
+  articulo    String? @db.Text
+  descripcion String  @db.Text
+  referencia  String? @db.Text
+
+  preguntas Pregunta[]
+  opciones  Opcion[]
+
+  @@map("fundamento")
+  @@schema("public")
+}
+
+model Cuestionario {
+  id                 BigInt  @id @default(autoincrement())
+  tipo               String  @db.Text
+  leccionId          BigInt? @map("leccion_id")
+  cursoId            BigInt? @map("curso_id")
+  orden              Int?
+  titulo             String  @db.Text
+  instrucciones      String  @db.Text
+  calificacionMinima Decimal @default(70.00) @map("calificacion_minima") @db.Decimal(5, 2)
+  minutosEspera      Int     @default(20) @map("minutos_espera")
+  activo             Boolean @default(true)
+
+  leccion   Leccion?   @relation(fields: [leccionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  curso     Curso?     @relation(fields: [cursoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  preguntas Pregunta[]
+  intentos  Intento[]
+
+  @@map("cuestionario")
+  @@schema("public")
+}
+
+model Pregunta {
+  id                BigInt  @id @default(autoincrement())
+  cuestionarioId    BigInt  @map("cuestionario_id")
+  tipo              String  @db.Text
+  enunciado         String  @db.Text
+  orden             Int
+  fundamentoId      BigInt? @map("fundamento_id")
+  leccionRepasoId   BigInt? @map("leccion_repaso_id")
+  retroalimentacion String? @db.Text
+  activa            Boolean @default(true)
+
+  cuestionario  Cuestionario      @relation(fields: [cuestionarioId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  fundamento    Fundamento?       @relation(fields: [fundamentoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  leccionRepaso Leccion?          @relation("LeccionRepaso", fields: [leccionRepasoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  opciones      Opcion[]
+  parejas       Pareja[]
+  respuestas    RespuestaOpcion[]
+
+  @@map("pregunta")
+  @@schema("public")
+}
+
+model Opcion {
+  id                BigInt  @id @default(autoincrement())
+  preguntaId        BigInt  @map("pregunta_id")
+  texto             String  @db.Text
+  valor             Decimal @db.Decimal(3, 2)
+  retroalimentacion String? @db.Text
+  consecuencia      String? @db.Text
+  fundamentoId      BigInt? @map("fundamento_id")
+  orden             Int
+  activa            Boolean @default(true)
+
+  pregunta   Pregunta          @relation(fields: [preguntaId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  fundamento Fundamento?       @relation(fields: [fundamentoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  respuestas RespuestaOpcion[]
+
+  @@unique([id, preguntaId])
+  @@map("opcion")
+  @@schema("public")
+}
+
+model Pareja {
+  id             BigInt @id @default(autoincrement())
+  preguntaId     BigInt @map("pregunta_id")
+  textoIzquierdo String @map("texto_izquierdo") @db.Text
+  textoDerecho   String @map("texto_derecho") @db.Text
+  orden          Int
+
+  pregunta      Pregunta          @relation(fields: [preguntaId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  respuestasIzq RespuestaPareja[] @relation("ParejaIzquierda")
+  respuestasDer RespuestaPareja[] @relation("ParejaDerecha")
+
+  @@unique([preguntaId, orden])
+  @@map("pareja")
+  @@schema("public")
+}
+
+model Intento {
+  id             String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  usuarioId      String    @map("usuario_id") @db.Uuid
+  cuestionarioId BigInt    @map("cuestionario_id")
+  numero         Int
+  estado         String    @default("en_curso") @db.Text
+  semilla        Int       @default(dbgenerated("floor(random() * 2147483647)::int"))
+  iniciadoEn     DateTime  @default(now()) @map("iniciado_en") @db.Timestamptz(6)
+  enviadoEn      DateTime? @map("enviado_en") @db.Timestamptz(6)
+  calificacion   Decimal?  @db.Decimal(5, 2)
+  aprobado       Boolean?
+
+  usuario          Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  cuestionario     Cuestionario      @relation(fields: [cuestionarioId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  respuestas       RespuestaOpcion[]
+  respuestasPareja RespuestaPareja[]
+
+  @@unique([usuarioId, cuestionarioId, numero])
+  @@map("intento")
+  @@schema("public")
+}
+
+model RespuestaOpcion {
+  intentoId    String   @map("intento_id") @db.Uuid
+  preguntaId   BigInt   @map("pregunta_id")
+  opcionId     BigInt   @map("opcion_id")
+  puntaje      Decimal? @db.Decimal(3, 2)
+  respondidoEn DateTime @default(now()) @map("respondido_en") @db.Timestamptz(6)
+
+  intento  Intento  @relation(fields: [intentoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  pregunta Pregunta @relation(fields: [preguntaId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  opcion   Opcion   @relation(fields: [opcionId, preguntaId], references: [id, preguntaId], onDelete: Restrict, onUpdate: NoAction)
+
+  @@id([intentoId, preguntaId])
+  @@map("respuesta_opcion")
+  @@schema("public")
+}
+
+model RespuestaPareja {
+  intentoId         String   @map("intento_id") @db.Uuid
+  parejaIzquierdaId BigInt   @map("pareja_izquierda_id")
+  parejaDerechaId   BigInt   @map("pareja_derecha_id")
+  respondidoEn      DateTime @default(now()) @map("respondido_en") @db.Timestamptz(6)
+
+  intento         Intento @relation(fields: [intentoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  parejaIzquierda Pareja  @relation("ParejaIzquierda", fields: [parejaIzquierdaId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  parejaDerecha   Pareja  @relation("ParejaDerecha", fields: [parejaDerechaId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@id([intentoId, parejaIzquierdaId])
+  @@unique([intentoId, parejaDerechaId])
+  @@map("respuesta_pareja")
+  @@schema("public")
+}
+
+model ProgresoLeccion {
+  usuarioId     String    @map("usuario_id") @db.Uuid
+  leccionId     BigInt    @map("leccion_id")
+  ultimaSeccion Int       @default(1) @map("ultima_seccion")
+  abiertaEn     DateTime  @default(now()) @map("abierta_en") @db.Timestamptz(6)
+  terminadaEn   DateTime? @map("terminada_en") @db.Timestamptz(6)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  leccion Leccion @relation(fields: [leccionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@id([usuarioId, leccionId])
+  @@map("progreso_leccion")
+  @@schema("public")
+}
+
+model Insignia {
+  id          BigInt @id @default(autoincrement())
+  moduloId    BigInt @unique @map("modulo_id")
+  nombre      String @db.Text
+  descripcion String @db.Text
+  imagenId    BigInt @map("imagen_id")
+
+  modulo   Modulo            @relation(fields: [moduloId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  imagen   Imagen            @relation(fields: [imagenId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  usuarios InsigniaUsuario[]
+
+  @@map("insignia")
+  @@schema("public")
+}
+
+model InsigniaUsuario {
+  usuarioId  String   @map("usuario_id") @db.Uuid
+  insigniaId BigInt   @map("insignia_id")
+  otorgadaEn DateTime @default(now()) @map("otorgada_en") @db.Timestamptz(6)
+
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  insignia Insignia @relation(fields: [insigniaId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  @@id([usuarioId, insigniaId])
+  @@map("insignia_usuario")
+  @@schema("public")
 }
