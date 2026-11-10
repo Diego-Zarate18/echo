@@ -1,3 +1,8 @@
+// Esquema de Echo: 21 tablas y 30 relaciones (docs/echo_db.drawio, nodos «tabla» del grafo).
+// Prisma no puede expresar los CHECK, los índices únicos parciales, los GIN, las funciones,
+// los disparadores, las vistas ni los permisos: viven en SQL dentro de las migraciones (INV-10).
+// La conexión está en prisma.config.ts.
+
 generator cliente {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -5,18 +10,17 @@ generator cliente {
 
 datasource db {
   provider = "postgresql"
-   schemas  = ["public"]
 }
 
 model Usuario {
   id                      String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
   nombre                  String?   @db.Text
   apellidos               String?   @db.Text
-  correo                  String?   @unique @db.Text
+  correo                  String?   @unique(map: "ux_usuario_correo") @db.Text
   correoVerificadoEn      DateTime? @map("correo_verificado_en") @db.Timestamptz(6)
   estado                  String    @default("pendiente") @db.Text
   hashContrasena          String?   @map("hash_contrasena") @db.Text
-  googleSub               String?   @unique @map("google_sub") @db.Text
+  googleSub               String?   @unique(map: "ux_usuario_google_sub") @map("google_sub") @db.Text
   intentosFallidos        Int       @default(0) @map("intentos_fallidos")
   bloqueadoHasta          DateTime? @map("bloqueado_hasta") @db.Timestamptz(6)
   creadoEn                DateTime  @default(now()) @map("creado_en") @db.Timestamptz(6)
@@ -33,13 +37,12 @@ model Usuario {
   insignias    InsigniaUsuario[]
 
   @@map("usuario")
-  @@schema("public")
 }
 
 model Sesion {
   id                String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
   usuarioId         String    @map("usuario_id") @db.Uuid
-  tokenHash         String    @unique @map("token_hash") @db.Text
+  tokenHash         String    @unique(map: "ux_sesion_token_hash") @map("token_hash") @db.Text
   creadaEn          DateTime  @default(now()) @map("creada_en") @db.Timestamptz(6)
   ultimaActividadEn DateTime  @default(now()) @map("ultima_actividad_en") @db.Timestamptz(6)
   revocadaEn        DateTime? @map("revocada_en") @db.Timestamptz(6)
@@ -47,16 +50,15 @@ model Sesion {
 
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([usuarioId])
+  // ix_sesion_usuario_activa (parcial, WHERE revocada_en IS NULL) se crea en SQL.
   @@map("sesion")
-  @@schema("public")
 }
 
 model TokenCorreo {
   id            String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
   usuarioId     String    @map("usuario_id") @db.Uuid
   tipo          String    @db.Text
-  tokenHash     String    @unique @map("token_hash") @db.Text
+  tokenHash     String    @unique(map: "ux_token_correo_token_hash") @map("token_hash") @db.Text
   correoDestino String    @map("correo_destino") @db.Text
   expiraEn      DateTime  @map("expira_en") @db.Timestamptz(6)
   usadoEn       DateTime? @map("usado_en") @db.Timestamptz(6)
@@ -64,9 +66,8 @@ model TokenCorreo {
 
   usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([usuarioId])
+  @@index([usuarioId], map: "ix_token_correo_usuario")
   @@map("token_correo")
-  @@schema("public")
 }
 
 model DocumentoLegal {
@@ -80,9 +81,8 @@ model DocumentoLegal {
 
   aceptaciones AceptacionDocumento[]
 
-  @@unique([tipo, version])
+  @@unique([tipo, version], map: "ux_documento_legal_tipo_version")
   @@map("documento_legal")
-  @@schema("public")
 }
 
 model AceptacionDocumento {
@@ -95,30 +95,28 @@ model AceptacionDocumento {
   usuario   Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   documento DocumentoLegal @relation(fields: [documentoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
-  @@unique([usuarioId, documentoId])
+  @@unique([usuarioId, documentoId], map: "ux_aceptacion_usuario_documento")
   @@map("aceptacion_documento")
-  @@schema("public")
 }
 
 model Modulo {
   id          BigInt  @id @default(autoincrement())
-  slug        String  @unique @db.Text
+  slug        String  @unique(map: "ux_modulo_slug") @db.Text
   titulo      String  @db.Text
   descripcion String  @db.Text
-  orden       Int     @unique
+  orden       Int     @unique(map: "ux_modulo_orden")
   publicado   Boolean @default(false)
 
   cursos   Curso[]
   insignia Insignia?
 
   @@map("modulo")
-  @@schema("public")
 }
 
 model Curso {
   id          BigInt  @id @default(autoincrement())
   moduloId    BigInt  @map("modulo_id")
-  slug        String  @unique @db.Text
+  slug        String  @unique(map: "ux_curso_slug") @db.Text
   titulo      String  @db.Text
   descripcion String  @db.Text
   orden       Int
@@ -128,15 +126,14 @@ model Curso {
   lecciones     Leccion[]
   cuestionarios Cuestionario[]
 
-  @@unique([moduloId, orden])
+  @@unique([moduloId, orden], map: "ux_curso_modulo_orden")
   @@map("curso")
-  @@schema("public")
 }
 
 model Leccion {
   id          BigInt    @id @default(autoincrement())
   cursoId     BigInt    @map("curso_id")
-  slug        String    @unique @db.Text
+  slug        String    @unique(map: "ux_leccion_slug") @db.Text
   titulo      String    @db.Text
   resumen     String?   @db.Text
   orden       Int
@@ -149,9 +146,8 @@ model Leccion {
   preguntasRepaso Pregunta[]        @relation("LeccionRepaso")
   progresos       ProgresoLeccion[]
 
-  @@unique([cursoId, orden])
+  @@unique([cursoId, orden], map: "ux_leccion_curso_orden")
   @@map("leccion")
-  @@schema("public")
 }
 
 model Seccion {
@@ -165,14 +161,13 @@ model Seccion {
   leccion Leccion @relation(fields: [leccionId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   imagen  Imagen? @relation(fields: [imagenId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
-  @@unique([leccionId, orden])
+  @@unique([leccionId, orden], map: "ux_seccion_leccion_orden")
   @@map("seccion")
-  @@schema("public")
 }
 
 model Imagen {
   id               BigInt  @id @default(autoincrement())
-  ruta             String  @unique @db.Text
+  ruta             String  @unique(map: "ux_imagen_ruta") @db.Text
   textoAlternativo String  @map("texto_alternativo") @db.Text
   pie              String? @db.Text
 
@@ -180,7 +175,6 @@ model Imagen {
   insignias Insignia[]
 
   @@map("imagen")
-  @@schema("public")
 }
 
 model Fundamento {
@@ -195,7 +189,6 @@ model Fundamento {
   opciones  Opcion[]
 
   @@map("fundamento")
-  @@schema("public")
 }
 
 model Cuestionario {
@@ -216,7 +209,6 @@ model Cuestionario {
   intentos  Intento[]
 
   @@map("cuestionario")
-  @@schema("public")
 }
 
 model Pregunta {
@@ -238,7 +230,6 @@ model Pregunta {
   respuestas    RespuestaOpcion[]
 
   @@map("pregunta")
-  @@schema("public")
 }
 
 model Opcion {
@@ -256,9 +247,8 @@ model Opcion {
   fundamento Fundamento?       @relation(fields: [fundamentoId], references: [id], onDelete: Restrict, onUpdate: NoAction)
   respuestas RespuestaOpcion[]
 
-  @@unique([id, preguntaId])
+  @@unique([id, preguntaId], map: "ux_opcion_id_pregunta")
   @@map("opcion")
-  @@schema("public")
 }
 
 model Pareja {
@@ -272,9 +262,8 @@ model Pareja {
   respuestasIzq RespuestaPareja[] @relation("ParejaIzquierda")
   respuestasDer RespuestaPareja[] @relation("ParejaDerecha")
 
-  @@unique([preguntaId, orden])
+  @@unique([preguntaId, orden], map: "ux_pareja_pregunta_orden")
   @@map("pareja")
-  @@schema("public")
 }
 
 model Intento {
@@ -283,7 +272,7 @@ model Intento {
   cuestionarioId BigInt    @map("cuestionario_id")
   numero         Int
   estado         String    @default("en_curso") @db.Text
-  semilla        Int       @default(dbgenerated("floor(random() * 2147483647)::int"))
+  semilla        Int       @default(dbgenerated("(floor((random() * (2147483647)::double precision)))::integer"))
   iniciadoEn     DateTime  @default(now()) @map("iniciado_en") @db.Timestamptz(6)
   enviadoEn      DateTime? @map("enviado_en") @db.Timestamptz(6)
   calificacion   Decimal?  @db.Decimal(5, 2)
@@ -294,9 +283,9 @@ model Intento {
   respuestas       RespuestaOpcion[]
   respuestasPareja RespuestaPareja[]
 
-  @@unique([usuarioId, cuestionarioId, numero])
+  @@unique([usuarioId, cuestionarioId, numero], map: "ux_intento_numero")
+  @@index([usuarioId, cuestionarioId, enviadoEn(sort: Desc)], map: "ix_intento_usuario_cuestionario")
   @@map("intento")
-  @@schema("public")
 }
 
 model RespuestaOpcion {
@@ -312,7 +301,6 @@ model RespuestaOpcion {
 
   @@id([intentoId, preguntaId])
   @@map("respuesta_opcion")
-  @@schema("public")
 }
 
 model RespuestaPareja {
@@ -326,9 +314,8 @@ model RespuestaPareja {
   parejaDerecha   Pareja  @relation("ParejaDerecha", fields: [parejaDerechaId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
   @@id([intentoId, parejaIzquierdaId])
-  @@unique([intentoId, parejaDerechaId])
+  @@unique([intentoId, parejaDerechaId], map: "ux_respuesta_pareja_derecha")
   @@map("respuesta_pareja")
-  @@schema("public")
 }
 
 model ProgresoLeccion {
@@ -343,12 +330,11 @@ model ProgresoLeccion {
 
   @@id([usuarioId, leccionId])
   @@map("progreso_leccion")
-  @@schema("public")
 }
 
 model Insignia {
   id          BigInt @id @default(autoincrement())
-  moduloId    BigInt @unique @map("modulo_id")
+  moduloId    BigInt @unique(map: "ux_insignia_modulo") @map("modulo_id")
   nombre      String @db.Text
   descripcion String @db.Text
   imagenId    BigInt @map("imagen_id")
@@ -358,7 +344,6 @@ model Insignia {
   usuarios InsigniaUsuario[]
 
   @@map("insignia")
-  @@schema("public")
 }
 
 model InsigniaUsuario {
@@ -371,5 +356,4 @@ model InsigniaUsuario {
 
   @@id([usuarioId, insigniaId])
   @@map("insignia_usuario")
-  @@schema("public")
 }

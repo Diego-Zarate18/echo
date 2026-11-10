@@ -1,3 +1,10 @@
+-- Migración inicial de Echo: 21 tablas, 30 relaciones, CHECK, índices y búsqueda.
+-- Generada con «prisma migrate dev --create-only» y completada a mano con lo que Prisma no expresa (INV-10).
+-- Se ejecuta como echo_migracion actuando como echo_propietario (prisma/sql/roles.sql).
+
+-- Extensión para la búsqueda sin distinguir acentos (TEC-UNACCENT). Es «trusted»: la crea el dueño de la base.
+CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA public;
+
 -- CreateTable
 CREATE TABLE "usuario" (
     "id" UUID NOT NULL DEFAULT uuidv7(),
@@ -269,67 +276,64 @@ CREATE TABLE "insignia_usuario" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "usuario_correo_key" ON "usuario"("correo");
+CREATE UNIQUE INDEX "ux_usuario_correo" ON "usuario"("correo");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "usuario_google_sub_key" ON "usuario"("google_sub");
+CREATE UNIQUE INDEX "ux_usuario_google_sub" ON "usuario"("google_sub");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "sesion_token_hash_key" ON "sesion"("token_hash");
+CREATE UNIQUE INDEX "ux_sesion_token_hash" ON "sesion"("token_hash");
 
 -- CreateIndex
-CREATE INDEX "sesion_usuario_id_idx" ON "sesion"("usuario_id");
+CREATE UNIQUE INDEX "ux_token_correo_token_hash" ON "token_correo"("token_hash");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "token_correo_token_hash_key" ON "token_correo"("token_hash");
+CREATE INDEX "ix_token_correo_usuario" ON "token_correo"("usuario_id");
 
 -- CreateIndex
-CREATE INDEX "token_correo_usuario_id_idx" ON "token_correo"("usuario_id");
+CREATE UNIQUE INDEX "ux_documento_legal_tipo_version" ON "documento_legal"("tipo", "version");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "documento_legal_tipo_version_key" ON "documento_legal"("tipo", "version");
+CREATE UNIQUE INDEX "ux_aceptacion_usuario_documento" ON "aceptacion_documento"("usuario_id", "documento_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "aceptacion_documento_usuario_id_documento_id_key" ON "aceptacion_documento"("usuario_id", "documento_id");
+CREATE UNIQUE INDEX "ux_modulo_slug" ON "modulo"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "modulo_slug_key" ON "modulo"("slug");
+CREATE UNIQUE INDEX "ux_modulo_orden" ON "modulo"("orden");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "modulo_orden_key" ON "modulo"("orden");
+CREATE UNIQUE INDEX "ux_curso_slug" ON "curso"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "curso_slug_key" ON "curso"("slug");
+CREATE UNIQUE INDEX "ux_curso_modulo_orden" ON "curso"("modulo_id", "orden");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "curso_modulo_id_orden_key" ON "curso"("modulo_id", "orden");
+CREATE UNIQUE INDEX "ux_leccion_slug" ON "leccion"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "leccion_slug_key" ON "leccion"("slug");
+CREATE UNIQUE INDEX "ux_leccion_curso_orden" ON "leccion"("curso_id", "orden");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "leccion_curso_id_orden_key" ON "leccion"("curso_id", "orden");
+CREATE UNIQUE INDEX "ux_seccion_leccion_orden" ON "seccion"("leccion_id", "orden");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "seccion_leccion_id_orden_key" ON "seccion"("leccion_id", "orden");
+CREATE UNIQUE INDEX "ux_imagen_ruta" ON "imagen"("ruta");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "imagen_ruta_key" ON "imagen"("ruta");
+CREATE UNIQUE INDEX "ux_opcion_id_pregunta" ON "opcion"("id", "pregunta_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "opcion_id_pregunta_id_key" ON "opcion"("id", "pregunta_id");
+CREATE UNIQUE INDEX "ux_pareja_pregunta_orden" ON "pareja"("pregunta_id", "orden");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "pareja_pregunta_id_orden_key" ON "pareja"("pregunta_id", "orden");
+CREATE UNIQUE INDEX "ux_intento_numero" ON "intento"("usuario_id", "cuestionario_id", "numero");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "intento_usuario_id_cuestionario_id_numero_key" ON "intento"("usuario_id", "cuestionario_id", "numero");
+CREATE UNIQUE INDEX "ux_respuesta_pareja_derecha" ON "respuesta_pareja"("intento_id", "pareja_derecha_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "respuesta_pareja_intento_id_pareja_derecha_id_key" ON "respuesta_pareja"("intento_id", "pareja_derecha_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "insignia_modulo_id_key" ON "insignia"("modulo_id");
+CREATE UNIQUE INDEX "ux_insignia_modulo" ON "insignia"("modulo_id");
 
 -- AddForeignKey
 ALTER TABLE "sesion" ADD CONSTRAINT "sesion_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES "usuario"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
@@ -421,8 +425,23 @@ ALTER TABLE "insignia_usuario" ADD CONSTRAINT "insignia_usuario_usuario_id_fkey"
 -- AddForeignKey
 ALTER TABLE "insignia_usuario" ADD CONSTRAINT "insignia_usuario_insignia_id_fkey" FOREIGN KEY ("insignia_id") REFERENCES "insignia"("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
--- Reglas de integridad del dominio
+
+-- ============================================================================
+-- Completado a mano: reglas que Prisma no puede expresar en schema.prisma
+-- ============================================================================
+
+-- usuario (TBL-USUARIO)
 ALTER TABLE "usuario"
+  ADD CONSTRAINT "chk_usuario_nombre"
+  CHECK (nombre IS NULL OR length(nombre) BETWEEN 1 AND 100),
+  ADD CONSTRAINT "chk_usuario_apellidos"
+  CHECK (apellidos IS NULL OR length(apellidos) BETWEEN 1 AND 100),
+  ADD CONSTRAINT "chk_usuario_correo"
+  CHECK (correo IS NULL OR (correo = lower(correo) AND strpos(correo, '@') > 1)),
+  ADD CONSTRAINT "chk_usuario_estado"
+  CHECK (estado IN ('pendiente', 'activo', 'anonimizado')),
+  ADD CONSTRAINT "chk_usuario_intentos_fallidos"
+  CHECK (intentos_fallidos >= 0),
   ADD CONSTRAINT "chk_usuario_acceso"
   CHECK (estado = 'anonimizado' OR hash_contrasena IS NOT NULL OR google_sub IS NOT NULL),
   ADD CONSTRAINT "chk_usuario_datos"
@@ -432,79 +451,70 @@ ALTER TABLE "usuario"
   ADD CONSTRAINT "chk_usuario_anonimizado"
   CHECK (estado <> 'anonimizado' OR (anonimizado_en IS NOT NULL AND correo IS NULL AND hash_contrasena IS NULL AND google_sub IS NULL)),
   ADD CONSTRAINT "chk_usuario_mayoria_edad"
-  CHECK (estado = 'anonimizado' OR mayoria_edad_confirmada_en IS NOT NULL),
-  ADD CONSTRAINT "chk_usuario_estado"
-  CHECK (estado IN ('pendiente', 'activo', 'anonimizado')),
-  ADD CONSTRAINT "chk_usuario_intentos_fallidos"
-  CHECK (intentos_fallidos >= 0);
+  CHECK (estado = 'anonimizado' OR mayoria_edad_confirmada_en IS NOT NULL);
 
+-- sesion (TBL-SESION)
 ALTER TABLE "sesion"
   ADD CONSTRAINT "chk_sesion_agente_usuario"
   CHECK (agente_usuario IS NULL OR length(agente_usuario) <= 500);
 
+-- token_correo (TBL-TOKEN-CORREO)
 ALTER TABLE "token_correo"
   ADD CONSTRAINT "chk_token_correo_tipo"
   CHECK (tipo IN ('verificacion', 'recuperacion', 'cambio_correo')),
   ADD CONSTRAINT "chk_token_correo_expiracion"
   CHECK (expira_en > creado_en);
 
+-- documento_legal (TBL-DOCUMENTO-LEGAL)
 ALTER TABLE "documento_legal"
   ADD CONSTRAINT "chk_documento_legal_tipo"
   CHECK (tipo IN ('aviso_privacidad', 'terminos')),
+  ADD CONSTRAINT "chk_documento_legal_version"
+  CHECK (version ~ '^[0-9]+\.[0-9]+$'),
   ADD CONSTRAINT "chk_documento_legal_huella"
-  CHECK (length(huella_contenido) = 64),
+  CHECK (huella_contenido ~ '^[0-9a-f]{64}$'),
   ADD CONSTRAINT "chk_documento_legal_resumen"
   CHECK (length(resumen_cambios) BETWEEN 1 AND 1000);
 
+-- Contenido
 ALTER TABLE "modulo"
-  ADD CONSTRAINT "chk_modulo_slug"
-  CHECK (slug ~ '^[a-z0-9-]+$'),
-  ADD CONSTRAINT "chk_modulo_titulo"
-  CHECK (length(titulo) BETWEEN 1 AND 150),
-  ADD CONSTRAINT "chk_modulo_orden"
-  CHECK (orden > 0);
+  ADD CONSTRAINT "chk_modulo_slug"   CHECK (slug ~ '^[a-z0-9-]+$'),
+  ADD CONSTRAINT "chk_modulo_titulo" CHECK (length(titulo) BETWEEN 1 AND 150),
+  ADD CONSTRAINT "chk_modulo_orden"  CHECK (orden > 0);
 
 ALTER TABLE "curso"
-  ADD CONSTRAINT "chk_curso_slug"
-  CHECK (slug ~ '^[a-z0-9-]+$'),
-  ADD CONSTRAINT "chk_curso_titulo"
-  CHECK (length(titulo) BETWEEN 1 AND 150),
-  ADD CONSTRAINT "chk_curso_orden"
-  CHECK (orden > 0);
+  ADD CONSTRAINT "chk_curso_slug"   CHECK (slug ~ '^[a-z0-9-]+$'),
+  ADD CONSTRAINT "chk_curso_titulo" CHECK (length(titulo) BETWEEN 1 AND 150),
+  ADD CONSTRAINT "chk_curso_orden"  CHECK (orden > 0);
 
 ALTER TABLE "leccion"
-  ADD CONSTRAINT "chk_leccion_slug"
-  CHECK (slug ~ '^[a-z0-9-]+$'),
-  ADD CONSTRAINT "chk_leccion_titulo"
-  CHECK (length(titulo) BETWEEN 1 AND 150),
-  ADD CONSTRAINT "chk_leccion_orden"
-  CHECK (orden > 0),
-  ADD CONSTRAINT "chk_leccion_publicada"
-  CHECK (NOT publicado OR publicado_en IS NOT NULL);
+  ADD CONSTRAINT "chk_leccion_slug"      CHECK (slug ~ '^[a-z0-9-]+$'),
+  ADD CONSTRAINT "chk_leccion_titulo"    CHECK (length(titulo) BETWEEN 1 AND 150),
+  ADD CONSTRAINT "chk_leccion_orden"     CHECK (orden > 0),
+  ADD CONSTRAINT "chk_leccion_publicada" CHECK (NOT publicado OR publicado_en IS NOT NULL);
 
 ALTER TABLE "seccion"
-  ADD CONSTRAINT "chk_seccion_titulo"
-  CHECK (length(titulo) BETWEEN 1 AND 150),
-  ADD CONSTRAINT "chk_seccion_orden"
-  CHECK (orden > 0);
+  ADD CONSTRAINT "chk_seccion_titulo" CHECK (length(titulo) BETWEEN 1 AND 150),
+  ADD CONSTRAINT "chk_seccion_orden"  CHECK (orden > 0);
 
 ALTER TABLE "imagen"
-  ADD CONSTRAINT "chk_imagen_texto_alternativo"
-  CHECK (length(texto_alternativo) BETWEEN 1 AND 300);
+  ADD CONSTRAINT "chk_imagen_texto_alternativo" CHECK (length(texto_alternativo) BETWEEN 1 AND 300);
 
 ALTER TABLE "fundamento"
-  ADD CONSTRAINT "chk_fundamento_tipo"
-  CHECK (tipo IN ('ley', 'norma', 'principio', 'codigo'));
+  ADD CONSTRAINT "chk_fundamento_tipo" CHECK (tipo IN ('ley', 'norma', 'principio', 'codigo'));
 
+-- Evaluables
 ALTER TABLE "cuestionario"
+  ADD CONSTRAINT "chk_cuestionario_tipo"
+  CHECK (tipo IN ('actividad', 'caso', 'examen')),
   ADD CONSTRAINT "chk_cuestionario_padre"
   CHECK ((leccion_id IS NOT NULL AND curso_id IS NULL) OR (leccion_id IS NULL AND curso_id IS NOT NULL)),
   ADD CONSTRAINT "chk_cuestionario_examen"
   CHECK ((tipo = 'examen') = (curso_id IS NOT NULL)),
   ADD CONSTRAINT "chk_cuestionario_orden"
   CHECK ((orden IS NOT NULL) = (leccion_id IS NOT NULL)),
-  ADD CONSTRAINT "chk_cuestionario_tipo"
-  CHECK (tipo IN ('actividad', 'caso', 'examen')),
+  ADD CONSTRAINT "chk_cuestionario_orden_positivo"
+  CHECK (orden IS NULL OR orden > 0),
   ADD CONSTRAINT "chk_cuestionario_titulo"
   CHECK (length(titulo) BETWEEN 1 AND 150),
   ADD CONSTRAINT "chk_cuestionario_calificacion"
@@ -519,15 +529,13 @@ ALTER TABLE "pregunta"
   CHECK (orden > 0);
 
 ALTER TABLE "opcion"
-  ADD CONSTRAINT "chk_opcion_valor"
-  CHECK (valor BETWEEN 0 AND 1),
-  ADD CONSTRAINT "chk_opcion_orden"
-  CHECK (orden > 0);
+  ADD CONSTRAINT "chk_opcion_valor" CHECK (valor BETWEEN 0 AND 1),
+  ADD CONSTRAINT "chk_opcion_orden" CHECK (orden > 0);
 
 ALTER TABLE "pareja"
-  ADD CONSTRAINT "chk_pareja_orden"
-  CHECK (orden > 0);
+  ADD CONSTRAINT "chk_pareja_orden" CHECK (orden > 0);
 
+-- Desempeño
 ALTER TABLE "intento"
   ADD CONSTRAINT "chk_intento_numero"
   CHECK (numero > 0),
@@ -548,11 +556,13 @@ ALTER TABLE "progreso_leccion"
   ADD CONSTRAINT "chk_progreso_terminada"
   CHECK (terminada_en IS NULL OR terminada_en >= abierta_en);
 
+-- Logros
 ALTER TABLE "insignia"
-  ADD CONSTRAINT "chk_insignia_nombre"
-  CHECK (length(nombre) BETWEEN 1 AND 100);
+  ADD CONSTRAINT "chk_insignia_nombre" CHECK (length(nombre) BETWEEN 1 AND 100);
 
--- Índices de operación y reglas de unicidad condicional
+-- ============================================================================
+-- Índices parciales y de operación (sección 4.1 del reporte)
+-- ============================================================================
 CREATE UNIQUE INDEX "ux_cuestionario_actividad"
   ON "cuestionario" ("leccion_id") WHERE tipo = 'actividad';
 CREATE UNIQUE INDEX "ux_cuestionario_examen"
@@ -560,13 +570,13 @@ CREATE UNIQUE INDEX "ux_cuestionario_examen"
 CREATE UNIQUE INDEX "ux_cuestionario_leccion_orden"
   ON "cuestionario" ("leccion_id", "orden") WHERE leccion_id IS NOT NULL;
 CREATE UNIQUE INDEX "ux_pregunta_cuestionario_orden"
-  ON "pregunta" ("cuestionario_id", "orden") WHERE activa = true;
+  ON "pregunta" ("cuestionario_id", "orden") WHERE activa;
 CREATE UNIQUE INDEX "ux_opcion_pregunta_orden"
-  ON "opcion" ("pregunta_id", "orden") WHERE activa = true;
+  ON "opcion" ("pregunta_id", "orden") WHERE activa;
 CREATE UNIQUE INDEX "ux_intento_en_curso"
   ON "intento" ("usuario_id", "cuestionario_id") WHERE estado = 'en_curso';
 CREATE UNIQUE INDEX "ux_intento_aprobado"
-  ON "intento" ("usuario_id", "cuestionario_id") WHERE aprobado = true;
+  ON "intento" ("usuario_id", "cuestionario_id") WHERE aprobado;
 CREATE INDEX "ix_sesion_usuario_activa"
   ON "sesion" ("usuario_id") WHERE revocada_en IS NULL;
 CREATE INDEX "ix_intento_usuario_cuestionario"
@@ -574,19 +584,24 @@ CREATE INDEX "ix_intento_usuario_cuestionario"
 CREATE INDEX "ix_intento_usuario_enviado"
   ON "intento" ("usuario_id", "enviado_en" DESC) WHERE estado = 'enviado';
 
--- Búsqueda sin distinguir tildes
+-- ============================================================================
+-- Búsqueda de módulos, cursos y lecciones sin distinguir acentos (FN-UNACCENT, OP-21)
+-- ============================================================================
+-- Envoltura inmutable: PostgreSQL solo indexa expresiones inmutables.
 CREATE FUNCTION "f_unaccent"(texto TEXT)
 RETURNS TEXT
 LANGUAGE SQL
 IMMUTABLE
 PARALLEL SAFE
+STRICT
 AS $funcion$
-  SELECT public.unaccent('public.unaccent', texto);
+  SELECT public.unaccent('public.unaccent'::regdictionary, texto);
 $funcion$;
 
+-- La consulta del buscador debe usar exactamente la misma expresión para aprovechar el índice.
 CREATE INDEX "ix_modulo_busqueda"
-  ON "modulo" USING GIN (to_tsvector('spanish', f_unaccent(titulo || ' ' || descripcion)));
+  ON "modulo" USING GIN (to_tsvector('spanish', public.f_unaccent(titulo || ' ' || descripcion)));
 CREATE INDEX "ix_curso_busqueda"
-  ON "curso" USING GIN (to_tsvector('spanish', f_unaccent(titulo || ' ' || descripcion)));
+  ON "curso" USING GIN (to_tsvector('spanish', public.f_unaccent(titulo || ' ' || descripcion)));
 CREATE INDEX "ix_leccion_busqueda"
-  ON "leccion" USING GIN (to_tsvector('spanish', f_unaccent(titulo || ' ' || coalesce(resumen, ''))));
+  ON "leccion" USING GIN (to_tsvector('spanish', public.f_unaccent(titulo || ' ' || coalesce(resumen, ''))));

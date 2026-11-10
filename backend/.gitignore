@@ -1,7 +1,17 @@
-node_modules
-# Keep environment variables out of version control
+# Dependencias y compilación
+node_modules/
+dist/
+coverage/
+
+# Cliente de Prisma generado
+/generated/
+
+# Variables de entorno: nunca se versionan (solo la plantilla)
 .env
+.env.*
+!.env.example
 
-/generated/prisma
-
-/dist
+# Respaldos de base de datos: nunca entran al repositorio (INV-14)
+*.dump
+*.backup
+*.7z
