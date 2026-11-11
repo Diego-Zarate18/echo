@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Echo · frontend
 
-## Getting Started
+Interfaz web de **Echo**, la plataforma educativa de ética y legislación en TI de la UP Chiapas: Next.js 16
+(App Router), React, TypeScript, Tailwind 4 y pruebas con Playwright y axe. Habla solo con la API (`/api/*`); nunca con
+la base de datos.
 
-First, run the development server:
+**¿Vas a continuar el frontend?** Empieza por [`docs/frontend/guia-de-relevo.md`](../docs/frontend/guia-de-relevo.md):
+qué hay hecho, qué falta, la forma de trabajo y las notas de quien empezó.
+
+## Correrlo con la API simulada
+
+Necesitas Node 22 (`.nvmrc`). En esta carpeta:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local        # API_URL_INTERNA=http://localhost:4000
+npm run simulador                 # terminal 1: API simulada en http://localhost:4000
+npm run dev                       # terminal 2: app en http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Entra con `alumno@example.com` / `Ejemplo2026`. Las demás cuentas, los escenarios y los correos simulados están en
+[`simulador/README.md`](simulador/README.md).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Comandos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | Para qué |
+|---|---|
+| `npm run dev` | Servidor de desarrollo (Turbopack) en el puerto 3000 |
+| `npm run simulador` | API simulada en el puerto 4000; cumple `docs/api/openapi.yaml` |
+| `npm run build` | Compila para producción (necesita `API_URL_INTERNA`) y muestra la tabla de rutas |
+| `npm run start` | Sirve la compilación |
+| `npm run lint` | ESLint |
+| `npm run tipos` | Tipos de rutas y `tsc`; falla si `src/lib/api/esquema.d.ts` no coincide con el contrato |
+| `npm run api:tipos` | Regenera `src/lib/api/esquema.d.ts` desde `docs/api/openapi.yaml` |
+| `npm run prueba:e2e` | Playwright + axe en escritorio y móvil, y las pruebas de la API; levanta solo el simulador y la app |
 
-## Learn More
+Antes de la primera corrida de pruebas: `npx playwright install chromium`.
 
-To learn more about Next.js, take a look at the following resources:
+## Dónde está cada cosa
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/`: las rutas, por grupo (`(publico)`, `(acceso)`, `(aceptacion)`, `(app)`).
+- `src/areas/`: lo propio de cada área; `src/componentes/`: lo compartido.
+- `src/lib/api/`: los clientes de la API, el contrato generado y los textos de error.
+- `simulador/`: la API simulada (nunca entra al build).
+- `pruebas/`: Playwright.
+- [`DESIGN.md`](DESIGN.md): el sistema visual «Tierra».
+- [`../docs/frontend/arquitectura.md`](../docs/frontend/arquitectura.md): cómo está hecho.
+- [`../CLAUDE.md`](../CLAUDE.md): las reglas del proyecto.
