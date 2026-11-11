@@ -249,3 +249,149 @@ test.describe("SCR-02, SCR-03 y SCR-19 · Crear cuenta, verificar correo y acept
     await revisarAccesibilidad(page);
   });
 });
+
+test.describe("SCR-04 · Recuperar y restablecer contraseña", () => {
+  test.describe.configure({ mode: "default" });
+
+  test.beforeEach(async () => {
+    await reiniciarSimulador();
+  });
+
+  const NUEVA_CONTRASENA = "Renovada2026";
+  const TEXTO_DEC_77 =
+    "Si hay una cuenta con contraseña para ese correo, te enviamos un enlace que vence en 30 minutos. Si entras con Google, no necesitas contraseña.";
+
+  async function pedirEnlace(pagina: Page, correo: string) {
+    await pagina.goto("/recuperar-contrasena");
+    await pagina.getByLabel("Correo electrónico").fill(correo);
+    await pagina.getByRole("button", { name: "Enviar enlace" }).click();
+    await expect(titulo(pagina)).toHaveText("Revisa tu correo");
+  }
+
+  async function guardar(pagina: Page, contrasena: string) {
+    await pagina.getByLabel("Contraseña nueva", { exact: true }).fill(contrasena);
+    await pagina.getByRole("button", { name: "Guardar contraseña" }).click();
+  }
+
+  test("flujo completo: «¿Olvidaste tu contraseña?», correo, contraseña nueva e iniciar sesión con ella", async ({ page }) => {
+    await page.goto("/iniciar-sesion");
+    await page.getByRole("link", { name: "¿Olvidaste tu contraseña?" }).click();
+    await page.waitForURL("**/recuperar-contrasena");
+    await expect(titulo(page)).toHaveText("Recupera tu contraseña");
+    await revisarAccesibilidad(page);
+
+    await pedirEnlace(page, ` ${ALUMNA.toUpperCase()} `);
+    expect(page.url()).not.toContain("example.com");
+    await expect(page.getByRole("status").filter({ hasText: "Solicitud enviada" })).toContainText(TEXTO_DEC_77);
+    await expect(titulo(page)).toBeFocused();
+    await revisarAccesibilidad(page);
+
+    const enlace = await enlaceDe(ALUMNA, "recuperacion");
+    expect(enlace).toMatch(/^\/recuperar-contrasena\/nueva\?codigo=/);
+    await page.goto(enlace!);
+    await expect(titulo(page)).toHaveText("Crea una contraseña nueva");
+    await expect.poll(() => new URL(page.url()).search).toBe("");
+    await revisarAccesibilidad(page);
+
+    // Los mismos requisitos de Crear cuenta: sin número no se guarda.
+    await guardar(page, "sinnumero");
+    await expect(page.getByLabel("Contraseña nueva", { exact: true })).toHaveAccessibleDescription(/^Agrega al menos un número\./);
+
+    await guardar(page, NUEVA_CONTRASENA);
+    await expect(titulo(page)).toHaveText("Listo, tu contraseña cambió");
+    await expect(titulo(page)).toBeFocused();
+    await revisarAccesibilidad(page);
+
+    await page.getByRole("link", { name: "Iniciar sesión" }).click();
+    await page.waitForURL(/\/iniciar-sesion/);
+    await page.getByLabel("Correo electrónico").fill(ALUMNA);
+    await page.getByLabel("Contraseña", { exact: true }).fill(NUEVA_CONTRASENA);
+    await page.getByRole("button", { name: "Iniciar sesión" }).click();
+    await page.waitForURL("**/modulos");
+    await expect(titulo(page)).toHaveText("Hola, Alma");
+  });
+
+  test("DEC-77: con un correo inexistente, la misma respuesta y ningún correo", async ({ page }) => {
+    const antes = (await correos()).length;
+    await pedirEnlace(page, "nadie.existe@example.com");
+    await expect(page.getByRole("status").filter({ hasText: "Solicitud enviada" })).toContainText(TEXTO_DEC_77);
+    expect((await correos()).length).toBe(antes);
+  });
+
+  test("enlace ya usado, vencido (inexistente) y sin código: su estado y «Pedir un enlace nuevo»", async ({ page }) => {
+    await pedirEnlace(page, ALUMNA);
+    const enlace = (await enlaceDe(ALUMNA, "recuperacion"))!;
+    await page.goto(enlace);
+    await guardar(page, NUEVA_CONTRASENA);
+    await expect(titulo(page)).toHaveText("Listo, tu contraseña cambió");
+
+    await page.goto(enlace);
+    await guardar(page, "OtraMas2026");
+    await expect(titulo(page)).toHaveText("Este enlace ya se usó");
+    await expect(page.getByRole("link", { name: "Pedir un enlace nuevo" })).toHaveAttribute("href", "/recuperar-contrasena");
+    await revisarAccesibilidad(page);
+
+    await page.goto("/recuperar-contrasena/nueva?codigo=no-existe");
+    await guardar(page, "OtraMas2026");
+    await expect(titulo(page)).toHaveText("Este enlace ya venció");
+
+    await page.goto("/recuperar-contrasena/nueva");
+    await expect(titulo(page)).toHaveText("Este enlace ya no funciona");
+  });
+
+  test("OP-07 cierra todas las sesiones: la que estaba abierta en otro navegador deja de valer", async ({ page, browser }) => {
+    await entrar(page);
+    await page.waitForURL("**/modulos");
+
+    const otro = await browser.newContext();
+    const pagina = await otro.newPage();
+    await pedirEnlace(pagina, ALUMNA);
+    await pagina.goto((await enlaceDe(ALUMNA, "recuperacion"))!);
+    await guardar(pagina, NUEVA_CONTRASENA);
+    await expect(titulo(pagina)).toHaveText("Listo, tu contraseña cambió");
+    await otro.close();
+
+    await page.goto("/modulos");
+    await page.waitForURL(/\/iniciar-sesion\?motivo=expirada/);
+  });
+
+  test("todo con teclado: pedir el enlace y guardar la contraseña nueva", async ({ page }) => {
+    await page.goto("/recuperar-contrasena");
+    const enfocado = () => page.evaluate(() => document.activeElement?.id ?? "");
+    for (let i = 0; i < 20 && (await enfocado()) !== "recuperar-correo"; i++) await page.keyboard.press("Tab");
+    await page.keyboard.type(ALUMNA);
+    await page.keyboard.press("Enter");
+    await expect(titulo(page)).toHaveText("Revisa tu correo");
+
+    await page.goto((await enlaceDe(ALUMNA, "recuperacion"))!);
+    for (let i = 0; i < 20 && (await enfocado()) !== "nueva-contrasena"; i++) await page.keyboard.press("Tab");
+    await page.keyboard.type(NUEVA_CONTRASENA);
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Mostrar contraseña" })).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Enter");
+    await expect(titulo(page)).toHaveText("Listo, tu contraseña cambió");
+  });
+});
+
+test.describe("SCR-19 · El correo de Google no se parte", () => {
+  test.beforeEach(async () => {
+    await reiniciarSimulador();
+  });
+
+  test("un correo largo va completo en su propio renglón a 390 px", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const largo = "gala.ejemplo.larga@upchiapas.edu.mx";
+    await control("POST", "/__simulador/google", { correo: largo });
+    await page.goto("/api/auth/google");
+    await page.waitForURL("**/aceptar");
+    const correo = page.getByRole("main").locator("strong", { hasText: largo });
+    await expect(correo).toBeVisible();
+    // Un solo renglón: la caja mide lo que una línea de texto (15 px × 1.5), no dos.
+    const { alto, linea } = await correo.evaluate((nodo) => ({
+      alto: nodo.getBoundingClientRect().height,
+      linea: parseFloat(getComputedStyle(nodo).lineHeight),
+    }));
+    expect(alto).toBeLessThan(linea * 1.5);
+  });
+});

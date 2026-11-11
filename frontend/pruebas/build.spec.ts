@@ -26,7 +26,7 @@ test.describe("Build de producción", () => {
 
   test("las páginas públicas, las de acceso y los íconos siguen estáticos", async () => {
     const manifiesto = JSON.parse(readFileSync(join(carpetaBuild, "prerender-manifest.json"), "utf8")) as { routes: Record<string, unknown> };
-    for (const ruta of ["/", "/aviso-de-privacidad", "/terminos-y-condiciones", "/ayuda", "/iniciar-sesion", "/crear-cuenta", "/verificar-correo", "/icon.png", "/icon1.png", "/apple-icon.png"]) {
+    for (const ruta of ["/", "/aviso-de-privacidad", "/terminos-y-condiciones", "/ayuda", "/iniciar-sesion", "/crear-cuenta", "/verificar-correo", "/recuperar-contrasena", "/recuperar-contrasena/nueva", "/icon.png", "/icon1.png", "/apple-icon.png"]) {
       expect(Object.keys(manifiesto.routes), ruta).toContain(ruta);
     }
   });
