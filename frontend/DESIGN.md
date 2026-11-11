@@ -96,6 +96,7 @@ Nada se repite en bucle: el movimiento automático dura menos de 5 s (WCAG 2.2.2
 | El cierre regresa | `Llamado` (`.brotar-al-ver`) | Moris vuelve a brotar como en el hero |
 | Encabezado fijo | `EncabezadoPublico` | Al salir del hero se vuelve una píldora café sólida a 8 px del borde (62 px de alto) que se queda **siempre** a la vista. Se materializa una vez al aparecer (opacidad, escala 0.98, desenfoque; transición interrumpible de 220 ms) y hace la inversa al volver al hero. Un solo indicador (`clip-path`) se desliza a la sección actual (`aria-current`). Si un control con foco queda debajo de ella, la página se desplaza para dejarlo 16 px por debajo. Con movimiento reducido, solo fundido |
 | Botón con flecha | `Boton` `conFlecha` | La flecha sale por arriba y otra entra desde abajo |
+| Panel de acceso | `PanelDeAcceso` | Moris y el saludo entran una vez por carga; al navegar entre pantallas de acceso, Moris queda quieto y el saludo se funde (200 ms) |
 
 Con movimiento reducido, la entrada es un fundido de 250 ms y lo demás no se mueve. Los títulos, filas y tarjetas
 están visibles desde el inicio: no se animan solo por aparecer.

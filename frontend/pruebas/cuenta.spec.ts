@@ -395,3 +395,62 @@ test.describe("SCR-19 · El correo de Google no se parte", () => {
     expect(alto).toBeLessThan(linea * 1.5);
   });
 });
+
+test.describe("Panel de acceso · entra una vez por carga (plan 001)", () => {
+  /** El panel café visible (la página anterior queda oculta en la Activity de Next). */
+  const panel = (pagina: Page) => pagina.locator("header[data-fondo=oscuro]:visible");
+  const bloqueMoris = (pagina: Page) => panel(pagina).locator(":scope > div").nth(1);
+  const bloqueSaludo = (pagina: Page) => panel(pagina).locator(":scope > div").nth(2);
+  const animaciones = (bloque: ReturnType<typeof bloqueMoris>) =>
+    bloque.evaluate((elemento) => elemento.getAnimations().map((a) => (a as CSSAnimation).animationName));
+  /** Animaciones que empezaron en los bloques del panel («moris:aparecer», «saludo:desvanecer»…) desde la última limpieza. */
+  const entradas = (pagina: Page) => pagina.evaluate(() => (window as unknown as { __entradas: string[] }).__entradas);
+  const limpiar = (pagina: Page) => pagina.evaluate(() => ((window as unknown as { __entradas: string[] }).__entradas = []));
+
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      const registro = window as unknown as { __entradas: string[] };
+      registro.__entradas = [];
+      document.addEventListener(
+        "animationstart",
+        (evento) => {
+          const bloque = evento.target as HTMLElement;
+          const panelDelBloque = bloque.parentElement;
+          if (!panelDelBloque?.matches("header[data-fondo=oscuro]")) return;
+          // Los bloques del panel son tres `div`: la fila del logo, Moris y el saludo.
+          const posicion = [...panelDelBloque.querySelectorAll(":scope > div")].indexOf(bloque);
+          const nombre = ["logo", "moris", "saludo"][posicion] ?? "otro";
+          registro.__entradas.push(`${nombre}:${evento.animationName}`);
+        },
+        true,
+      );
+    });
+  });
+
+  test("primera carga con entrada; al navegar Moris queda quieto y el saludo se funde; al recargar, otra vez", async ({ page }) => {
+    await page.goto("/iniciar-sesion");
+    await expect.poll(() => entradas(page)).toEqual(expect.arrayContaining(["moris:aparecer", "saludo:aparecer"]));
+
+    await limpiar(page);
+    await page.getByRole("main").getByRole("link", { name: "Crear cuenta", exact: true }).click();
+    await expect(page).toHaveURL(/\/crear-cuenta$/);
+    await expect(bloqueSaludo(page)).toHaveClass(/\banimate-fundido\b/);
+    await expect(bloqueMoris(page)).not.toHaveClass(/\banimate-/);
+    expect(await animaciones(bloqueMoris(page))).toEqual([]);
+    expect(await entradas(page)).not.toContain("moris:aparecer");
+    expect(await entradas(page)).not.toContain("saludo:aparecer");
+
+    // De regreso con «Atrás», la pantalla anterior (que Next conservaba oculta) tampoco repite la subida.
+    await limpiar(page);
+    await page.goBack();
+    await expect(page).toHaveURL(/\/iniciar-sesion$/);
+    await expect(bloqueMoris(page)).toBeVisible();
+    // Si la entrada no había terminado (aquí se navega antes de 800 ms), se completa antes de pintar: Moris ya está
+    // en su lugar y opaco, sin animación en curso.
+    expect(await animaciones(bloqueMoris(page))).toEqual([]);
+    expect(await bloqueMoris(page).evaluate((e) => [getComputedStyle(e).opacity, getComputedStyle(e).transform])).toEqual(["1", "none"]);
+
+    await page.reload();
+    await expect.poll(() => entradas(page)).toEqual(expect.arrayContaining(["moris:aparecer", "saludo:aparecer"]));
+  });
+});
