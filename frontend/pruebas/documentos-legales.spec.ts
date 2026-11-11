@@ -316,6 +316,8 @@ test.describe("Enlaces a los textos legales", () => {
     } else {
       await encabezado.getByRole("link", { name: "Términos y condiciones" }).click();
     }
+    // Con la suite completa, la navegación puede tardar más de 5 s: primero la URL, con margen.
+    await expect(page).toHaveURL(/\/terminos-y-condiciones$/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Términos y condiciones de uso con descargo de responsabilidad");
   });
 });
