@@ -145,6 +145,8 @@ resuelven a gusto.
   sin volver dinámica la página).
 - `estilos/globales.css`: los tokens de color (`@theme`). La paleta de Tailwind está vaciada: **solo existen los colores
   de `DESIGN.md`**.
+- **Movimiento:** antes de animar algo, lee `frontend/DESIGN.md` § “Movimiento en la app”. Si un patrón no está
+  ahí, no lo animes y pregúntalo en el reporte.
 
 **Reglas de construcción:**
 1. **Nunca se habla con la base de datos**, solo con `/api` (INV-26). El rewrite lleva `/api/*` al backend.

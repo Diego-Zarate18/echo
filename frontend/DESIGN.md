@@ -101,6 +101,63 @@ Nada se repite en bucle: el movimiento automático dura menos de 5 s (WCAG 2.2.2
 Con movimiento reducido, la entrada es un fundido de 250 ms y lo demás no se mueve. Los títulos, filas y tarjetas
 están visibles desde el inicio: no se animan solo por aparecer.
 
+## Movimiento en la app (pantallas con sesión)
+
+La app se usa todos los días: el movimiento ahí **responde**, no se luce. Regla de bolsillo: si la persona hace algo
+decenas de veces por sesión, no se anima o se anima en 150 ms o menos.
+
+### Curvas
+| Token | Para qué | Nunca |
+|---|---|---|
+| `--ease-respuesta` | Casi todo: abrir, cerrar, aparecer, presionar, cambiar de estado | — |
+| `--ease-desplazar` | Algo que viaja de un lugar a otro dentro de la pantalla (un indicador que se desliza) | Para aparecer o desaparecer |
+| `--ease-llegada` | Solo el momento de deleite de la insignia nueva (ver abajo) | En controles |
+
+Nada de `ease-in` (se siente lento al empezar), ni de rebotes o resortes, ni de `transition: all`. Tampoco el `ease-out`
+genérico de Tailwind: siempre el token.
+
+### Duraciones
+| Duración | Qué |
+|---|---|
+| 150 ms | Presionar (`Boton` ya hace `scale-[0.97]`), hover, cambio de color o de borde, casilla |
+| 200–220 ms | Abrir o cerrar algo dentro de la página: acordeón, menú, alerta (`animate-alerta`), retroalimentación al enviar |
+| 250 ms | Hoja inferior móvil y diálogo al **entrar**; al **salir**, 200 ms |
+| 400 ms | Una barra de progreso que cambia **mientras la persona la ve** (por ejemplo, al terminar una lección) |
+
+Nada de la app dura más de 400 ms, salvo la insignia nueva.
+
+### Qué NO se anima
+- **El cambio de pantalla.** Sin transiciones de página: Next navega y la pantalla nueva aparece.
+- **Pasar de una pregunta a otra** (examen y actividad), elegir una opción y el indicador «Guardado» / «Sin
+  conexión»: cambian al instante (a lo sumo, el ícono con un fundido de 150 ms).
+- **Listas y tarjetas al cargar** (módulos, cursos, resultados): ya están ahí. Sin cascada ni aparición escalonada.
+- **Barras de progreso al cargar:** se dibujan ya en su valor. Solo se animan si el valor cambia en la misma pantalla.
+- **Números que cuentan** (porcentajes, calificaciones): aparecen con su valor final.
+- **Nada con el teclado repetido:** Tab, flechas y Enter no disparan animaciones; solo el anillo de foco.
+- **Errores:** sin sacudidas ni parpadeos. El error llega con `animate-alerta` y recibe el foco.
+
+### Recetas
+| Patrón | Cómo |
+|---|---|
+| Botón presionado | `Boton` ya lo hace. En un botón propio: `transition-[scale] duration-150 ease-(--ease-respuesta) motion-safe:active:scale-[0.97]` |
+| Acordeón | `<details>` con la clase `.apartado` (documentos legales), o el de Ayuda: botón con `aria-expanded` y región `.respuesta-acordeon` (`data-abierta`). No escribas un tercero |
+| Alerta o retroalimentación que aparece | `animate-alerta` (220 ms, 6 px desde arriba) |
+| Texto que cambia en un lugar que no se mueve | `animate-fundido` (200 ms, solo opacidad), como el saludo del panel de acceso al navegar |
+| Hoja inferior (móvil: eliminar cuenta, sesión por expirar) | `<dialog>`; el panel entra con `translate-y-full` → `0` en 250 ms y sale en 200 ms (`--ease-respuesta`); el fondo, solo opacidad. Usa `@starting-style` (Tailwind `starting:`), que se puede interrumpir |
+| Diálogo centrado (escritorio) | Opacidad 0 → 1 y escala 0.96 → 1 en 200 ms, `transform-origin: center`. Nunca desde `scale(0)` |
+| Menú o panel que cuelga de un botón | Opacidad y 4 px de desplazamiento desde el botón, 200 ms, con `transform-origin` del lado del botón. Es lo que hace `MenuMovil`, pero él todavía usa el `ease-out` de Tailwind: al copiarlo, usa `ease-(--ease-respuesta)` |
+| Barra de progreso que cambia | `transform: scaleX()` con `origin-left` en 400 ms, nunca `width` |
+| **Insignia nueva** (SCR-13, el único momento de deleite) | Una vez: el sello entra con opacidad 0 → 1 y escala 0.9 → 1 en 500 ms con `--ease-llegada`; el texto, 100 ms después con `animate-alerta`. No se repite al volver a la pantalla |
+
+### Siempre
+- **Movimiento reducido:** todo lo que se mueve va con `motion-safe:` o dentro de
+  `@media (prefers-reduced-motion: no-preference)`. La regla global de `globales.css` vuelve un fundido de 250 ms
+  cualquier clase `animate-*`.
+- **Interrumpible:** para abrir y cerrar se usan **transiciones**, no `@keyframes`. Así, abrir y cerrar rápido retoma
+  desde donde va.
+- **Solo `transform` y `opacity`**, salvo la altura del acordeón, que ya está resuelta.
+- **Nada en bucle** ni que dure más de 5 s (WCAG 2.2.2).
+
 ## Íconos (`src/componentes/ui/iconos/`)
 
 Trazo 1.75, estilo Lucide, rutas exportadas de los componentes `Icono/*` de Figma. Usan `currentColor` y

@@ -22,7 +22,8 @@
 
 **Contenido y comportamiento:**
 - <qué muestra, de dónde sale cada dato>;
-- <qué hace cada acción, qué operación llama y a dónde lleva>.
+- <qué hace cada acción, qué operación llama y a dónde lleva>;
+- <movimiento: qué se anima según DESIGN.md § «Movimiento en la app», o «nada»>;
 
 **Estados** (los de `estados_a_disenar` del nodo SCR, más carga y error):
 - <estado>: <qué se ve>.
