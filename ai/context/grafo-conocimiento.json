@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.5.3",
-    "actualizado": "2026-10-28",
-    "fase": "Iniciar sesión y sesión en el frontend (Tarea 08). Siguiente: Registro, verificación de correo y aceptación (Tarea 09).",
+    "version": "1.6.1",
+    "actualizado": "2026-11-10",
+    "fase": "Registro, verificación y aceptación (Tarea 09, aprobada). Siguiente: Recuperar contraseña (SCR-04) y relevo del frontend a otra persona del equipo con docs/frontend/guia-de-relevo.md (Tarea 10).",
     "historial": [
       {
         "version": "0.1.0",
@@ -84,6 +84,16 @@
         "version": "1.5.3",
         "fecha": "2026-10-28",
         "cambio": "Revisión de la Tarea 08: la exportación marca cerradaEn por sesión (DEC-94); el backend borra la cookie al responder 401 y /aceptar va en su propio grupo (DEC-85, SCR-19)."
+      },
+      {
+        "version": "1.6.0",
+        "fecha": "2026-11-10",
+        "cambio": "Revisión del docente: tabla auditoria_bd (22 tablas, sin FK), rol personal echo_admin (6 roles), actor ACT-06, funciones fn_auditar_cambio, fn_auditar_ddl y fn_registrar_accion_manual, disparadores trg_auditoria, trg_auditoria_inmutable y evt_auditoria_ddl, invariante INV-31 (DEC-97)."
+      },
+      {
+        "version": "1.6.1",
+        "fecha": "2026-11-10",
+        "cambio": "Revisión de la Tarea 09: lectura del registro con Google en OP-13, motivo de ENLACE_INVALIDO (OP-02, OP-07, OP-12), ruta /crear-cuenta (SCR-02) y estados de SCR-03."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -186,20 +196,20 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 461,
-      "aristas": 1315,
+      "nodos": 472,
+      "aristas": 1403,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
-        "actor": 5,
+        "actor": 6,
         "tecnologia": 32,
-        "decision": 96,
-        "invariante": 30,
-        "tabla": 21,
-        "rol_bd": 5,
-        "funcion_bd": 6,
-        "disparador": 2,
+        "decision": 97,
+        "invariante": 31,
+        "tabla": 22,
+        "rol_bd": 6,
+        "funcion_bd": 9,
+        "disparador": 5,
         "vista_bd": 2,
         "consulta": 13,
         "modulo": 8,
@@ -388,7 +398,7 @@
       "id": "ACT-03",
       "tipo": "actor",
       "nombre": "Equipo de desarrollo",
-      "descripcion": "Carga y retira contenido con scripts versionados usando el rol echo_contenido. No es un usuario de la app.",
+      "descripcion": "Carga y retira contenido con scripts versionados usando el rol echo_contenido. No es un usuario de la app. Lo que hace con echo_contenido queda en auditoria_bd (DEC-97).",
       "estado": "decidido"
     },
     {
@@ -996,9 +1006,12 @@
     {
       "id": "DEC-45",
       "tipo": "decision",
-      "nombre": "Cinco roles de base de datos con privilegios mínimos",
-      "descripcion": "echo_propietario (sin login, dueño), echo_migracion (migraciones), echo_app (servidor), echo_contenido (scripts de carga), echo_lectura (soporte y análisis sin datos personales). Ningún proceso usa el superusuario de Railway. Se revoca PUBLIC y se usan ALTER DEFAULT PRIVILEGES. Contraseñas de roles en variables de entorno de Railway, nunca en el repositorio.",
-      "estado": "decidido"
+      "nombre": "Seis roles de base de datos con privilegios mínimos",
+      "descripcion": "echo_propietario (sin login, dueño), echo_migracion (migraciones), echo_app (servidor), echo_contenido (scripts de carga), echo_lectura (soporte y análisis sin datos personales) y echo_admin (administrador, auditado; DEC-97). Ningún proceso usa el superusuario de Railway; solo se usa en la configuración inicial (crear roles y el disparador de eventos de auditoría). Se revoca PUBLIC y se usan ALTER DEFAULT PRIVILEGES. Contraseñas de roles en variables de entorno de Railway, nunca en el repositorio.",
+      "estado": "decidido",
+      "detalles": {
+        "revisada": "1.6.0 (10/11): sexto rol echo_admin (DEC-97)"
+      }
     },
     {
       "id": "DEC-46",
@@ -2904,21 +2917,21 @@
       "id": "ROL-APP",
       "tipo": "rol_bd",
       "nombre": "echo_app",
-      "descripcion": "Servidor de la aplicación (DATABASE_URL de Prisma Client). SELECT sobre contenido; SELECT, INSERT y UPDATE sobre usuario, intento, respuesta_opcion, respuesta_pareja, progreso_leccion e insignia_usuario; SELECT, INSERT, UPDATE y DELETE sobre sesion y token_correo; EXECUTE sobre las funciones; SELECT sobre v_avance_curso. No puede modificar contenido, borrar historial ni cambiar la estructura. Sobre aceptacion_documento solo SELECT e INSERT: no puede modificar ni borrar aceptaciones (las cambia solo fn_anonimizar_usuario).",
+      "descripcion": "Servidor de la aplicación (DATABASE_URL de Prisma Client). SELECT sobre contenido; SELECT, INSERT y UPDATE sobre usuario, intento, respuesta_opcion, respuesta_pareja, progreso_leccion e insignia_usuario; SELECT, INSERT, UPDATE y DELETE sobre sesion y token_correo; EXECUTE sobre las funciones; SELECT sobre v_avance_curso. No puede modificar contenido, borrar historial ni cambiar la estructura. Sobre aceptacion_documento solo SELECT e INSERT: no puede modificar ni borrar aceptaciones (las cambia solo fn_anonimizar_usuario). No lee ni escribe auditoria_bd.",
       "estado": "decidido"
     },
     {
       "id": "ROL-CONTENIDO",
       "tipo": "rol_bd",
       "nombre": "echo_contenido",
-      "descripcion": "Scripts de carga del equipo (RN-02). SELECT, INSERT, UPDATE y DELETE sobre las 11 tablas de contenido y documento_legal (versiones del aviso y los términos). No ve ni toca tablas de estudiantes; ON DELETE RESTRICT le impide borrar contenido respondido.",
+      "descripcion": "Scripts de carga del equipo (RN-02). SELECT, INSERT, UPDATE y DELETE sobre las 11 tablas de contenido y documento_legal (versiones del aviso y los términos). No ve ni toca tablas de estudiantes; ON DELETE RESTRICT le impide borrar contenido respondido. No lee ni escribe auditoria_bd.",
       "estado": "decidido"
     },
     {
       "id": "ROL-LECTURA",
       "tipo": "rol_bd",
       "nombre": "echo_lectura",
-      "descripcion": "Equipo, para soporte y análisis. SELECT sobre contenido y sobre v_resultados_anonimos. No lee usuario, sesion ni token_correo; no escribe.",
+      "descripcion": "Equipo, para soporte y análisis. SELECT sobre contenido y sobre v_resultados_anonimos. No lee usuario, sesion ni token_correo; no escribe. No lee ni escribe auditoria_bd.",
       "estado": "decidido"
     },
     {
@@ -3172,7 +3185,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Baja",
         "recibe": "Código del enlace",
-        "devuelve": "Cuenta activa y sesión iniciada"
+        "devuelve": "Cuenta activa y sesión iniciada",
+        "enlace_invalido": "ENLACE_INVALIDO con motivo «vencido» (también para un código inexistente) o «usado»; el código es secreto, así que no delata cuentas"
       }
     },
     {
@@ -3242,7 +3256,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Baja",
         "recibe": "Código del enlace, contraseña nueva",
-        "devuelve": "Confirmación"
+        "devuelve": "Confirmación",
+        "enlace_invalido": "ENLACE_INVALIDO con motivo «vencido» (también para un código inexistente) o «usado»; el código es secreto, así que no delata cuentas"
       }
     },
     {
@@ -3312,7 +3327,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Baja",
         "recibe": "Código del enlace",
-        "devuelve": "Correo actualizado"
+        "devuelve": "Correo actualizado",
+        "enlace_invalido": "ENLACE_INVALIDO con motivo «vencido» (también para un código inexistente) o «usado»; el código es secreto, así que no delata cuentas"
       }
     },
     {
@@ -3654,7 +3670,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Baja",
         "recibe": "Versiones aceptadas; en el caso (1), además mayoría de edad y negativas, y la cookie temporal de Google",
-        "devuelve": "Sesión (caso 1) o confirmación (caso 2)"
+        "devuelve": "Sesión (caso 1) o confirmación (caso 2)",
+        "lectura_previa": "GET /api/cuenta/registro-google (obtenerRegistroGoogle): sin sesión, con la cookie temporal; devuelve { nombre, correo, expiraEn } y nunca el sub de Google; 401 REGISTRO_GOOGLE_VENCIDO si no hay cookie o venció. Cache-Control: no-store"
       }
     },
     {
@@ -3681,7 +3698,8 @@
         "estados_a_disenar": "Apellidos vacíos; Contraseña débil; registro enviado: siempre «Revisa tu correo», exista o no una cuenta con ese correo (DEC-77); casilla obligatoria sin marcar (error junto a la casilla, con foco)",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
-        "texto_aviso_simplificado": "Anexo A del aviso de privacidad integral v1.0 (docs/legal/)"
+        "texto_aviso_simplificado": "Anexo A del aviso de privacidad integral v1.0 (docs/legal/)",
+        "ruta": "/crear-cuenta"
       }
     },
     {
@@ -3695,7 +3713,9 @@
         "estados_a_disenar": "Enlace vencido, enlace ya usado",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
-        "ruta": "/verificar-correo?codigo= (OP-02) y /verificar-correo?tipo=cambio-correo&codigo= (OP-12)"
+        "ruta": "/verificar-correo?codigo= (OP-02) y /verificar-correo?tipo=cambio-correo&codigo= (OP-12)",
+        "estado_correcto": "OP-02 inicia la sesión; la pantalla muestra «Tu correo está verificado» con «Ir a Módulos» en lugar de redirigir",
+        "correo_pendiente": "El correo de «Revisa tu correo» vive solo en la memoria de la página (ni URL ni localStorage); si se recarga, se pide de nuevo"
       }
     },
     {
@@ -5310,7 +5330,8 @@
       "descripcion": "pg_dump 18 (formato custom) con credenciales de echo_migracion. Reglas: (1) se cifra al crearse (7-Zip AES-256 con contraseña); (2) se guarda fuera del repositorio, en carpeta ignorada por .gitignore; (3) solo sirve para restaurar producción, nunca se carga en desarrollo; (4) se conservan las últimas 7 copias; (5) lo hace una persona designada; (6) se toma antes de cada migración, antes de cada carga de contenido y una vez por semana; (7) se prueba restaurar al menos una vez en una base local vacía; (8) la versión de pg_dump debe ser la 18. Tamaño estimado: ~5 MB comprimido con 100 estudiantes.",
       "estado": "decidido",
       "detalles": {
-        "origen": "PEND-03 (18/10)"
+        "origen": "PEND-03 (18/10)",
+        "auditoria": "Cada respaldo y cada restauración se registran con fn_registrar_accion_manual (DEC-97)"
       }
     },
     {
@@ -5364,7 +5385,7 @@
       "id": "DEC-74",
       "tipo": "decision",
       "nombre": "Cierre del proyecto",
-      "descripcion": "Después de recibir las calificaciones: (1) se anonimiza o elimina la base de datos; (2) se detienen los servicios de Railway; (3) se borran los respaldos de Railway y todas las copias manuales cifradas. La LFPDPPP pide no conservar datos personales sin una finalidad vigente y Railway seguiría cobrando. La detención de servicios incluye el frontend completo, con la página pública SCR-18.",
+      "descripcion": "Después de recibir las calificaciones: (1) se anonimiza o elimina la base de datos; (2) se detienen los servicios de Railway; (3) se borran los respaldos de Railway y todas las copias manuales cifradas. La LFPDPPP pide no conservar datos personales sin una finalidad vigente y Railway seguiría cobrando. La detención de servicios incluye el frontend completo, con la página pública SCR-18. La auditoría (auditoria_bd) se borra con la base.",
       "estado": "decidido"
     },
     {
@@ -6103,6 +6124,265 @@
       "nombre": "Firmar el DPA de Railway",
       "descripcion": "El responsable firma el acuerdo de procesamiento de datos de Railway (DocuSign) antes de abrir el piloto (DEC-96).",
       "estado": "pendiente"
+    },
+    {
+      "id": "DEC-97",
+      "tipo": "decision",
+      "nombre": "Auditoría de la administración de la base de datos",
+      "descripcion": "La tabla auditoria_bd registra lo que hacen en la base los roles de administración (echo_admin, echo_migracion y echo_contenido): quién (rol de la sesión y rol efectivo), cuándo (clock_timestamp()), desde dónde (IP y aplicación), qué (tipo de evento, comando, tabla y fila) y cómo (columnas cambiadas, valores antes y después, sentencia DDL y un motivo opcional). Lo que hace echo_app no se audita: la actividad de los estudiantes ya queda en sus propias tablas. Sin llaves foráneas: el actor es un rol de PostgreSQL y no un usuario de la app, la fila afectada puede ser de cualquier tabla (tabla + registro_id) y el registro debe sobrevivir aunque se borre lo que audita. Solo crece: nadie la modifica ni la borra. En las tablas con datos personales (usuario, sesion, token_correo y aceptacion_documento) guarda los nombres de las columnas cambiadas pero no sus valores, para que la anonimización (DEC-27) no deje copias; nunca guarda hashes, códigos ni contraseñas. Las acciones fuera de las tablas (respaldos, restauraciones, cambios de roles) se registran con fn_registrar_accion_manual. Se conserva hasta el cierre del proyecto (DEC-74).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Revisión del docente de la base de datos (10/11/2026): registrar qué hace el administrador, cuándo y cómo",
+        "captura": {
+          "dml": "trg_auditoria en las 21 tablas (AFTER INSERT, UPDATE o DELETE por fila; TRUNCATE por sentencia)",
+          "ddl": "disparador de eventos evt_auditoria_ddl (ddl_command_end y sql_drop)",
+          "manual": "fn_registrar_accion_manual(comando, motivo)"
+        },
+        "motivo": "SET LOCAL echo.motivo = '…' antes de trabajar; los disparadores lo leen con current_setting('echo.motivo', true)",
+        "limites": "PostgreSQL no tiene disparadores de lectura: los SELECT no se auditan (requeriría la extensión pgaudit, fuera del alcance del piloto). Los disparadores de eventos no ven CREATE o ALTER ROLE (objetos globales): esos cambios se registran a mano. El disparador de eventos lo crea una sola vez el superusuario de Railway.",
+        "consulta_tipica": "SELECT … FROM auditoria_bd WHERE ocurrido_en >= … ORDER BY ocurrido_en DESC"
+      }
+    },
+    {
+      "id": "ACT-06",
+      "tipo": "actor",
+      "nombre": "Administrador de la base de datos",
+      "descripcion": "El responsable técnico del proyecto (Brian Luis Ruiz Pérez). Mantiene la base, corrige datos, hace respaldos y restauraciones con su rol personal echo_admin. No es un usuario de la app. Todo lo que hace queda en auditoria_bd.",
+      "estado": "decidido"
+    },
+    {
+      "id": "ROL-ADMIN",
+      "tipo": "rol_bd",
+      "nombre": "echo_admin",
+      "descripcion": "Rol personal del administrador (inicia sesión; contraseña solo en su gestor de contraseñas). Miembro de echo_propietario sin heredar sus privilegios (NOINHERIT): para cambiar la estructura usa SET ROLE, y auditoria_bd sigue registrando rol_sesion = echo_admin. SELECT, INSERT, UPDATE y DELETE sobre las 21 tablas; único rol que lee auditoria_bd; EXECUTE sobre fn_registrar_accion_manual. No es superusuario, no puede modificar ni borrar la auditoría y no puede desactivar el disparador de eventos.",
+      "estado": "decidido",
+      "detalles": {
+        "conexion": "Solo con el acceso público temporal de Railway y sslmode=require (sección 3.2 del reporte), desde psql o DBeaver"
+      }
+    },
+    {
+      "id": "TBL-AUDITORIA-BD",
+      "tipo": "tabla",
+      "nombre": "auditoria_bd",
+      "descripcion": "Bitácora de lo que hacen los roles de administración en la base: quién, cuándo, desde dónde, qué y cómo. Solo crece y no tiene llaves foráneas (DEC-97).",
+      "estado": "decidido",
+      "detalles": {
+        "grupo": "auditoria",
+        "llave_primaria": [
+          "id"
+        ],
+        "unicas": [],
+        "columnas": [
+          {
+            "campo": "id",
+            "tipo": "BIGINT",
+            "nulo": "No",
+            "por_defecto": "identidad",
+            "restricciones": "PK",
+            "descripcion": "Identificador del registro"
+          },
+          {
+            "campo": "ocurrido_en",
+            "tipo": "TIMESTAMPTZ",
+            "nulo": "No",
+            "por_defecto": "clock_timestamp()",
+            "restricciones": "—",
+            "descripcion": "Cuándo. Hora real de cada cambio (no la del inicio de la transacción, como now())"
+          },
+          {
+            "campo": "rol_sesion",
+            "tipo": "TEXT",
+            "nulo": "No",
+            "por_defecto": "session_user",
+            "restricciones": "—",
+            "descripcion": "Quién: rol con el que se conectó (echo_admin, echo_migracion o echo_contenido). No cambia con SET ROLE"
+          },
+          {
+            "campo": "rol_efectivo",
+            "tipo": "TEXT",
+            "nulo": "No",
+            "por_defecto": "current_user",
+            "restricciones": "—",
+            "descripcion": "Rol con el que actuó, si usó SET ROLE (por ejemplo echo_propietario)"
+          },
+          {
+            "campo": "direccion_ip",
+            "tipo": "INET",
+            "nulo": "Sí",
+            "por_defecto": "inet_client_addr()",
+            "restricciones": "—",
+            "descripcion": "Desde dónde. Nula si la conexión fue local"
+          },
+          {
+            "campo": "aplicacion",
+            "tipo": "TEXT",
+            "nulo": "Sí",
+            "por_defecto": "current_setting('application_name')",
+            "restricciones": "—",
+            "descripcion": "Con qué herramienta: psql, DBeaver, Prisma"
+          },
+          {
+            "campo": "id_transaccion",
+            "tipo": "BIGINT",
+            "nulo": "No",
+            "por_defecto": "txid_current()",
+            "restricciones": "—",
+            "descripcion": "Agrupa los cambios de una misma operación"
+          },
+          {
+            "campo": "tipo_evento",
+            "tipo": "TEXT",
+            "nulo": "No",
+            "por_defecto": "—",
+            "restricciones": "CHECK (INSERT, UPDATE, DELETE, TRUNCATE, DDL, MANUAL)",
+            "descripcion": "Qué hizo"
+          },
+          {
+            "campo": "comando",
+            "tipo": "TEXT",
+            "nulo": "Sí",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Detalle del evento DDL o manual: ALTER TABLE, CREATE INDEX, RESPALDO, RESTAURACION, ALTER ROLE…"
+          },
+          {
+            "campo": "tabla",
+            "tipo": "TEXT",
+            "nulo": "Sí",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Sobre qué: tabla u objeto afectado. Nula en acciones manuales generales"
+          },
+          {
+            "campo": "registro_id",
+            "tipo": "TEXT",
+            "nulo": "Sí",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Llave de la fila afectada, como texto (hay llaves UUID y BIGINT; las compuestas se unen con «/»). Nula en DDL, TRUNCATE y MANUAL"
+          },
+          {
+            "campo": "columnas_cambiadas",
+            "tipo": "TEXT[]",
+            "nulo": "Sí",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Columnas que cambiaron. Solo en UPDATE"
+          },
+          {
+            "campo": "datos_anteriores",
+            "tipo": "JSONB",
+            "nulo": "Sí",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Fila antes del cambio (UPDATE y DELETE). En usuario, sesion, token_correo y aceptacion_documento los valores van como «[protegido]»; nunca hashes ni códigos"
+          },
+          {
+            "campo": "datos_nuevos",
+            "tipo": "JSONB",
+            "nulo": "Sí",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Fila después del cambio (INSERT y UPDATE), con la misma protección"
+          },
+          {
+            "campo": "sentencia",
+            "tipo": "TEXT",
+            "nulo": "Sí",
+            "por_defecto": "—",
+            "restricciones": "—",
+            "descripcion": "Cómo: el SQL exacto, solo en DDL y MANUAL. Las contraseñas (PASSWORD '…') se reemplazan por «[protegido]»"
+          },
+          {
+            "campo": "motivo",
+            "tipo": "TEXT",
+            "nulo": "Sí",
+            "por_defecto": "current_setting('echo.motivo', true)",
+            "restricciones": "CHECK longitud 1 a 500",
+            "descripcion": "Por qué (opcional)"
+          }
+        ],
+        "restricciones_de_tabla": [
+          "ck_auditoria_tipo_evento: CHECK (tipo_evento IN ('INSERT','UPDATE','DELETE','TRUNCATE','DDL','MANUAL')).",
+          "Sin llaves foráneas a propósito (DEC-97): relación lógica con todas las tablas por tabla + registro_id.",
+          "Solo inserción: trg_auditoria_inmutable rechaza UPDATE, DELETE y TRUNCATE para cualquier rol."
+        ],
+        "indices": [
+          {
+            "nombre": "ix_auditoria_ocurrido",
+            "sobre": "auditoria_bd (ocurrido_en descendente)",
+            "tipo": "B-Tree",
+            "consulta": "Revisar lo más reciente o un periodo"
+          },
+          {
+            "nombre": "ix_auditoria_tabla_ocurrido",
+            "sobre": "auditoria_bd (tabla, ocurrido_en descendente)",
+            "tipo": "B-Tree compuesto",
+            "consulta": "Historial de cambios de una tabla o de una fila"
+          }
+        ]
+      }
+    },
+    {
+      "id": "FN-AUDITAR",
+      "tipo": "funcion_bd",
+      "nombre": "fn_auditar_cambio()",
+      "descripcion": "Función de disparador: si session_user no es echo_app, inserta en auditoria_bd el tipo de evento, la tabla, la llave de la fila, las columnas cambiadas y los valores antes y después (protegidos en las tablas con datos personales), con el motivo de echo.motivo si existe. Con echo_app no hace nada.",
+      "estado": "decidido",
+      "detalles": {
+        "invocacion": "trg_auditoria",
+        "seguridad": "SECURITY DEFINER con search_path fijo (los roles auditados no pueden insertar en auditoria_bd directamente)"
+      }
+    },
+    {
+      "id": "FN-AUDITAR-DDL",
+      "tipo": "funcion_bd",
+      "nombre": "fn_auditar_ddl()",
+      "descripcion": "Función del disparador de eventos: por cada comando de estructura (pg_event_trigger_ddl_commands y pg_event_trigger_dropped_objects) inserta tipo_evento = 'DDL', el comando, el objeto y la sentencia con las contraseñas ocultas. Desactivar un disparador con ALTER TABLE también queda registrado.",
+      "estado": "decidido",
+      "detalles": {
+        "invocacion": "evt_auditoria_ddl",
+        "seguridad": "SECURITY DEFINER con search_path fijo"
+      }
+    },
+    {
+      "id": "FN-ACCION-MANUAL",
+      "tipo": "funcion_bd",
+      "nombre": "fn_registrar_accion_manual(comando, motivo)",
+      "descripcion": "Registra una acción que no pasa por las tablas: RESPALDO (pg_dump), RESTAURACION, ALTER ROLE, cambio de contraseña de un rol, activar o desactivar el acceso público. tipo_evento = 'MANUAL'. Es la única forma de escribir a mano en auditoria_bd, y no permite elegir la fecha ni el rol.",
+      "estado": "decidido",
+      "detalles": {
+        "invocacion": "psql o DBeaver, por echo_admin",
+        "seguridad": "SECURITY DEFINER con search_path fijo"
+      }
+    },
+    {
+      "id": "TRG-AUDITORIA",
+      "tipo": "disparador",
+      "nombre": "trg_auditoria",
+      "descripcion": "Las 21 tablas, después de insertar, actualizar o borrar (por fila) y de TRUNCATE (por sentencia): ejecuta fn_auditar_cambio().",
+      "estado": "decidido"
+    },
+    {
+      "id": "TRG-AUDITORIA-INMUTABLE",
+      "tipo": "disparador",
+      "nombre": "trg_auditoria_inmutable",
+      "descripcion": "auditoria_bd, antes de actualizar, borrar o vaciar: rechaza la operación con un error, sea cual sea el rol.",
+      "estado": "decidido"
+    },
+    {
+      "id": "TRG-AUDITORIA-DDL",
+      "tipo": "disparador",
+      "nombre": "evt_auditoria_ddl",
+      "descripcion": "Disparador de eventos de la base (ddl_command_end y sql_drop): ejecuta fn_auditar_ddl(). Lo crea una sola vez el superusuario de Railway; solo un superusuario puede desactivarlo.",
+      "estado": "decidido"
+    },
+    {
+      "id": "INV-31",
+      "tipo": "invariante",
+      "nombre": "La auditoría solo crece",
+      "descripcion": "Todo cambio de un rol de administración en las tablas o en la estructura queda en auditoria_bd en la misma transacción. Ningún rol puede modificar ni borrar sus filas, y no contiene valores de datos personales, hashes, códigos ni contraseñas.",
+      "estado": "obligatorio"
     }
   ],
   "aristas": [
@@ -12776,6 +13056,446 @@
       "origen": "PEND-15",
       "destino": "DEC-96",
       "relacion": "afina"
+    },
+    {
+      "origen": "DEC-97",
+      "destino": "DEC-45",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-97",
+      "destino": "DEC-27",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-97",
+      "destino": "DEC-74",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-97",
+      "destino": "DEC-69",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "DEC-97",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "DEC-45",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "ACT-06",
+      "relacion": "usado_por"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "ROL-PROPIETARIO",
+      "relacion": "actua_como"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-CUESTIONARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-CUESTIONARIO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-CURSO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-CURSO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-FUNDAMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-FUNDAMENTO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-IMAGEN",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-IMAGEN",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-INSIGNIA-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-INSIGNIA-USUARIO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-INTENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-INTENTO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-LECCION",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-MODULO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-MODULO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-OPCION",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-PAREJA",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-PREGUNTA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-PREGUNTA",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-PROGRESO-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-PROGRESO-LECCION",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-RESPUESTA-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-RESPUESTA-OPCION",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-RESPUESTA-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-RESPUESTA-PAREJA",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-SECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-SECCION",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-SESION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-SESION",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-TOKEN-CORREO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-TOKEN-CORREO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-USUARIO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "TBL-AUDITORIA-BD",
+      "destino": "DEC-97",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "DEC-97",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-AUDITAR",
+      "destino": "DEC-97",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-AUDITAR-DDL",
+      "destino": "DEC-97",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ACCION-MANUAL",
+      "destino": "DEC-97",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "DEC-97",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "TRG-AUDITORIA-INMUTABLE",
+      "destino": "DEC-97",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "TRG-AUDITORIA-DDL",
+      "destino": "DEC-97",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-AUDITAR",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "FN-AUDITAR-DDL",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "FN-ACCION-MANUAL",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "TRG-AUDITORIA-DDL",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "TRG-AUDITORIA-INMUTABLE",
+      "destino": "TBL-AUDITORIA-BD",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-ACEPTACION-DOCUMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-CUESTIONARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-CURSO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-DOCUMENTO-LEGAL",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-FUNDAMENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-IMAGEN",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-INSIGNIA-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-INTENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-MODULO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-PREGUNTA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-PROGRESO-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-RESPUESTA-OPCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-RESPUESTA-PAREJA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-SECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-SESION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-TOKEN-CORREO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "TRG-AUDITORIA",
+      "destino": "TBL-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ACCION-MANUAL",
+      "destino": "ROL-ADMIN",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "INV-31",
+      "destino": "DEC-97",
+      "relacion": "deriva_de"
     }
   ]
 }
