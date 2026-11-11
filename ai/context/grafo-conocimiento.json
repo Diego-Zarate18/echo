@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.6.1",
+    "version": "1.6.2",
     "actualizado": "2026-11-10",
-    "fase": "Registro, verificación y aceptación (Tarea 09, aprobada). Siguiente: Recuperar contraseña (SCR-04) y relevo del frontend a otra persona del equipo con docs/frontend/guia-de-relevo.md (Tarea 10).",
+    "fase": "Revisión de la Tarea 10 (aprobada). Siguiente: ajustes del docente al inicio y a los documentos legales (Tarea 11); después, el frontend pasa a otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -94,6 +94,11 @@
         "version": "1.6.1",
         "fecha": "2026-11-10",
         "cambio": "Revisión de la Tarea 09: lectura del registro con Google en OP-13, motivo de ENLACE_INVALIDO (OP-02, OP-07, OP-12), ruta /crear-cuenta (SCR-02) y estados de SCR-03."
+      },
+      {
+        "version": "1.6.2",
+        "fecha": "2026-11-10",
+        "cambio": "Revisión del docente: documentos legales con resumen y apartados desplegables (DEC-98, SCR-05, SCR-20); «Qué encontrarás» sin la columna de descripción (SCR-18)."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -3742,7 +3747,8 @@
         "estados_a_disenar": "—",
         "requiere_sesion": false,
         "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
-        "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026."
+        "texto_piloto": "Echo es un piloto académico de la UP Chiapas vigente hasta diciembre de 2026.",
+        "presentacion": "Tarjeta de resumen y apartados desplegables (DEC-98)"
       }
     },
     {
@@ -3917,7 +3923,8 @@
         "contenido": "Fijo; no invoca operaciones ni lee tablas",
         "diseno": "Propuesta B «Tierra» en Figma (DEC-82)",
         "ruta": "/",
-        "render": "Estático; la redirección con sesión la hace proxy.ts (DEC-83)"
+        "render": "Estático; la redirección con sesión la hace proxy.ts (DEC-83)",
+        "que_encontraras": "Cada elemento muestra ícono, nombre y el mensaje de Moris; sin la columna de descripción (revisión del docente, 10/11/2026)"
       }
     },
     {
@@ -5976,7 +5983,8 @@
         "requiere_sesion": false,
         "render": "Estático, como SCR-05",
         "estados_a_disenar": "—",
-        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones"
+        "comunes": "Pie con UP Chiapas, versión y enlaces al aviso de privacidad y a los términos y condiciones",
+        "presentacion": "Tarjeta de resumen y apartados desplegables (DEC-98)"
       }
     },
     {
@@ -6383,6 +6391,21 @@
       "nombre": "La auditoría solo crece",
       "descripcion": "Todo cambio de un rol de administración en las tablas o en la estructura queda en auditoria_bd en la misma transacción. Ningún rol puede modificar ni borrar sus filas, y no contiene valores de datos personales, hashes, códigos ni contraseñas.",
       "estado": "obligatorio"
+    },
+    {
+      "id": "DEC-98",
+      "tipo": "decision",
+      "nombre": "Documentos legales con resumen y apartados desplegables",
+      "descripcion": "Por la revisión del docente (mucho desplazamiento), SCR-05 y SCR-20 muestran arriba una tarjeta «Resumen» con los cinco puntos del bloque «Resumen en cinco puntos» del propio documento, y debajo cada apartado de nivel 2 como un desplegable cerrado (details/summary), con un botón «Abrir todos». El texto completo sigue en la página y en el DOM: el resumen no lo sustituye y lo dice. Un enlace con #ancla abre su apartado; la búsqueda del navegador encuentra el texto de los apartados cerrados; al imprimir se muestran todos abiertos.",
+      "estado": "decidido",
+      "detalles": {
+        "fecha": "2026-11-10",
+        "origen": "Revisión del docente",
+        "resumen_aviso": "Quiénes somos, qué datos recabamos, para qué los usamos, no vendemos tus datos y derechos ARCO",
+        "resumen_terminos": "Proyecto académico, licencia personal, no es asesoría legal, tu cuenta es tuya (credenciales) y leyes mexicanas",
+        "documentos": "El resumen vive en docs/legal/ (sigue siendo la versión 1.0, porque nadie la ha aceptado aún); cambian las huellas SHA-256 (DEC-28)",
+        "figma": "SCR-05 84:783 y 150:4959; SCR-20 170:5216 y 150:5454; componente «Apartado (details/summary)» 170:5215"
+      }
     }
   ],
   "aristas": [
@@ -13496,6 +13519,26 @@
       "origen": "INV-31",
       "destino": "DEC-97",
       "relacion": "deriva_de"
+    },
+    {
+      "origen": "DEC-98",
+      "destino": "SCR-05",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "DEC-98",
+      "destino": "SCR-20",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "DEC-98",
+      "destino": "DEC-28",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-98",
+      "destino": "DEC-71",
+      "relacion": "depende_de"
     }
   ]
 }
