@@ -35,6 +35,9 @@ const esResumen = (bloque: Bloque): bloque is Extract<Bloque, { tipo: "cita" }> 
  * Lee el bloque del resumen: el título, una lista numerada de cinco puntos que empiezan con su título en negritas
  * («**Quiénes somos:** …») y un párrafo final. Si no tiene esa forma, la compilación falla con su línea.
  */
+/** La primera letra en mayúscula, con las reglas del español (las letras con acento conservan el acento). */
+const conMayuscula = (texto: string) => texto.charAt(0).toLocaleUpperCase("es-MX") + texto.slice(1);
+
 function leerResumen(cita: Extract<Bloque, { tipo: "cita" }>): ResumenDeDocumento {
   const [, lista, nota, ...sobra] = cita.bloques;
   if (lista?.tipo !== "lista" || !lista.ordenada || lista.elementos.length !== 5) {
@@ -45,7 +48,9 @@ function leerResumen(cita: Extract<Bloque, { tipo: "cita" }>): ResumenDeDocument
     const [titulo, ...resto] = elemento.contenido;
     if (titulo?.tipo !== "negrita") throw new ErrorDeMarkdown(elemento.linea, "cada punto del resumen empieza con su título en negritas");
     const [primero, ...demas] = resto;
-    const texto: Texto[] = primero?.tipo === "texto" ? [{ tipo: "texto", valor: primero.valor.trimStart() }, ...demas] : resto;
+    // En el archivo el texto sigue a «**Título:**» y empieza en minúscula; en la tarjeta va solo, así que la primera
+    // letra que se muestra va en mayúscula (también con acento: «á» → «Á»). El archivo no cambia.
+    const texto: Texto[] = primero?.tipo === "texto" ? [{ tipo: "texto", valor: conMayuscula(primero.valor.trimStart()) }, ...demas] : resto;
     return { titulo: textoPlano(titulo.hijos).replace(/:$/, ""), texto };
   });
   return { puntos, nota: nota.contenido };

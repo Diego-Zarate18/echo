@@ -6,6 +6,8 @@ import { expect, test, type Page } from "@playwright/test";
 const ETIQUETAS_WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const leer = (archivo: string) => readFileSync(join(__dirname, "..", "..", "docs", "legal", archivo), "utf8");
 const sinMarcas = (l: string) => l.replaceAll("**", "").replace(/\s+/g, " ").trim();
+/** En la tarjeta, el texto de cada punto empieza con mayúscula (en el archivo va en minúscula tras el título). */
+const conMayuscula = (l: string) => l.charAt(0).toLocaleUpperCase("es-MX") + l.slice(1);
 
 /** Las dos páginas y el archivo que muestran (docs/legal, sin tocar). */
 const DOCUMENTOS = [
@@ -38,7 +40,7 @@ const DOCUMENTOS = [
         .filter((l) => /^> \d\. /.test(l))
         .map((l) => {
           const [, titulo, texto] = /^> \d\. \*\*(.+?):\*\* (.+)$/.exec(l)!;
-          return { titulo, texto: sinMarcas(texto) };
+          return { titulo, texto: conMayuscula(sinMarcas(texto)) };
         }),
       nota: sinMarcas(lineas[finResumen].slice(2)),
     },
@@ -122,6 +124,8 @@ for (const documento of DOCUMENTOS) {
       for (const [i, punto] of documento.resumen.puntos.entries()) {
         await expect(puntos.nth(i).locator("p").first()).toHaveText(punto.titulo);
         await expect(puntos.nth(i).locator("p").nth(1)).toHaveText(punto.texto);
+        // La primera letra que se muestra va en mayúscula.
+        expect(await puntos.nth(i).locator("p").nth(1).innerText()).toMatch(/^\p{Lu}/u);
         await expect(puntos.nth(i).locator(":scope > [aria-hidden=true]")).toHaveCount(1);
       }
       await expect(tarjeta.locator(":scope > p")).toHaveText(documento.resumen.nota);
