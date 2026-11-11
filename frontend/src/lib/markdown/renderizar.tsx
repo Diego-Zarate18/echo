@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { textoPlano, type Bloque, type Texto } from "./analizar";
+import { idDeSubtitulo } from "./documento";
 
 export type OpcionesDeDibujo = {
   /** Prefijo único de la sección: los ids internos (por ejemplo, el título de una cita) lo llevan. */
@@ -118,8 +119,21 @@ export function dibujarBloques(bloques: Bloque[], opciones: OpcionesDeDibujo): R
       case "titulo": {
         tituloCercano = bloque.texto;
         const contenido = dibujarTexto(bloque.contenido, opciones, clave);
-        if (bloque.nivel === 3) return <h3 key={clave} className="mt-6 font-titulo text-tarjeta font-bold text-balance">{contenido}</h3>;
-        if (bloque.nivel === 4) return <h4 key={clave} className="mt-3 font-titulo text-cuerpo font-extrabold">{contenido}</h4>;
+        // Los «###» y «####» tienen ancla propia: un enlace a ella abre su apartado (DEC-98).
+        if (bloque.nivel === 3) {
+          return (
+            <h3 key={clave} id={idDeSubtitulo(bloque.texto)} className="mt-6 font-titulo text-tarjeta font-bold text-balance">
+              {contenido}
+            </h3>
+          );
+        }
+        if (bloque.nivel === 4) {
+          return (
+            <h4 key={clave} id={idDeSubtitulo(bloque.texto)} className="mt-3 font-titulo text-cuerpo font-extrabold">
+              {contenido}
+            </h4>
+          );
+        }
         return <h2 key={clave} className="font-titulo text-elemento font-extrabold text-balance">{contenido}</h2>;
       }
       case "parrafo":

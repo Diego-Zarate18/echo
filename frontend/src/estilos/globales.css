@@ -521,3 +521,57 @@
     vector-effect: non-scaling-stroke;
   }
 }
+
+/*
+ * Apartados desplegables de los documentos legales (DEC-98, componente 170:5215). Son `<details>` nativos: el texto
+ * está en el HTML aunque estén cerrados, Ctrl+F los abre y el teclado funciona sin código.
+ * El chevrón gira y el contenido se abre en 220 ms con `::details-content` + `interpolate-size`; en un navegador que
+ * no los soporta, se abre al instante. Con movimiento reducido no hay animación.
+ */
+@layer components {
+  .chevron-apartado {
+    flex-shrink: 0;
+    transition: rotate 220ms var(--ease-respuesta);
+  }
+
+  .apartado[open] .chevron-apartado {
+    rotate: 180deg;
+  }
+
+  @supports (interpolate-size: allow-keywords) and selector(::details-content) {
+    .apartado {
+      interpolate-size: allow-keywords;
+    }
+
+    .apartado::details-content {
+      block-size: 0;
+      overflow-y: clip;
+      transition:
+        block-size 220ms var(--ease-respuesta),
+        content-visibility 220ms allow-discrete;
+    }
+
+    .apartado[open]::details-content {
+      block-size: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chevron-apartado,
+    .apartado::details-content {
+      transition: none;
+    }
+  }
+
+  /* Al imprimir, todo el documento: el `beforeprint` de ControlesDeApartados abre los apartados y esto los respalda. */
+  @media print {
+    .apartado::details-content {
+      block-size: auto;
+      content-visibility: visible;
+    }
+
+    .apartado > summary .chevron-apartado {
+      display: none;
+    }
+  }
+}
