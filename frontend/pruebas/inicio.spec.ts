@@ -83,6 +83,32 @@ test.describe("SCR-18 · Inicio público", () => {
   test("axe no encuentra violaciones de WCAG 2.2 AA", async ({ page }) => {
     await revisarAccesibilidad(page);
   });
+
+  test("«Qué encontrarás» tiene ícono, nombre y globo de Moris, sin la columna de descripción", async ({ page }, info) => {
+    const filas = page.locator("#que-encontraras li");
+    await expect(filas).toHaveCount(5);
+    await expect(filas.locator("h3")).toHaveText(["Lecciones breves", "Actividades", "Casos prácticos", "Examen por curso", "Progreso e insignias"]);
+    const texto = (await page.locator("#que-encontraras").textContent())!;
+    for (const descripcion of ["Temas cortos divididos", "Opción múltiple", "Dilemas reales", "Ves tu avance en porcentaje"]) {
+      expect(texto).not.toContain(descripcion);
+    }
+    for (const fila of await filas.all()) {
+      await expect(fila.locator(":scope > *")).toHaveCount(3);
+      const [icono, nombre, globo] = await Promise.all(
+        [fila.locator(":scope > span").first(), fila.locator("h3"), fila.locator(":scope > p")].map(async (l) => (await l.boundingBox())!),
+      );
+      if (info.project.name === "movil") {
+        // Ícono de 48 px y nombre en una fila; el globo, debajo.
+        expect(icono.width).toBe(48);
+        expect(Math.abs(icono.y + icono.height / 2 - (nombre.y + nombre.height / 2))).toBeLessThan(2);
+        expect(globo.y).toBeGreaterThanOrEqual(icono.y + icono.height);
+      } else {
+        // El nombre ocupa el espacio libre y el globo queda a la derecha, en la misma fila.
+        expect(globo.x).toBeGreaterThan(nombre.x + nombre.width - 1);
+        expect(globo.y).toBeLessThan(icono.y + icono.height);
+      }
+    }
+  });
 });
 
 test.describe("SCR-18 · Movimiento", () => {
