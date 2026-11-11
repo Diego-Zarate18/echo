@@ -206,8 +206,8 @@ Copia ahí `docs/frontend/relevo/README.md` (el reglamento del buzón). Los arch
 | `historial/` | Ambos | `tarea-NN.md` y `reporte-NN.md` de cada ciclo |
 
 Plantillas en `docs/frontend/relevo/plantilla-tarea.md` y `docs/frontend/relevo/plantilla-reporte.md`.
-La numeración sigue desde la **Tarea 12**: la 11 fue de ajustes que pidió el docente al inicio y a los documentos
-legales (DEC-98).
+La numeración sigue desde la **Tarea 13**: la 11 fue de ajustes que pidió el docente al inicio y a los documentos
+legales (DEC-98), y la 12, de animaciones (el panel de acceso y la guía de movimiento de `DESIGN.md`).
 
 ### 5.2 El ciclo
 
@@ -237,7 +237,7 @@ esto como primer mensaje:
 > repositorio, y los nodos `invariante` de `ai/context/grafo-conocimiento.json`. Figma: archivo `1zggHPVnKEPlt7khBbtWTt`,
 > página `66:2`. Tu trabajo: escribir cada tarea en `ai/handoff/siguiente.md` con la plantilla de
 > `docs/frontend/relevo/plantilla-tarea.md`, revisar el reporte cuando te diga «revisa», y proponerme cualquier cambio
-> al grafo antes de hacerlo. Si Figma y el grafo no coinciden, manda el grafo. Empieza con la Tarea 12: SCR-06 Módulos.
+> al grafo antes de hacerlo. Si Figma y el grafo no coinciden, manda el grafo. Empieza con la Tarea 13: SCR-06 Módulos.
 
 ### 5.4 Cómo trabaja Claude Code
 
