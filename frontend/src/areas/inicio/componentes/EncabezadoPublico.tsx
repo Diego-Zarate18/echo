@@ -215,7 +215,7 @@ export function EncabezadoPublico() {
       className={[
         "inset-x-2 top-2 z-30",
         fija
-          ? "fixed transition-[scale,opacity,filter] duration-220 ease-(--ease-respuesta) lg:inset-x-0 lg:px-[72px]"
+          ? "fixed transition-[scale,opacity,filter] duration-220 ease-(--ease-respuesta) motion-reduce:transition-opacity lg:inset-x-0 lg:px-[72px]"
           : "absolute px-5 pt-2 md:px-8 md:pt-5 xl:pt-7",
         fija && !visible
           ? "pointer-events-none scale-[0.98] opacity-0 blur-[6px] motion-reduce:scale-100 motion-reduce:blur-none"
