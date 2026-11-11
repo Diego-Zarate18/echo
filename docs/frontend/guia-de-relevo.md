@@ -18,7 +18,7 @@ examen por curso) y con bloqueo del avance. El piloto con estudiantes termina a 
 | Ruta | Pantalla |
 |---|---|
 | `/` | SCR-18 Inicio público |
-| `/aviso-de-privacidad`, `/terminos-y-condiciones`, `/ayuda` | SCR-05, SCR-20, SCR-17 |
+| `/aviso-de-privacidad`, `/terminos-y-condiciones`, `/ayuda` | SCR-05, SCR-20 (resumen y apartados desplegables, DEC-98; Tarea 11), SCR-17 |
 | `/iniciar-sesion` | SCR-01 |
 | `/crear-cuenta` | SCR-02 |
 | `/verificar-correo` | SCR-03 |
@@ -132,7 +132,8 @@ resuelven a gusto.
   (con `ayuda` y `describe`), `Casilla`, `Alerta` (tonos `error`, `correo`, `aviso` y `espera`), `ResumenDeErrores`,
   `CorreoEnTexto` e `iconos/`. **Úsalos antes de crear otro.**
 - `componentes/estructura/`: `SaltarAlContenido`, `EncabezadoInterno` (páginas públicas internas), `MenuMovil`,
-  `PiePublico` (variantes `oscuro`, `claro` y `acceso`), `IndicePagina` y `PaginaDeDocumentoLegal`. **El encabezado,
+  `PiePublico` (variantes `oscuro`, `claro` y `acceso`), `IndicePagina` (lo usa Ayuda), `PaginaDeDocumentoLegal` y
+  `ControlesDeApartados` (ver §9.6). **El encabezado,
   el pie y la barra inferior de la app todavía no existen** (fila 2 de la tabla de §1).
 - `componentes/marca/`: `Logo`, `Moris`, `MorisVivo`, `Ondas` y `Filamentos`.
 - `areas/cuenta/componentes/PantallaDeAcceso.tsx`: el panel café y la columna de las pantallas de acceso; no se usa en
@@ -203,7 +204,8 @@ Copia ahí `docs/frontend/relevo/README.md` (el reglamento del buzón). Los arch
 | `historial/` | Ambos | `tarea-NN.md` y `reporte-NN.md` de cada ciclo |
 
 Plantillas en `docs/frontend/relevo/plantilla-tarea.md` y `docs/frontend/relevo/plantilla-reporte.md`.
-La numeración sigue desde la **Tarea 11**.
+La numeración sigue desde la **Tarea 12**: la 11 fue de ajustes que pidió el docente al inicio y a los documentos
+legales (DEC-98).
 
 ### 5.2 El ciclo
 
@@ -233,7 +235,7 @@ esto como primer mensaje:
 > repositorio, y los nodos `invariante` de `ai/context/grafo-conocimiento.json`. Figma: archivo `1zggHPVnKEPlt7khBbtWTt`,
 > página `66:2`. Tu trabajo: escribir cada tarea en `ai/handoff/siguiente.md` con la plantilla de
 > `docs/frontend/relevo/plantilla-tarea.md`, revisar el reporte cuando te diga «revisa», y proponerme cualquier cambio
-> al grafo antes de hacerlo. Si Figma y el grafo no coinciden, manda el grafo. Empieza con la Tarea 11: SCR-06 Módulos.
+> al grafo antes de hacerlo. Si Figma y el grafo no coinciden, manda el grafo. Empieza con la Tarea 12: SCR-06 Módulos.
 
 ### 5.4 Cómo trabaja Claude Code
 
@@ -353,6 +355,11 @@ Lo que aprendí construyendo las Tareas 01 a 10 y que no está escrito en otro l
   El aviso simplificado de Crear cuenta y de `/aceptar` es una constante con prueba contra el Anexo A.
 - En la consola del navegador verás 404 de prefetch hacia rutas que todavía no existen (`/perfil`, etc.): no es un
   error de la página.
+- **Apartados desplegables (DEC-98):** el aviso y los términos usan un `<details>` nativo por cada `##`, todos
+  cerrados, con el `h2` dentro del `summary` (componente de Figma `170:5215`, clase `.apartado` en `globales.css`).
+  `ControlesDeApartados` pone «Abrir todos» / «Cerrar todos», abre el apartado de un `#ancla` (también de `###`) y
+  los abre todos al imprimir. Si un día Ayuda u otra página necesita lo mismo, reutiliza las dos piezas en lugar de
+  hacer un acordeón con estado: el texto se queda en el HTML, Ctrl+F lo encuentra y la página sigue `○`.
 - Los íconos se copian de Figma como rutas en `componentes/ui/iconos/iconos.tsx` (trazo 1.75, `currentColor`); no
   se usan imágenes ni otra librería de íconos.
 - El equipo pidió que los commits **no** lleven la línea de autoría de Claude Code (`Co-Authored-By`). Díselo en la

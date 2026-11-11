@@ -132,8 +132,8 @@ echo/                          ← repositorio Diego-Zarate18/echo
       │  │                        (por hacer) Dialogo, Menu, Selector, BarraProgreso, Insignia, Estado
       │  ├─ marca/             ← Logo, Moris, MorisVivo, Ondas, Filamentos
       │  └─ estructura/        ← SaltarAlContenido, EncabezadoInterno, MenuMovil, PiePublico,
-      │                           IndicePagina («En esta página» del aviso, los términos y Ayuda),
-      │                           PaginaDeDocumentoLegal (aviso y términos);
+      │                           IndicePagina («En esta página» de Ayuda),
+      │                           PaginaDeDocumentoLegal y ControlesDeApartados (aviso y términos, DEC-98);
       │                           (por hacer) Encabezado de la app, MenuPrincipal, BarraInferior (DEC-80), AvisoSesion
       ├─ lib/
       │  ├─ api/               ← esquema.d.ts (generado), operaciones.ts, cliente.ts, servidor.ts,
