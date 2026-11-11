@@ -97,7 +97,7 @@ Navegador ──▶ next dev (:3000) ── /api/* ──rewrite──▶ API si
 echo/                          ← repositorio Diego-Zarate18/echo
 ├─ ai/context/grafo-conocimiento.json
 ├─ CLAUDE.md
-├─ backend/                    ← NestJS (se define después)
+├─ backend/                    ← NestJS con Prisma (lo lleva otra persona del equipo)
 └─ frontend/
    ├─ .nvmrc  .npmrc (save-exact=true)  next.config.ts  eslint.config.mjs  tsconfig.json
    ├─ DESIGN.md                ← sistema visual «Tierra» (DEC-82), escrito a partir de Figma
@@ -109,34 +109,41 @@ echo/                          ← repositorio Diego-Zarate18/echo
    ├─ scripts/                 ← generar-iconos.mjs, revisar-tipos-api.mjs
    └─ src/
       ├─ app/                  ← solo rutas (§5); cada page.tsx es delgada
+      │  ├─ (publico)/         ← inicio, aviso de privacidad, términos y Ayuda
+      │  ├─ (acceso)/          ← iniciar-sesion, crear-cuenta, verificar-correo, recuperar-contrasena(/nueva)
+      │  ├─ (aceptacion)/      ← aceptar (SCR-19), fuera de (app) para no formar un ciclo (DEC-85)
+      │  └─ (app)/             ← vistas con sesión; su layout valida la sesión (§7). Hoy solo /modulos provisional
       ├─ areas/                ← lógica por área, mismo nombre que los MOD-* del grafo
       │  ├─ aviso/             ← Aviso de privacidad SCR-05: texto de docs/legal (contenido.ts)
       │  ├─ terminos/          ← Términos y condiciones SCR-20: texto de docs/legal (contenido.ts)
       │  ├─ ayuda/             ← Ayuda SCR-17: preguntas fijas (contenido.ts) y acordeón
-      │  ├─ inicio/            ← sitio público SCR-18 (DEC-83): Encabezado, Presentacion,
+      │  ├─ inicio/            ← sitio público SCR-18 (DEC-83): EncabezadoPublico, Presentacion,
       │  │                        QueEsEcho, QueEncontraras, PorQueEcho, QuienesSomos, Llamado
-      │  ├─ cuenta/            ← formularios de acceso, perfil, mensajes de DEC-77
-      │  ├─ contenido/         ← tarjetas de módulo/curso, lector de lección, buscador
-      │  ├─ evaluables/        ← actividad y casos (SCR-10)
-      │  ├─ examen/            ← portada, resolución, resultado (SCR-11..13)
-      │  ├─ progreso/          ← barras, insignias (SCR-14)
-      │  └─ resultados/        ← historial y filtros (SCR-15)
-      │     └─ (cada área: componentes/, acciones.ts, tipos.ts, esquemas.ts)
+      │  ├─ cuenta/            ← SCR-01 a SCR-04 y SCR-19: formularios, panel de acceso, casoDeAceptacion.ts,
+      │  │                        textosDeConsentimiento.ts (Anexo A) y correoPendiente.ts; (por hacer) Perfil SCR-16
+      │  ├─ contenido/         ← (por hacer) tarjetas de módulo/curso, lector de lección, buscador
+      │  ├─ evaluables/        ← (por hacer) actividad y casos (SCR-10)
+      │  ├─ examen/            ← (por hacer) portada, resolución, resultado (SCR-11..13)
+      │  ├─ progreso/          ← (por hacer) barras, insignias (SCR-14)
+      │  └─ resultados/        ← (por hacer) historial y filtros (SCR-15)
+      │     └─ (cada área: componentes/ y, si hace falta, sus módulos de datos y textos)
       ├─ componentes/
-      │  ├─ ui/                ← primitivos accesibles: Boton, Campo, CampoContrasena,
-      │  │                        Alerta, Dialogo, Menu, Selector, BarraProgreso, Insignia, Estado
-      │  ├─ marca/             ← Logo, Moris
-      │  └─ estructura/        ← Encabezado, MenuPrincipal, BarraInferior (DEC-80),
-      │                           Pie, SaltarAlContenido, AvisoSesion, EncabezadoInterno,
+      │  ├─ ui/                ← Boton, Campo y CampoContrasena, Casilla, Alerta, ResumenDeErrores, iconos/;
+      │  │                        (por hacer) Dialogo, Menu, Selector, BarraProgreso, Insignia, Estado
+      │  ├─ marca/             ← Logo, Moris, MorisVivo, Ondas, Filamentos
+      │  └─ estructura/        ← SaltarAlContenido, EncabezadoInterno, MenuMovil, PiePublico,
       │                           IndicePagina («En esta página» del aviso, los términos y Ayuda),
-      │                           PaginaDeDocumentoLegal (aviso y términos)
+      │                           PaginaDeDocumentoLegal (aviso y términos);
+      │                           (por hacer) Encabezado de la app, MenuPrincipal, BarraInferior (DEC-80), AvisoSesion
       ├─ lib/
       │  ├─ api/               ← esquema.d.ts (generado), operaciones.ts, cliente.ts, servidor.ts,
       │  │                        navegador.ts, errores.ts, mensajes.ts (código de error → texto en español)
       │  ├─ markdown/          ← convertidor mínimo de Markdown a elementos de React (DEC-57)
       │  ├─ contacto.ts        ← correos de soporte y de privacidad (DEC-68)
-      │  ├─ sesion.ts          ← obtenerSesion() en el servidor
-      │  └─ fechas.ts          ← Intl en es-MX, America/Mexico_City, DD/MM/AAAA, 24 h (INV-03)
+      │  ├─ rutas.ts           ← nombres de las cookies, `volver` seguro (rutaInternaSegura) y rutas de acceso
+      │  ├─ sesion.ts          ← obtenerSesion(), obtenerRegistroGoogle() y obtenerDocumentosVigentes() en el servidor
+      │  ├─ useConsultaDeLaUrl.ts ← la consulta de la URL leída en el navegador, para que las páginas sigan estáticas
+      │  └─ fechas.ts          ← (por hacer) Intl en es-MX, America/Mexico_City, DD/MM/AAAA, 24 h (INV-03)
       ├─ estilos/
       │  └─ globales.css       ← @import "tailwindcss"; @theme con los tokens de marca
       └─ proxy.ts              ← redirección rápida si no hay cookie (§7)
@@ -161,10 +168,11 @@ Los grupos entre paréntesis no aparecen en la URL; solo eligen el `layout`.
 | `/terminos-y-condiciones` | SCR-20 Términos y condiciones | `(publico)` | No |
 | `/ayuda` | SCR-17 Ayuda | `(publico)`; si hay sesión muestra el encabezado de la app | No |
 | `/iniciar-sesion` | SCR-01 | `(acceso)` | No (con sesión → `/modulos`) |
-| `/registro` | SCR-02 | `(acceso)` | No |
+| `/crear-cuenta` | SCR-02 | `(acceso)` | No |
 | `/verificar-correo` | SCR-03 («revisa tu correo» y resultado del enlace `?codigo=`) | `(acceso)` | No |
 | `/recuperar-contrasena` | SCR-04 paso 1 | `(acceso)` | No |
 | `/recuperar-contrasena/nueva?codigo=` | SCR-04 paso 2 | `(acceso)` | No |
+| `/aceptar` | SCR-19 Aceptar aviso y términos | `(aceptacion)` | Sí, o la cookie temporal de Google |
 | `/modulos` | SCR-06 Módulos (inicio) + buscador `?q=` | `(app)` | Sí |
 | `/modulos/[modulo]` | SCR-07 Módulo | `(app)` | Sí |
 | `/modulos/[modulo]/[curso]` | SCR-08 Curso | `(app)` | Sí |
