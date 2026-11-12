@@ -3,3 +3,6 @@ docs/legal/*.md text eol=lf
 # Migraciones y esquema con LF: Prisma guarda la huella del archivo de cada migración aplicada.
 *.sql text eol=lf
 *.prisma text eol=lf
+# El grafo y los documentos con LF: el grafo llega con CRLF desde Windows y, sin esta regla, git marca el archivo completo.
+ai/context/*.json text eol=lf
+docs/**/*.md text eol=lf

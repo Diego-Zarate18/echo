@@ -6,6 +6,7 @@ import { leerCorreoPendiente } from "@/areas/cuenta/correoPendiente";
 import { Alerta } from "@/componentes/ui/Alerta";
 import { Boton } from "@/componentes/ui/Boton";
 import { Campo } from "@/componentes/ui/Campo";
+import { CorreoEnTexto } from "@/componentes/ui/CorreoEnTexto";
 import { IconoAlerta, IconoCirculoCheck, IconoReloj, IconoSobre } from "@/componentes/ui/iconos/iconos";
 import { apiNavegador } from "@/lib/api/navegador";
 import type { ErrorApi } from "@/lib/api/errores";
@@ -186,7 +187,7 @@ export function VerificarCorreo() {
         <Texto>
           {correoPendiente ? (
             <>
-              Te enviamos un mensaje a <strong className="font-semibold text-marca-cafe">{correoPendiente}</strong>.
+              Te enviamos un mensaje a <CorreoEnTexto correo={correoPendiente} />.
             </>
           ) : (
             "Te enviamos un mensaje a tu correo."

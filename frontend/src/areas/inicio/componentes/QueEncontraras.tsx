@@ -12,7 +12,6 @@ import { EncabezadoSeccion } from "./EncabezadoSeccion";
 
 type Elemento = {
   titulo: string;
-  descripcion: string;
   Icono: ComponentType<PropsIcono>;
   expresion: ExpresionMoris;
   mensajeMoris: string;
@@ -21,38 +20,30 @@ type Elemento = {
 const elementos: readonly Elemento[] = [
   {
     titulo: "Lecciones breves",
-    descripcion: "Temas cortos divididos en secciones. Avanzas, regresas y retomas donde te quedaste.",
     Icono: IconoLibro,
     expresion: "sorprendido",
     mensajeMoris: "¿Sabías que tu código también tiene derechos de autor?",
   },
   {
     titulo: "Actividades",
-    descripcion:
-      "Opción múltiple, verdadero o falso y relación de columnas sin arrastrar. Repítelas cuando quieras.",
     Icono: IconoLista,
     expresion: "feliz",
     mensajeMoris: "¡Bien pensado! Esa fue la mejor decisión.",
   },
   {
     titulo: "Casos prácticos",
-    descripcion:
-      "Dilemas reales: cada decisión es óptima, aceptable o riesgosa y muestra su consecuencia y su fundamento.",
     Icono: IconoDilema,
     expresion: "curioso",
     mensajeMoris: "¿Qué harías tú? No siempre hay una sola respuesta.",
   },
   {
     titulo: "Examen por curso",
-    descripcion:
-      "Sin cronómetro y con guardado automático. Apruebas con 70 %; si no, repasas y lo intentas de nuevo.",
     Icono: IconoBirrete,
     expresion: "triste",
     mensajeMoris: "Descansa un momento y repasa. En 20 minutos podrás intentarlo de nuevo.",
   },
   {
     titulo: "Progreso e insignias",
-    descripcion: "Ves tu avance en porcentaje y obtienes una insignia al completar cada módulo.",
     Icono: IconoInsignia,
     expresion: "feliz",
     mensajeMoris: "¡Nueva insignia! Completaste el módulo.",
@@ -60,7 +51,9 @@ const elementos: readonly Elemento[] = [
 ];
 
 /**
- * Sección «Qué encontrarás» (84:560): cinco filas con su globo de Moris.
+ * Sección «Qué encontrarás» (84:560 escritorio, 150:5259 móvil): cinco filas con el ícono, el nombre y el globo de
+ * Moris (SCR-18, grafo 1.6.2: sin la columna de descripción). En escritorio el nombre ocupa el espacio libre y el globo
+ * queda a la derecha; en móvil, el ícono de 48 px y el nombre van en una fila y el globo debajo.
  * Tiene el mismo aire arriba y abajo que las demás secciones y las filas el ritmo de Figma (30 px arriba y abajo).
  * En ventanas de escritorio bajas (`ventana-baja`) las filas y el globo se compactan para que, al llegar desde el
  * menú, se vea la sección completa: del título a la última fila.
@@ -82,19 +75,16 @@ export function QueEncontraras() {
         />
 
         <ul className="mt-12 lg:mt-14 ventana-baja:mt-6">
-          {elementos.map(({ titulo, descripcion, Icono, expresion, mensajeMoris }) => (
+          {elementos.map(({ titulo, Icono, expresion, mensajeMoris }) => (
             <li
               key={titulo}
-              className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-start gap-x-5 gap-y-3 border-t border-marca-cafe/14 py-[30px] ventana-baja:py-3 md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_300px_minmax(0,420px)_384px] xl:items-center xl:justify-between"
+              className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-x-4 gap-y-4 border-t border-marca-cafe/14 py-[30px] ventana-baja:py-3 md:grid-cols-[4rem_minmax(0,1fr)] md:gap-x-10 xl:grid-cols-[4rem_minmax(0,1fr)_384px]"
             >
-              <span data-dibujar className="row-span-3 flex size-14 items-center justify-center rounded-full bg-marca-cafe text-marca-menta md:size-16 xl:row-span-1">
-                <Icono className="size-6 md:size-7" />
+              <span data-dibujar className="flex size-12 items-center justify-center rounded-full bg-marca-cafe text-marca-menta md:size-16">
+                <Icono className="size-5 md:size-7" />
               </span>
-              <h3 className="self-center font-titulo text-elemento font-extrabold">{titulo}</h3>
-              <p className="col-start-2 max-w-[60ch] text-cuerpo text-texto-secundario xl:col-start-auto">
-                {descripcion}
-              </p>
-              <p className="revelar-globo col-start-2 flex max-w-[384px] items-center gap-3.5 rounded-globo bg-superficie-hundida py-3 pr-5 ventana-baja:py-2 pl-3 text-menor leading-[1.45] font-semibold xl:col-start-auto">
+              <h3 className="font-titulo text-elemento font-extrabold">{titulo}</h3>
+              <p className="revelar-globo col-span-2 flex items-center gap-3.5 rounded-globo bg-superficie-hundida py-3 pr-5 ventana-baja:py-2 pl-3 text-menor leading-[1.45] font-semibold md:col-span-1 md:col-start-2 md:max-w-[384px] xl:col-start-auto">
                 <Moris expresion={expresion} alt="" sizes="42px" className="w-[42px] shrink-0" />
                 <span>
                   <span className="sr-only">Moris dice: </span>

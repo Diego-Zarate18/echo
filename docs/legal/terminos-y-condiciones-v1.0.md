@@ -2,6 +2,20 @@
 
 **Versión:** 1.0 · **Última actualización:** 21/10/2026
 
+> **Resumen en cinco puntos**
+>
+> 1. **Echo es un proyecto académico:** es gratuito, de la Universidad Politécnica de Chiapas, y funciona como piloto hasta principios de diciembre de 2026. Sus calificaciones e insignias no son oficiales.
+>
+> 2. **Licencia personal:** puedes usar Echo solo con fines personales, académicos o pedagógicos. La licencia es gratuita, intransferible y revocable, y no te da la propiedad de nada de la plataforma.
+>
+> 3. **No es asesoría legal:** Echo es didáctico y no sustituye a un abogado. Antes de aplicar una norma, consulta su versión vigente.
+>
+> 4. **Tu cuenta es tuya:** debes tener 18 años o más, usar una sola cuenta con datos verdaderos y cuidar tus credenciales. Eres responsable de lo que se haga con tu cuenta.
+>
+> 5. **Leyes mexicanas:** estos Términos se rigen por las leyes federales de México y, en lo que no prevean, por las del Estado de Chiapas.
+>
+> Este resumen no sustituye los Términos completos: cada sección está abajo.
+
 ## 1. Aceptación de los términos
 
 Estos Términos y condiciones de uso con descargo de responsabilidad (los «Términos») regulan el acceso y el uso de la plataforma educativa **Echo**, que opera la persona física **Brian Luis Ruiz Pérez** (en adelante, «el responsable» o «nosotros»), con el apoyo del equipo de desarrollo integrado por Ángel Eduardo Moreno Moreno y Diego Alberto Zárate Vázquez, con domicilio para oír y recibir notificaciones en Carretera Tuxtla Gutiérrez – Portillo Zaragoza km 21+500, colonia Las Brisas, municipio de Suchiapa, Chiapas, México, C.P. 29145.

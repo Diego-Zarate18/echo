@@ -10,15 +10,17 @@ Su propósito es que sepas, antes de darnos cualquier dato, quién trata tu info
 
 > **Resumen en cinco puntos**
 >
-> 1. Usamos tu nombre, apellidos y correo para tu cuenta, y tu avance y respuestas para que aprendas con Echo.
+> 1. **Quiénes somos:** Echo es un proyecto académico de la Universidad Politécnica de Chiapas. El responsable de tus datos es Brian Luis Ruiz Pérez, y puedes escribirle a privacidad.echo@gmail.com.
 >
-> 2. Tu contraseña nunca se guarda legible: solo su hash Argon2id.
+> 2. **Qué datos recabamos:** tu nombre, apellidos y correo; tu avance, tus respuestas y tus calificaciones, y datos técnicos de tus sesiones, como la IP y el navegador. No pedimos datos de pago, de salud ni de discapacidad.
 >
-> 3. No vendemos tus datos, no hacemos publicidad, no usamos analítica de terceros ni guardamos datos de salud o discapacidad.
+> 3. **Para qué los usamos:** para tu cuenta, tu avance y tus calificaciones. Solo si no te opones, también para invitarte una vez a una encuesta y para estadísticas anónimas; puedes negarte sin perder nada del servicio.
 >
-> 4. Guardamos la fecha, la hora, la IP y la versión del aviso que aceptaste, como prueba de tu consentimiento.
+> 4. **No vendemos tus datos:** no los transferimos a terceros, no hacemos publicidad ni usamos analítica de terceros, y tu contraseña nunca se guarda legible.
 >
-> 5. Puedes ver, corregir o borrar tus datos desde tu Perfil, o escribir a privacidad.echo@gmail.com.
+> 5. **Tus derechos ARCO:** puedes ver, corregir o borrar tus datos desde tu Perfil, oponerte a las finalidades opcionales o escribir a privacidad.echo@gmail.com.
+>
+> Este resumen no sustituye el aviso completo: cada apartado está abajo.
 
 ## 1. Identidad, domicilio y contacto del responsable
 

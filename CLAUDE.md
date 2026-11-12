@@ -12,7 +12,7 @@ Todo el código lo escribe Claude y lo revisa una persona del equipo.
    operaciones (OP-*), consultas (C-*), pantallas y su navegación (SCR-*), fuera de alcance (FDA-*) y pendientes (PEND-*).
    Búscalo con Grep por id (p. ej. `"id": "DEC-19"` o `"id": "TBL-INTENTO"`); no lo leas completo si no hace falta.
    **Antes de empezar, lee los nodos `invariante`.**
-2. `docs/echo_db.drawio`: diagrama entidad-relación oficial (21 tablas, 30 relaciones).
+2. `docs/echo_db.drawio`: diagrama entidad-relación oficial (22 tablas, 30 relaciones; `auditoria_bd` no tiene llaves foráneas).
 
 El documento de requerimientos original **no se usa**: el grafo lo sustituye (DEC-67). Si un requerimiento aparece
 como `parchado` o `descartado`, manda la decisión enlazada con `ajustado_por`, no el texto original.
@@ -86,11 +86,17 @@ ids: `alumno@example.com`, `otra.alumna@example.com` y `pendiente@example.com`, 
 - Listas cerradas como `TEXT` + `CHECK`, nunca ENUM. Contenido con `BIGINT` identity; tablas del alumno con UUID v7.
 - Todo cambio de esquema es una migración versionada; nada se cambia a mano (INV-10).
 - La app se conecta como `echo_app`, las migraciones como `echo_migracion` y la carga de contenido como `echo_contenido`.
+<<<<<<< HEAD
   Nunca uses el superusuario (INV-09).
 - La lógica de BD se limita a las 7 funciones, 2 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
   La regla de desbloqueo vive solo en `fn_estado_desbloqueo` (DEC-97): el backend la consulta y nunca la repite.
 - Los errores de las funciones traen el código de la API como mensaje y un SQLSTATE `EC4xx` (DEC-99); el backend solo los
   traduce a `{ codigo, mensaje }`.
+=======
+  El administrador entra como `echo_admin`, y todo lo que hacen los roles de administración queda en `auditoria_bd`, que
+  solo crece (DEC-97, INV-31). Nunca uses el superusuario (INV-09).
+- La lógica de BD se limita a las 9 funciones, 5 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
+>>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
 
 ## Reglas no negociables
 1. El historial nunca se borra: eliminar una cuenta es anonimizarla con `fn_anonimizar_usuario` (INV-01).

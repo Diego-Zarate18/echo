@@ -5,6 +5,7 @@ import { Moris } from "@/componentes/marca/Moris";
 import { MorisVivo } from "@/componentes/marca/MorisVivo";
 import { Ondas } from "@/componentes/marca/Ondas";
 import { IconoAyuda } from "@/componentes/ui/iconos/iconos";
+import { EntradaDelPanel } from "@/areas/cuenta/componentes/EntradaDelPanel";
 
 type PropsPanelDeAcceso = {
   /** Saludo en dos renglones, como en Figma. */
@@ -20,8 +21,10 @@ type PropsPanelDeAcceso = {
  * el logo lleva al inicio y, en móvil, el botón redondo lleva a Ayuda.
  *
  * Reutiliza las piezas del hero en su versión estática: Moris ya está en su lugar (no brota) y los filamentos ya están
- * trazados. Solo hay una entrada sobria, una vez: Moris y el saludo suben 24 px mientras aparecen. Con ratón, Moris se
- * asoma hacia el puntero y las ondas suenan al pasar sobre él, igual que en el hero.
+ * trazados. Solo hay una entrada sobria, una vez **por carga de la página**: al navegar entre pantallas de acceso,
+ * Moris se queda quieto y solo el saludo cambia con un fundido. En la primera carga, Moris y el saludo suben 24 px
+ * mientras aparecen. Con ratón, Moris se asoma hacia el puntero y las ondas suenan al pasar sobre él, igual que en el
+ * hero.
  */
 export function PanelDeAcceso({ saludo, entrada, saludoCompacto = false }: PropsPanelDeAcceso) {
   return (
@@ -55,15 +58,22 @@ export function PanelDeAcceso({ saludo, entrada, saludoCompacto = false }: Props
         Moris (67:45): 244 × 288 a 150 px del borde. En ventanas bajas se achica para no tocar el saludo.
         En móvil (68:212) queda abajo a la derecha, a 110 px de ancho y sin filamentos.
       */}
-      <div className="absolute right-5 bottom-[22px] w-[110px] animate-aparecer lg:relative lg:right-auto lg:bottom-auto lg:mt-[clamp(1rem,8dvh,4.5rem)] lg:ml-[19.6%] lg:w-[clamp(160px,calc(100dvh-656px),244px)]">
+      <EntradaDelPanel
+        primera="animate-aparecer"
+        className="absolute right-5 bottom-[22px] w-[110px] lg:relative lg:right-auto lg:bottom-auto lg:mt-[clamp(1rem,8dvh,4.5rem)] lg:ml-[19.6%] lg:w-[clamp(160px,calc(100dvh-656px),244px)]"
+      >
         <MorisVivo saludo={false}>
           <Ondas alCargar={false} />
           <Moris expresion="principal" alt="" sizes="(min-width: 1024px) 244px, 110px" preload className="w-full" />
           <Filamentos className="top-[36%] left-[94%] hidden w-[81%] text-marca-menta lg:block" />
         </MorisVivo>
-      </div>
+      </EntradaDelPanel>
 
-      <div className="mt-auto flex animate-aparecer flex-col gap-4 [animation-delay:80ms]">
+      <EntradaDelPanel
+        primera="animate-aparecer [animation-delay:80ms]"
+        siguientes="animate-fundido"
+        className="mt-auto flex flex-col gap-4"
+      >
         <p
           className={`font-titulo leading-[1.08] font-black tracking-[-0.015em] lg:max-w-[520px] lg:text-[46px] ${saludoCompacto ? "max-w-[230px] text-[28px]" : "max-w-[220px] text-[30px]"}`}
         >
@@ -71,7 +81,7 @@ export function PanelDeAcceso({ saludo, entrada, saludoCompacto = false }: Props
           <span className="block">{saludo[1]}</span>
         </p>
         <p className="hidden max-w-[500px] text-amplio leading-[1.55] text-marca-crema/86 lg:block">{entrada}</p>
-      </div>
+      </EntradaDelPanel>
     </header>
   );
 }

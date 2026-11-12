@@ -8,6 +8,7 @@ import { CASILLAS_OBLIGATORIAS, type NombreCasilla } from "@/areas/cuenta/textos
 import { Alerta } from "@/componentes/ui/Alerta";
 import { Boton } from "@/componentes/ui/Boton";
 import { Casilla } from "@/componentes/ui/Casilla";
+import { CorreoEnTexto } from "@/componentes/ui/CorreoEnTexto";
 import { apiNavegador } from "@/lib/api/navegador";
 import type { components } from "@/lib/api/esquema";
 import { mensajeDeCampo, mensajeDeError } from "@/lib/api/mensajes";
@@ -111,7 +112,7 @@ export function AceptacionGoogle({ correo, versiones, botonGoogle }: { correo: s
         Termina de crear tu cuenta
       </h1>
       <p className="text-menor text-texto-secundario lg:text-cuerpo">
-        Entraste con Google como <strong className="font-semibold break-all text-marca-cafe">{correo}</strong>. Tu cuenta se
+        Entraste con Google como <CorreoEnTexto correo={correo} />. Tu cuenta se
         crea cuando aceptes.
       </p>
       {aviso ? (

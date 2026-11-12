@@ -25,6 +25,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
+    // La raíz es frontend/: en la raíz del repositorio hay otro package-lock.json (del backend) y, sin esto, Next la toma
+    // como raíz del proyecto y escribe .next/ fuera de frontend/.
+    root: __dirname,
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
