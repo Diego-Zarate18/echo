@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.5.3",
-    "actualizado": "2026-10-28",
-    "fase": "Iniciar sesión y sesión en el frontend (Tarea 08). Siguiente: Registro, verificación de correo y aceptación (Tarea 09).",
+    "version": "1.6.0",
+    "actualizado": "2026-11-12",
+    "fase": "Base de datos del backend completa: 5 migraciones, semilla de desarrollo y pruebas SQL. Siguiente: infraestructura transversal del backend (Fase 2).",
     "historial": [
       {
         "version": "0.1.0",
@@ -84,6 +84,11 @@
         "version": "1.5.3",
         "fecha": "2026-10-28",
         "cambio": "Revisión de la Tarea 08: la exportación marca cerradaEn por sesión (DEC-94); el backend borra la cookie al responder 401 y /aceptar va en su propio grupo (DEC-85, SCR-19)."
+      },
+      {
+        "version": "1.6.0",
+        "fecha": "2026-11-12",
+        "cambio": "Base de datos del backend: regla de desbloqueo en fn_estado_desbloqueo (DEC-97, 7 funciones), todo curso publicado tiene examen (DEC-98), abrir actividad no crea intento (OP-22), errores de BD con SQLSTATE EC4xx (DEC-99), anonimización ampliada e idempotente (DEC-27), roles con roles.sql y base sombra (DEC-100), semilla igual a la API simulada (DEC-101) y precisiones de las vistas."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -154,7 +159,7 @@
       "persigue": "proyecto → objetivo",
       "limitado_por": "proyecto → restricción",
       "contiene": "proyecto → módulo",
-      "usa": "decisión/operación/consulta → tecnología, actor, función o vista",
+      "usa": "decisión/operación/consulta/función → tecnología, actor, función o vista",
       "cumple": "decisión → objetivo",
       "depende_de": "decisión → decisión",
       "motiva": "restricción → decisión",
@@ -186,19 +191,19 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 461,
-      "aristas": 1315,
+      "nodos": 467,
+      "aristas": 1351,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 5,
         "tecnologia": 32,
-        "decision": 96,
+        "decision": 101,
         "invariante": 30,
         "tabla": 21,
         "rol_bd": 5,
-        "funcion_bd": 6,
+        "funcion_bd": 7,
         "disparador": 2,
         "vista_bd": 2,
         "consulta": 13,
@@ -835,7 +840,7 @@
       "id": "DEC-27",
       "tipo": "decision",
       "nombre": "Eliminar cuenta = anonimizar",
-      "descripcion": "Se borran nombre, apellidos, correo, contraseña y google_sub; se eliminan sesiones y enlaces; estado = «anonimizado» y anonimizado_en. El historial académico se conserva sin forma de saber de quién era. Se confirma con la contraseña o volviendo a entrar con Google. El correo queda libre para una cuenta nueva desde cero.",
+      "descripcion": "Se borran nombre, apellidos, correo, contraseña y google_sub; se eliminan sesiones y enlaces; estado = «anonimizado» y anonimizado_en. El historial académico se conserva sin forma de saber de quién era. Se confirma con la contraseña o volviendo a entrar con Google. El correo queda libre para una cuenta nueva desde cero. También se borran correo_verificado_en y mayoria_edad_confirmada_en. Anonimizar una cuenta ya anonimizada no hace nada, para poder repetirlo al restaurar un respaldo (DEC-95).",
       "estado": "decidido",
       "detalles": {
         "origen": "P-23; reconcilia RN-14 (cancelación) con RF-AVANCE-03; reemplaza el «borrado lógico» de la tabla de operaciones original"
@@ -2897,7 +2902,7 @@
       "id": "ROL-MIGRACION",
       "tipo": "rol_bd",
       "nombre": "echo_migracion",
-      "descripcion": "Paso de despliegue que ejecuta prisma migrate deploy, con su propia variable de entorno. Actúa como echo_propietario. No lo usa la app en ejecución.",
+      "descripcion": "Paso de despliegue que ejecuta prisma migrate deploy, con su propia variable de entorno. Actúa como echo_propietario. No lo usa la app en ejecución. Lo crea prisma/sql/roles.sql y actúa como echo_propietario con ALTER ROLE … SET role (DEC-100).",
       "estado": "decidido"
     },
     {
@@ -2925,7 +2930,7 @@
       "id": "FN-INICIAR-INTENTO",
       "tipo": "funcion_bd",
       "nombre": "fn_iniciar_intento(usuario, cuestionario)",
-      "descripcion": "Verifica que el cuestionario esté desbloqueado, que el examen no esté aprobado y que la espera tras reprobar haya vencido; devuelve el intento en curso o crea uno nuevo con su semilla. Usa un bloqueo consultivo por alumno y cuestionario para que dos pestañas no abran dos intentos y calcula la espera con la hora del servidor.",
+      "descripcion": "Verifica que el cuestionario esté desbloqueado, que el examen no esté aprobado y que la espera tras reprobar haya vencido; devuelve el intento en curso o crea uno nuevo con su semilla. Usa un bloqueo consultivo por alumno y cuestionario para que dos pestañas no abran dos intentos y calcula la espera con la hora del servidor. El desbloqueo lo consulta en fn_estado_desbloqueo (DEC-97). Revisa en este orden: intento abierto (lo retoma), examen aprobado, espera y desbloqueo.",
       "estado": "decidido",
       "detalles": {
         "invocacion": "prisma.$queryRaw",
@@ -2947,7 +2952,7 @@
       "id": "FN-ANONIMIZAR",
       "tipo": "funcion_bd",
       "nombre": "fn_anonimizar_usuario(usuario)",
-      "descripcion": "Borra datos personales y credenciales, elimina sesiones y enlaces, borra la IP de sus aceptaciones (conserva fecha, hora y versión) y marca la cuenta como anonimizada en una sola transacción. Conserva negativa_estadisticas para seguir excluyendo su historial de las estadísticas.",
+      "descripcion": "Borra datos personales y credenciales, elimina sesiones y enlaces, borra la IP de sus aceptaciones (conserva fecha, hora y versión) y marca la cuenta como anonimizada en una sola transacción. Conserva negativa_estadisticas para seguir excluyendo su historial de las estadísticas. También pone en nulo correo_verificado_en y mayoria_edad_confirmada_en. Sobre una cuenta ya anonimizada no hace nada (DEC-95).",
       "estado": "decidido",
       "detalles": {
         "invocacion": "prisma.$queryRaw",
@@ -2958,7 +2963,7 @@
       "id": "FN-LIMPIEZA",
       "tipo": "funcion_bd",
       "nombre": "fn_limpieza_diaria()",
-      "descripcion": "Elimina cuentas pendientes con más de 24 h sin verificar, enlaces vencidos y sesiones vencidas. Solo borra cuentas pendientes, nunca cuentas con historial. Las aceptaciones de una cuenta pendiente que se elimina se borran en cascada.",
+      "descripcion": "Elimina cuentas pendientes con más de 24 h sin verificar, enlaces vencidos y sesiones vencidas. Solo borra cuentas pendientes, nunca cuentas con historial. Las aceptaciones de una cuenta pendiente que se elimina se borran en cascada. Nunca borra una cuenta pendiente que tenga intentos, progreso o insignias; devuelve cuántas filas borró de cada tipo, sin datos personales.",
       "estado": "decidido",
       "detalles": {
         "invocacion": "proceso programado (DEC-63)",
@@ -2983,21 +2988,21 @@
       "id": "TRG-RESPUESTA-VALIDA",
       "tipo": "disparador",
       "nombre": "trg_respuesta_valida",
-      "descripcion": "respuesta_opcion y respuesta_pareja, antes de insertar o actualizar: rechaza la respuesta si el intento ya fue enviado o si la pregunta o pareja no pertenece al cuestionario del intento.",
+      "descripcion": "respuesta_opcion y respuesta_pareja, antes de insertar o actualizar: rechaza la respuesta si el intento ya fue enviado o si la pregunta o pareja no pertenece al cuestionario del intento. También exige pregunta y opción activas y del tipo correcto; al cambiar la elección borra el puntaje (solo fn_enviar_intento califica, INV-04) y renueva respondido_en.",
       "estado": "decidido"
     },
     {
       "id": "VW-AVANCE-CURSO",
       "tipo": "vista_bd",
       "nombre": "v_avance_curso",
-      "descripcion": "Por alumno y curso: lecciones totales y terminadas, actividades y casos totales y enviados, si aprobó el examen y el % de avance (DEC-14). No materializada: el avance debe ser inmediato (RF-PROG-04).",
+      "descripcion": "Por alumno y curso: lecciones totales y terminadas, actividades y casos totales y enviados, si aprobó el examen y el % de avance (DEC-14). No materializada: el avance debe ser inmediato (RF-PROG-04). Con security_invoker: se consulta con los permisos de echo_app. Un componente que el curso no tiene no entra al promedio.",
       "estado": "decidido"
     },
     {
       "id": "VW-RESULTADOS-ANONIMOS",
       "tipo": "vista_bd",
       "nombre": "v_resultados_anonimos",
-      "descripcion": "Intentos enviados con módulo, curso, tipo, fecha y calificación, sin nombre ni correo, excluyendo a los estudiantes con negativa_estadisticas. Solo para echo_lectura.",
+      "descripcion": "Intentos enviados con módulo, curso, tipo, fecha y calificación, sin nombre ni correo, excluyendo a los estudiantes con negativa_estadisticas. Solo para echo_lectura. Sin identificador del alumno y con la fecha sin hora (en hora de México), para que ninguna fila pueda ligarse a una persona. Usa los permisos de su dueño, porque echo_lectura no lee las tablas de estudiantes.",
       "estado": "decidido"
     },
     {
@@ -6103,6 +6108,67 @@
       "nombre": "Firmar el DPA de Railway",
       "descripcion": "El responsable firma el acuerdo de procesamiento de datos de Railway (DocuSign) antes de abrir el piloto (DEC-96).",
       "estado": "pendiente"
+    },
+    {
+      "id": "DEC-97",
+      "tipo": "decision",
+      "nombre": "Regla de desbloqueo en una sola función de BD",
+      "descripcion": "El avance lineal (DEC-03) se calcula solo en fn_estado_desbloqueo. La usan fn_iniciar_intento y el backend para mostrar qué está bloqueado en módulos, cursos y lecciones; el backend no repite la regla. La lógica de BD pasa a 7 funciones.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "FN-ESTADO-DESBLOQUEO",
+      "tipo": "funcion_bd",
+      "nombre": "fn_estado_desbloqueo(usuario)",
+      "descripcion": "Devuelve, para cada módulo, curso, lección y cuestionario activo del contenido publicado, si está desbloqueado y si está completo para el alumno. Completo: cuestionario enviado; lección terminada con sus actividades y casos enviados; curso con examen aprobado; módulo con todos sus cursos completos o con su insignia otorgada. Desbloqueado: lo anterior de su nivel completo y su padre desbloqueado; una actividad o un caso además exige la lección leída, y un examen todas las lecciones del curso completas. Lo agregado a un curso o módulo ya completado no bloquea nada (DEC-10). De solo lectura (STABLE).",
+      "estado": "decidido",
+      "detalles": {
+        "invocacion": "prisma.$queryRaw",
+        "seguridad": "SECURITY INVOKER (echo_app), STABLE"
+      }
+    },
+    {
+      "id": "DEC-98",
+      "tipo": "decision",
+      "nombre": "Todo curso publicado tiene examen",
+      "descripcion": "Cada curso publicado tiene exactamente un examen activo; el script de carga (OP-35) rechaza publicar un curso sin él. Así «curso completo = examen aprobado» se cumple siempre en el desbloqueo (DEC-03) y en el avance (DEC-14).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "DEC-99",
+      "tipo": "decision",
+      "nombre": "Errores de BD con el código de la API",
+      "descripcion": "Las funciones y disparadores lanzan sus errores con el CodigoError de la API como mensaje y un SQLSTATE propio de clase EC: EC400 DATOS_INVALIDOS, EC403 BLOQUEADO_POR_AVANCE, EC404 NO_ENCONTRADO, EC409 EN_ESPERA (DETAIL = disponible_en en ISO 8601), EC410 EXAMEN_APROBADO, EC411 INTENTO_CERRADO, EC422 RESPUESTAS_INCOMPLETAS (DETAIL = ids de pregunta). El backend solo los traduce a la respuesta { codigo, mensaje } (DEC-85). Un intento ajeno se reporta como NO_ENCONTRADO (INV-07).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "DEC-100",
+      "tipo": "decision",
+      "nombre": "Creación de roles y base sombra",
+      "descripcion": "Los 5 roles se crean una vez por entorno con prisma/sql/roles.sql, ejecutado por el superusuario; el script no guarda contraseñas (llegan como variables de psql y viven en .env o en Railway). echo_migracion actúa como echo_propietario con ALTER ROLE … SET role, así que todo lo que crean las migraciones es de echo_propietario. Ningún rol puede crear bases ni roles; en desarrollo prisma migrate dev usa una base sombra ya creada (echo_sombra, DATABASE_URL_SOMBRA). Producción solo usa migrate deploy. Los permisos sobre tablas, funciones y vistas van en migraciones.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "DEC-101",
+      "tipo": "decision",
+      "nombre": "Semilla de desarrollo igual a la API simulada",
+      "descripcion": "La semilla de desarrollo (backend/prisma/semilla) carga el mismo contenido y las mismas cuentas de ejemplo que la API simulada del frontend, con los mismos ids, para que las pantallas y las pruebas vean los mismos datos con el backend real. El contenido y los documentos legales los carga echo_contenido (huella calculada de docs/legal) y las cuentas echo_app; nunca el superusuario ni en producción. Se carga sobre una base recién reiniciada (npm run bd:reiniciar).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
     }
   ],
   "aristas": [
@@ -8623,16 +8689,6 @@
       "origen": "OP-22",
       "destino": "TBL-PAREJA",
       "relacion": "lee"
-    },
-    {
-      "origen": "OP-22",
-      "destino": "TBL-INTENTO",
-      "relacion": "escribe"
-    },
-    {
-      "origen": "OP-22",
-      "destino": "FN-INICIAR-INTENTO",
-      "relacion": "ejecuta"
     },
     {
       "origen": "OP-22",
@@ -12776,6 +12832,196 @@
       "origen": "PEND-15",
       "destino": "DEC-96",
       "relacion": "afina"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-MODULO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-CURSO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-CUESTIONARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-PROGRESO-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-INTENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-INSIGNIA-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "DEC-03",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "DEC-10",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "DEC-97",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "ROL-APP",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "DEC-97",
+      "destino": "DEC-03",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "FN-INICIAR-INTENTO",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "C-02",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-15",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-16",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-17",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-18",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-22",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-24",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-98",
+      "destino": "DEC-33",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-98",
+      "destino": "DEC-03",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-35",
+      "destino": "DEC-98",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-23",
+      "destino": "FN-INICIAR-INTENTO",
+      "relacion": "ejecuta"
+    },
+    {
+      "origen": "DEC-99",
+      "destino": "DEC-85",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "FN-INICIAR-INTENTO",
+      "destino": "DEC-99",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ENVIAR-INTENTO",
+      "destino": "DEC-99",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ANONIMIZAR",
+      "destino": "DEC-99",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "DEC-99",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "TRG-RESPUESTA-VALIDA",
+      "destino": "DEC-99",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "ROL-PROPIETARIO",
+      "destino": "DEC-100",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-MIGRACION",
+      "destino": "DEC-100",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-APP",
+      "destino": "DEC-100",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-CONTENIDO",
+      "destino": "DEC-100",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-LECTURA",
+      "destino": "DEC-100",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "DEC-101",
+      "destino": "DEC-90",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "INV-14",
+      "destino": "DEC-101",
+      "relacion": "deriva_de"
     }
   ]
 }

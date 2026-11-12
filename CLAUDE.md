@@ -50,13 +50,33 @@ Se corren desde `frontend/`:
   y corre `npm run simulador` en una terminal y `npm run dev` en otra. `npm run build` también necesita `API_URL_INTERNA`.
 - `npx playwright install chromium`: descarga el navegador de las pruebas (solo la primera vez).
 
-### Backend
-El proyecto de backend aún no existe. Al crearlo, agrega aquí los comandos reales
-(compilar, pruebas, lint, migraciones) y usa siempre el Prisma instalado en el proyecto:
-- **Nunca** `npx prisma@latest` ni `npx prisma` fuera del proyecto: descargaría la última versión.
-- Migraciones de desarrollo: `npx prisma migrate dev --create-only` y luego edita el SQL si hace falta (CHECK, índices parciales,
-  GIN, funciones, disparadores, vistas, roles) antes de aplicarla. En producción solo `prisma migrate deploy`.
+### Backend (`backend/`, NestJS 11, Prisma 7.10.1)
+Se corren desde `backend/`. Usa siempre el Prisma instalado en el proyecto:
+**nunca** `npx prisma@latest` ni `npx prisma` fuera del proyecto (descargaría la última versión).
+- `npm install`: instala las dependencias exactas (`.npmrc` con `save-exact=true`; `.nvmrc` con Node 22).
+- `npm run start:dev`: servidor en modo desarrollo. `npm run build`, `npm run lint`, `npm run test`, `npm run test:e2e`.
+- `npm run prisma:validar` / `prisma:generar`: valida el esquema / genera el cliente en `backend/generated/prisma`.
+- `npm run prisma:crear-migracion -- --name <nombre>`: crea la migración SIN aplicarla. Edita el SQL si hace falta (CHECK,
+  índices parciales, GIN, funciones, disparadores, vistas, permisos). Una migración ya aplicada nunca se edita: lo nuevo va en otra.
+- `npm run prisma:desplegar`: aplica las migraciones pendientes (`migrate deploy`; es lo único que se usa en producción).
+- `npm run prisma:estado`: estado de las migraciones.
+- `npx prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --script`: debe salir
+  `empty migration` después de cada migración. Si en una migración nueva Prisma propone `DROP INDEX` de un índice que no
+  conoce (parcial, GIN o de expresión), quita esa línea.
+- `npm run bd:reiniciar`: borra todo, aplica las migraciones y carga la semilla. `npm run bd:semilla`: solo la semilla.
+- Pruebas SQL (con el superusuario, en una transacción que se deshace):
+  `psql -U postgres -d echo -v ON_ERROR_STOP=1 -f prisma/sql/pruebas/<archivo>.sql` para `logica_intentos`,
+  `ciclo_de_vida_datos` y `vistas`. Se vuelven a correr después de cualquier cambio en la base.
 - Antes de agregar una dependencia, pregunta; no actualices versiones existentes por tu cuenta.
+
+**Base local (una sola vez, DEC-100):** `prisma/sql/roles.sql` crea los 5 roles con el superusuario; las contraseñas llegan
+como variables de `psql` y viven solo en `.env` (plantilla en `.env.example`). Las bases `echo` y `echo_sombra` (base sombra
+de `prisma migrate dev`) pertenecen a `echo_propietario`, con UTF-8 e ICU `es-MX`. `.env` tiene una URL por rol:
+`DATABASE_URL` (echo_app), `DATABASE_URL_MIGRACION`, `DATABASE_URL_SOMBRA` (solo desarrollo), `DATABASE_URL_CONTENIDO` y
+`DATABASE_URL_LECTURA`.
+
+**Semilla (DEC-101):** `prisma/semilla/` carga el mismo contenido y las mismas cuentas que la API simulada, con los mismos
+ids: `alumno@example.com`, `otra.alumna@example.com` y `pendiente@example.com`, contraseña `Ejemplo2026`.
 
 ## Base de datos
 - El esquema sale de los nodos `tabla` del grafo (columnas, tipos, nulos, valores por defecto, CHECK, UNIQUE e índices)
@@ -67,7 +87,10 @@ El proyecto de backend aún no existe. Al crearlo, agrega aquí los comandos rea
 - Todo cambio de esquema es una migración versionada; nada se cambia a mano (INV-10).
 - La app se conecta como `echo_app`, las migraciones como `echo_migracion` y la carga de contenido como `echo_contenido`.
   Nunca uses el superusuario (INV-09).
-- La lógica de BD se limita a las 6 funciones, 2 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
+- La lógica de BD se limita a las 7 funciones, 2 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
+  La regla de desbloqueo vive solo en `fn_estado_desbloqueo` (DEC-97): el backend la consulta y nunca la repite.
+- Los errores de las funciones traen el código de la API como mensaje y un SQLSTATE `EC4xx` (DEC-99); el backend solo los
+  traduce a `{ codigo, mensaje }`.
 
 ## Reglas no negociables
 1. El historial nunca se borra: eliminar una cuenta es anonimizarla con `fn_anonimizar_usuario` (INV-01).
