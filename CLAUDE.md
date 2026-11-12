@@ -63,19 +63,25 @@ Se corren desde `backend/`. Usa siempre el Prisma instalado en el proyecto:
 - `npx prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --script`: debe salir
   `empty migration` después de cada migración. Si en una migración nueva Prisma propone `DROP INDEX` de un índice que no
   conoce (parcial, GIN o de expresión), quita esa línea.
-- `npm run bd:reiniciar`: borra todo, aplica las migraciones y carga la semilla. `npm run bd:semilla`: solo la semilla.
+- `npm run bd:reiniciar` (`prisma/sql/reiniciar_local.sh`): borra y crea la base local con el superusuario, aplica las
+  migraciones, instala los disparadores de eventos de la auditoría y carga la semilla. No uses `prisma migrate reset`:
+  con esos disparadores ya no puede borrar el esquema. `npm run bd:semilla`: solo la semilla (base recién creada).
 - Pruebas SQL (con el superusuario, en una transacción que se deshace):
   `psql -U postgres -d echo -v ON_ERROR_STOP=1 -f prisma/sql/pruebas/<archivo>.sql` para `logica_intentos`,
-  `ciclo_de_vida_datos` y `vistas`. Se vuelven a correr después de cualquier cambio en la base.
-- Antes de agregar una dependencia, pregunta; no actualices versiones existentes por tu cuenta.
+  `ciclo_de_vida_datos`, `vistas` y `auditoria`. Se vuelven a correr después de cualquier cambio en la base.
+- Antes de agregar una dependencia, pregunta; no actualices versiones existentes por tu cuenta (dependencias aprobadas: DEC-105).
+- Estructura de `src/` (DEC-104): `infraestructura/`, `comun/`, `areas/` (una por MOD-*) y `procesos/`. Las áreas no se
+  importan entre sí, salvo `cuestionarios/`.
 
-**Base local (una sola vez, DEC-100):** `prisma/sql/roles.sql` crea los 5 roles con el superusuario; las contraseñas llegan
-como variables de `psql` y viven solo en `.env` (plantilla en `.env.example`). Las bases `echo` y `echo_sombra` (base sombra
-de `prisma migrate dev`) pertenecen a `echo_propietario`, con UTF-8 e ICU `es-MX`. `.env` tiene una URL por rol:
-`DATABASE_URL` (echo_app), `DATABASE_URL_MIGRACION`, `DATABASE_URL_SOMBRA` (solo desarrollo), `DATABASE_URL_CONTENIDO` y
-`DATABASE_URL_LECTURA`.
+**Base local (una sola vez, DEC-102):** `prisma/sql/roles.sql` crea con el superusuario los 6 roles (`echo_propietario`,
+`echo_migracion`, `echo_app`, `echo_contenido`, `echo_lectura` y `echo_admin`); las contraseñas llegan como variables de
+`psql` y viven solo en `.env` (plantilla en `.env.example`). Después de aplicar las migraciones, el superusuario ejecuta
+`prisma/sql/auditoria_ddl.sql` (disparadores de eventos de la auditoría, DEC-97); `bd:reiniciar` ya lo hace.
+Las bases `echo` y `echo_sombra` (base sombra de `prisma migrate dev`) pertenecen a `echo_propietario`, con UTF-8 e ICU `es-MX`.
+`.env` tiene una URL por rol: `DATABASE_URL` (echo_app), `DATABASE_URL_MIGRACION`, `DATABASE_URL_SOMBRA` (solo desarrollo),
+`DATABASE_URL_CONTENIDO` y `DATABASE_URL_LECTURA`.
 
-**Semilla (DEC-101):** `prisma/semilla/` carga el mismo contenido y las mismas cuentas que la API simulada, con los mismos
+**Semilla (DEC-103):** `prisma/semilla/` carga el mismo contenido y las mismas cuentas que la API simulada, con los mismos
 ids: `alumno@example.com`, `otra.alumna@example.com` y `pendiente@example.com`, contraseña `Ejemplo2026`.
 
 ## Base de datos
@@ -86,17 +92,12 @@ ids: `alumno@example.com`, `otra.alumna@example.com` y `pendiente@example.com`, 
 - Listas cerradas como `TEXT` + `CHECK`, nunca ENUM. Contenido con `BIGINT` identity; tablas del alumno con UUID v7.
 - Todo cambio de esquema es una migración versionada; nada se cambia a mano (INV-10).
 - La app se conecta como `echo_app`, las migraciones como `echo_migracion` y la carga de contenido como `echo_contenido`.
-<<<<<<< HEAD
-  Nunca uses el superusuario (INV-09).
-- La lógica de BD se limita a las 7 funciones, 2 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
-  La regla de desbloqueo vive solo en `fn_estado_desbloqueo` (DEC-97): el backend la consulta y nunca la repite.
-- Los errores de las funciones traen el código de la API como mensaje y un SQLSTATE `EC4xx` (DEC-99); el backend solo los
-  traduce a `{ codigo, mensaje }`.
-=======
   El administrador entra como `echo_admin`, y todo lo que hacen los roles de administración queda en `auditoria_bd`, que
   solo crece (DEC-97, INV-31). Nunca uses el superusuario (INV-09).
-- La lógica de BD se limita a las 9 funciones, 5 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
+- La lógica de BD se limita a las 10 funciones, 5 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
+  La regla de desbloqueo vive solo en `fn_estado_desbloqueo` (DEC-99): el backend la consulta y nunca la repite.
+- Los errores de las funciones traen el código de la API como mensaje y un SQLSTATE `EC4xx` (DEC-101); el backend solo los
+  traduce a `{ codigo, mensaje }`.
 
 ## Reglas no negociables
 1. El historial nunca se borra: eliminar una cuenta es anonimizarla con `fn_anonimizar_usuario` (INV-01).

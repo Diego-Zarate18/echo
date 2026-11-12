@@ -19,7 +19,7 @@
     "prisma:estado": "prisma migrate status",
     "prisma:desplegar": "prisma migrate deploy",
     "bd:semilla": "node prisma/semilla/cargar.mjs",
-    "bd:reiniciar": "prisma migrate reset --force && npm run bd:semilla",
+    "bd:reiniciar": "bash prisma/sql/reiniciar_local.sh",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",

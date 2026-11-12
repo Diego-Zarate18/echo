@@ -5,7 +5,7 @@
 --
 -- Uso:
 --   psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
---     -v clave_migracion=... -v clave_app=... -v clave_contenido=... -v clave_lectura=... \
+--     -v clave_migracion=... -v clave_app=... -v clave_contenido=... -v clave_lectura=... -v clave_admin=... \
 --     -f prisma/sql/roles.sql
 --
 -- Los permisos sobre tablas, funciones y vistas NO van aquí: van en las migraciones de Prisma.
@@ -30,13 +30,23 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'echo_contenido') \gexe
 SELECT 'CREATE ROLE echo_lectura LOGIN'
 WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'echo_lectura') \gexec
 
+-- Administrador de la base (DEC-97, ACT-06): rol personal; su contraseña solo vive en su gestor de contraseñas.
+SELECT 'CREATE ROLE echo_admin LOGIN'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'echo_admin') \gexec
+
 -- Atributos: ninguno puede crear roles, bases ni ser superusuario.
 ALTER ROLE echo_propietario NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
 ALTER ROLE echo_migracion  LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'clave_migracion';
 ALTER ROLE echo_app        LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'clave_app';
 ALTER ROLE echo_contenido  LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'clave_contenido';
 ALTER ROLE echo_lectura    LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'clave_lectura';
+-- echo_admin no hereda privilegios de nadie (NOINHERIT): todo lo suyo se le concede en las migraciones.
+ALTER ROLE echo_admin      LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD :'clave_admin';
 
 -- echo_migracion actúa como echo_propietario: todo lo que creen las migraciones queda a su nombre.
 GRANT echo_propietario TO echo_migracion;
 ALTER ROLE echo_migracion SET role = 'echo_propietario';
+
+-- echo_admin puede actuar como echo_propietario solo con SET ROLE explícito, para cambiar la estructura;
+-- auditoria_bd sigue registrando rol_sesion = echo_admin (DEC-97).
+GRANT echo_propietario TO echo_admin WITH INHERIT FALSE, SET TRUE;

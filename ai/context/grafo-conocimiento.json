@@ -1,15 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-<<<<<<< HEAD
-    "version": "1.6.0",
+    "version": "1.6.4",
     "actualizado": "2026-11-12",
-    "fase": "Base de datos del backend completa: 5 migraciones, semilla de desarrollo y pruebas SQL. Siguiente: infraestructura transversal del backend (Fase 2).",
-=======
-    "version": "1.6.2",
-    "actualizado": "2026-11-10",
-    "fase": "Revisión de la Tarea 10 (aprobada). Siguiente: ajustes del docente al inicio y a los documentos legales (Tarea 11); después, el frontend pasa a otra persona del equipo desde la Tarea 12.",
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
+    "fase": "Backend: base de datos completa (6 migraciones con la auditoría, semilla y pruebas SQL). Siguiente: Fase 2 del backend (infraestructura transversal). El frontend sigue con otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -93,10 +87,6 @@
       },
       {
         "version": "1.6.0",
-<<<<<<< HEAD
-        "fecha": "2026-11-12",
-        "cambio": "Base de datos del backend: regla de desbloqueo en fn_estado_desbloqueo (DEC-97, 7 funciones), todo curso publicado tiene examen (DEC-98), abrir actividad no crea intento (OP-22), errores de BD con SQLSTATE EC4xx (DEC-99), anonimización ampliada e idempotente (DEC-27), roles con roles.sql y base sombra (DEC-100), semilla igual a la API simulada (DEC-101) y precisiones de las vistas."
-=======
         "fecha": "2026-11-10",
         "cambio": "Revisión del docente: tabla auditoria_bd (22 tablas, sin FK), rol personal echo_admin (6 roles), actor ACT-06, funciones fn_auditar_cambio, fn_auditar_ddl y fn_registrar_accion_manual, disparadores trg_auditoria, trg_auditoria_inmutable y evt_auditoria_ddl, invariante INV-31 (DEC-97)."
       },
@@ -109,7 +99,16 @@
         "version": "1.6.2",
         "fecha": "2026-11-10",
         "cambio": "Revisión del docente: documentos legales con resumen y apartados desplegables (DEC-98, SCR-05, SCR-20); «Qué encontrarás» sin la columna de descripción (SCR-18)."
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
+      },
+      {
+        "version": "1.6.3",
+        "fecha": "2026-11-12",
+        "cambio": "Base de datos del backend: regla de desbloqueo en fn_estado_desbloqueo (DEC-99), todo curso publicado tiene examen (DEC-100), abrir actividad no crea intento (OP-22), errores de BD con SQLSTATE EC4xx (DEC-101), anonimización ampliada e idempotente (DEC-27), roles con roles.sql y base sombra (DEC-102), semilla igual a la API simulada (DEC-103) y precisiones de las vistas. Antes de la Fase 2: estructura de carpetas (DEC-104) y dependencias (DEC-105). Reemplaza la v1.6.0 local que chocó con la v1.6.0 a v1.6.2 del equipo."
+      },
+      {
+        "version": "1.6.4",
+        "fecha": "2026-11-12",
+        "cambio": "Migración de la auditoría (DEC-97): rol_efectivo desde el parámetro role, motivo vacío = nulo, trg_auditoria y trg_auditoria_truncate con WHEN (session_user <> echo_app), dos disparadores de inmutabilidad y dos de eventos (auditoria_ddl.sql), echo_admin en roles.sql y reinicio local con reiniciar_local.sh (DEC-102). motivo sin valor por defecto: lo ponen las funciones de auditoría."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -212,34 +211,20 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-<<<<<<< HEAD
-      "nodos": 467,
-      "aristas": 1351,
-=======
-      "nodos": 472,
-      "aristas": 1403,
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
+      "nodos": 481,
+      "aristas": 1449,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 6,
         "tecnologia": 32,
-<<<<<<< HEAD
-        "decision": 101,
-        "invariante": 30,
-        "tabla": 21,
-        "rol_bd": 5,
-        "funcion_bd": 7,
-        "disparador": 2,
-=======
-        "decision": 97,
+        "decision": 105,
         "invariante": 31,
         "tabla": 22,
         "rol_bd": 6,
-        "funcion_bd": 9,
+        "funcion_bd": 10,
         "disparador": 5,
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
         "vista_bd": 2,
         "consulta": 13,
         "modulo": 8,
@@ -2940,7 +2925,7 @@
       "id": "ROL-MIGRACION",
       "tipo": "rol_bd",
       "nombre": "echo_migracion",
-      "descripcion": "Paso de despliegue que ejecuta prisma migrate deploy, con su propia variable de entorno. Actúa como echo_propietario. No lo usa la app en ejecución. Lo crea prisma/sql/roles.sql y actúa como echo_propietario con ALTER ROLE … SET role (DEC-100).",
+      "descripcion": "Paso de despliegue que ejecuta prisma migrate deploy, con su propia variable de entorno. Actúa como echo_propietario. No lo usa la app en ejecución. Lo crea backend/prisma/sql/roles.sql y actúa como echo_propietario con ALTER ROLE … SET role (DEC-102).",
       "estado": "decidido"
     },
     {
@@ -2968,7 +2953,7 @@
       "id": "FN-INICIAR-INTENTO",
       "tipo": "funcion_bd",
       "nombre": "fn_iniciar_intento(usuario, cuestionario)",
-      "descripcion": "Verifica que el cuestionario esté desbloqueado, que el examen no esté aprobado y que la espera tras reprobar haya vencido; devuelve el intento en curso o crea uno nuevo con su semilla. Usa un bloqueo consultivo por alumno y cuestionario para que dos pestañas no abran dos intentos y calcula la espera con la hora del servidor. El desbloqueo lo consulta en fn_estado_desbloqueo (DEC-97). Revisa en este orden: intento abierto (lo retoma), examen aprobado, espera y desbloqueo.",
+      "descripcion": "Verifica que el cuestionario esté desbloqueado, que el examen no esté aprobado y que la espera tras reprobar haya vencido; devuelve el intento en curso o crea uno nuevo con su semilla. Usa un bloqueo consultivo por alumno y cuestionario para que dos pestañas no abran dos intentos y calcula la espera con la hora del servidor. El desbloqueo lo consulta en fn_estado_desbloqueo (DEC-99). Revisa en este orden: intento abierto (lo retoma), examen aprobado, espera y desbloqueo.",
       "estado": "decidido",
       "detalles": {
         "invocacion": "prisma.$queryRaw",
@@ -6161,64 +6146,6 @@
     {
       "id": "DEC-97",
       "tipo": "decision",
-<<<<<<< HEAD
-      "nombre": "Regla de desbloqueo en una sola función de BD",
-      "descripcion": "El avance lineal (DEC-03) se calcula solo en fn_estado_desbloqueo. La usan fn_iniciar_intento y el backend para mostrar qué está bloqueado en módulos, cursos y lecciones; el backend no repite la regla. La lógica de BD pasa a 7 funciones.",
-      "estado": "decidido",
-      "detalles": {
-        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
-      }
-    },
-    {
-      "id": "FN-ESTADO-DESBLOQUEO",
-      "tipo": "funcion_bd",
-      "nombre": "fn_estado_desbloqueo(usuario)",
-      "descripcion": "Devuelve, para cada módulo, curso, lección y cuestionario activo del contenido publicado, si está desbloqueado y si está completo para el alumno. Completo: cuestionario enviado; lección terminada con sus actividades y casos enviados; curso con examen aprobado; módulo con todos sus cursos completos o con su insignia otorgada. Desbloqueado: lo anterior de su nivel completo y su padre desbloqueado; una actividad o un caso además exige la lección leída, y un examen todas las lecciones del curso completas. Lo agregado a un curso o módulo ya completado no bloquea nada (DEC-10). De solo lectura (STABLE).",
-      "estado": "decidido",
-      "detalles": {
-        "invocacion": "prisma.$queryRaw",
-        "seguridad": "SECURITY INVOKER (echo_app), STABLE"
-      }
-    },
-    {
-      "id": "DEC-98",
-      "tipo": "decision",
-      "nombre": "Todo curso publicado tiene examen",
-      "descripcion": "Cada curso publicado tiene exactamente un examen activo; el script de carga (OP-35) rechaza publicar un curso sin él. Así «curso completo = examen aprobado» se cumple siempre en el desbloqueo (DEC-03) y en el avance (DEC-14).",
-      "estado": "decidido",
-      "detalles": {
-        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
-      }
-    },
-    {
-      "id": "DEC-99",
-      "tipo": "decision",
-      "nombre": "Errores de BD con el código de la API",
-      "descripcion": "Las funciones y disparadores lanzan sus errores con el CodigoError de la API como mensaje y un SQLSTATE propio de clase EC: EC400 DATOS_INVALIDOS, EC403 BLOQUEADO_POR_AVANCE, EC404 NO_ENCONTRADO, EC409 EN_ESPERA (DETAIL = disponible_en en ISO 8601), EC410 EXAMEN_APROBADO, EC411 INTENTO_CERRADO, EC422 RESPUESTAS_INCOMPLETAS (DETAIL = ids de pregunta). El backend solo los traduce a la respuesta { codigo, mensaje } (DEC-85). Un intento ajeno se reporta como NO_ENCONTRADO (INV-07).",
-      "estado": "decidido",
-      "detalles": {
-        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
-      }
-    },
-    {
-      "id": "DEC-100",
-      "tipo": "decision",
-      "nombre": "Creación de roles y base sombra",
-      "descripcion": "Los 5 roles se crean una vez por entorno con prisma/sql/roles.sql, ejecutado por el superusuario; el script no guarda contraseñas (llegan como variables de psql y viven en .env o en Railway). echo_migracion actúa como echo_propietario con ALTER ROLE … SET role, así que todo lo que crean las migraciones es de echo_propietario. Ningún rol puede crear bases ni roles; en desarrollo prisma migrate dev usa una base sombra ya creada (echo_sombra, DATABASE_URL_SOMBRA). Producción solo usa migrate deploy. Los permisos sobre tablas, funciones y vistas van en migraciones.",
-      "estado": "decidido",
-      "detalles": {
-        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
-      }
-    },
-    {
-      "id": "DEC-101",
-      "tipo": "decision",
-      "nombre": "Semilla de desarrollo igual a la API simulada",
-      "descripcion": "La semilla de desarrollo (backend/prisma/semilla) carga el mismo contenido y las mismas cuentas de ejemplo que la API simulada del frontend, con los mismos ids, para que las pantallas y las pruebas vean los mismos datos con el backend real. El contenido y los documentos legales los carga echo_contenido (huella calculada de docs/legal) y las cuentas echo_app; nunca el superusuario ni en producción. Se carga sobre una base recién reiniciada (npm run bd:reiniciar).",
-      "estado": "decidido",
-      "detalles": {
-        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
-=======
       "nombre": "Auditoría de la administración de la base de datos",
       "descripcion": "La tabla auditoria_bd registra lo que hacen en la base los roles de administración (echo_admin, echo_migracion y echo_contenido): quién (rol de la sesión y rol efectivo), cuándo (clock_timestamp()), desde dónde (IP y aplicación), qué (tipo de evento, comando, tabla y fila) y cómo (columnas cambiadas, valores antes y después, sentencia DDL y un motivo opcional). Lo que hace echo_app no se audita: la actividad de los estudiantes ya queda en sus propias tablas. Sin llaves foráneas: el actor es un rol de PostgreSQL y no un usuario de la app, la fila afectada puede ser de cualquier tabla (tabla + registro_id) y el registro debe sobrevivir aunque se borre lo que audita. Solo crece: nadie la modifica ni la borra. En las tablas con datos personales (usuario, sesion, token_correo y aceptacion_documento) guarda los nombres de las columnas cambiadas pero no sus valores, para que la anonimización (DEC-27) no deje copias; nunca guarda hashes, códigos ni contraseñas. Las acciones fuera de las tablas (respaldos, restauraciones, cambios de roles) se registran con fn_registrar_accion_manual. Se conserva hasta el cierre del proyecto (DEC-74).",
       "estado": "decidido",
@@ -6230,7 +6157,7 @@
           "manual": "fn_registrar_accion_manual(comando, motivo)"
         },
         "motivo": "SET LOCAL echo.motivo = '…' antes de trabajar; los disparadores lo leen con current_setting('echo.motivo', true)",
-        "limites": "PostgreSQL no tiene disparadores de lectura: los SELECT no se auditan (requeriría la extensión pgaudit, fuera del alcance del piloto). Los disparadores de eventos no ven CREATE o ALTER ROLE (objetos globales): esos cambios se registran a mano. El disparador de eventos lo crea una sola vez el superusuario de Railway.",
+        "limites": "PostgreSQL no tiene disparadores de lectura: los SELECT no se auditan (requeriría la extensión pgaudit, fuera del alcance del piloto). Los disparadores de eventos no ven CREATE o ALTER ROLE (objetos globales): esos cambios se registran a mano. El disparador de eventos lo crea una sola vez el superusuario de Railway. echo_migracion actúa como echo_propietario, dueño de auditoria_bd, y un dueño siempre puede leer e insertar en su tabla; trg_auditoria_inmutable le impide modificarla o borrarla.",
         "consulta_tipica": "SELECT … FROM auditoria_bd WHERE ocurrido_en >= … ORDER BY ocurrido_en DESC"
       }
     },
@@ -6292,9 +6219,9 @@
             "campo": "rol_efectivo",
             "tipo": "TEXT",
             "nulo": "No",
-            "por_defecto": "current_user",
+            "por_defecto": "coalesce(nullif(current_setting('role'), 'none'), session_user)",
             "restricciones": "—",
-            "descripcion": "Rol con el que actuó, si usó SET ROLE (por ejemplo echo_propietario)"
+            "descripcion": "Rol con el que actuó, si usó SET ROLE (por ejemplo echo_propietario). Sale del parámetro role (SET ROLE) y no de current_user, porque dentro de una función SECURITY DEFINER current_user es el dueño de la función"
           },
           {
             "campo": "direccion_ip",
@@ -6388,9 +6315,9 @@
             "campo": "motivo",
             "tipo": "TEXT",
             "nulo": "Sí",
-            "por_defecto": "current_setting('echo.motivo', true)",
+            "por_defecto": "—",
             "restricciones": "CHECK longitud 1 a 500",
-            "descripcion": "Por qué (opcional)"
+            "descripcion": "Por qué (opcional). Lo ponen las funciones de auditoría leyendo echo.motivo (SET LOCAL echo.motivo = '…'); un motivo vacío se guarda como nulo"
           }
         ],
         "restricciones_de_tabla": [
@@ -6440,7 +6367,7 @@
       "id": "FN-ACCION-MANUAL",
       "tipo": "funcion_bd",
       "nombre": "fn_registrar_accion_manual(comando, motivo)",
-      "descripcion": "Registra una acción que no pasa por las tablas: RESPALDO (pg_dump), RESTAURACION, ALTER ROLE, cambio de contraseña de un rol, activar o desactivar el acceso público. tipo_evento = 'MANUAL'. Es la única forma de escribir a mano en auditoria_bd, y no permite elegir la fecha ni el rol.",
+      "descripcion": "Registra una acción que no pasa por las tablas: RESPALDO (pg_dump), RESTAURACION, ALTER ROLE, cambio de contraseña de un rol, activar o desactivar el acceso público. tipo_evento = 'MANUAL'. Es la única forma de escribir a mano en auditoria_bd, y no permite elegir la fecha ni el rol. Devuelve el id del registro. El comando es obligatorio (1 a 100 caracteres); si no se da motivo, usa echo.motivo.",
       "estado": "decidido",
       "detalles": {
         "invocacion": "psql o DBeaver, por echo_admin",
@@ -6451,21 +6378,21 @@
       "id": "TRG-AUDITORIA",
       "tipo": "disparador",
       "nombre": "trg_auditoria",
-      "descripcion": "Las 21 tablas, después de insertar, actualizar o borrar (por fila) y de TRUNCATE (por sentencia): ejecuta fn_auditar_cambio().",
+      "descripcion": "Las 21 tablas, después de insertar, actualizar o borrar (por fila) y de TRUNCATE (por sentencia): ejecuta fn_auditar_cambio(). Son dos disparadores por tabla, porque PostgreSQL no mezcla los de fila y los de sentencia: trg_auditoria (por fila) y trg_auditoria_truncate (por sentencia). Ambos llevan WHEN (session_user <> 'echo_app'), así que la app no paga el costo de llamar la función.",
       "estado": "decidido"
     },
     {
       "id": "TRG-AUDITORIA-INMUTABLE",
       "tipo": "disparador",
       "nombre": "trg_auditoria_inmutable",
-      "descripcion": "auditoria_bd, antes de actualizar, borrar o vaciar: rechaza la operación con un error, sea cual sea el rol.",
+      "descripcion": "auditoria_bd, antes de actualizar, borrar o vaciar: rechaza la operación con un error, sea cual sea el rol. Son trg_auditoria_inmutable (por fila) y trg_auditoria_inmutable_truncate, con la función de disparador trg_auditoria_inmutable(); también detienen al superusuario y al dueño.",
       "estado": "decidido"
     },
     {
       "id": "TRG-AUDITORIA-DDL",
       "tipo": "disparador",
       "nombre": "evt_auditoria_ddl",
-      "descripcion": "Disparador de eventos de la base (ddl_command_end y sql_drop): ejecuta fn_auditar_ddl(). Lo crea una sola vez el superusuario de Railway; solo un superusuario puede desactivarlo.",
+      "descripcion": "Disparador de eventos de la base (ddl_command_end y sql_drop): ejecuta fn_auditar_ddl(). Lo crea una sola vez el superusuario de Railway; solo un superusuario puede desactivarlo. Son dos, porque un disparador de eventos atiende un solo evento: evt_auditoria_ddl (ddl_command_end) y evt_auditoria_ddl_borrado (sql_drop). Los crea backend/prisma/sql/auditoria_ddl.sql, que se ejecuta después de las migraciones y se puede repetir.",
       "estado": "decidido"
     },
     {
@@ -6488,7 +6415,89 @@
         "resumen_terminos": "Proyecto académico, licencia personal, no es asesoría legal, tu cuenta es tuya (credenciales) y leyes mexicanas",
         "documentos": "El resumen vive en docs/legal/ (sigue siendo la versión 1.0, porque nadie la ha aceptado aún); cambian las huellas SHA-256 (DEC-28)",
         "figma": "SCR-05 84:783 y 150:4959; SCR-20 170:5216 y 150:5454; componente «Apartado (details/summary)» 170:5215"
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
+      }
+    },
+    {
+      "id": "DEC-99",
+      "tipo": "decision",
+      "nombre": "Regla de desbloqueo en una sola función de BD",
+      "descripcion": "El avance lineal (DEC-03) se calcula solo en fn_estado_desbloqueo. La usan fn_iniciar_intento y el backend para mostrar qué está bloqueado en módulos, cursos y lecciones; el backend no repite la regla.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "FN-ESTADO-DESBLOQUEO",
+      "tipo": "funcion_bd",
+      "nombre": "fn_estado_desbloqueo(usuario)",
+      "descripcion": "Devuelve, para cada módulo, curso, lección y cuestionario activo del contenido publicado, si está desbloqueado y si está completo para el alumno. Completo: cuestionario enviado; lección terminada con sus actividades y casos enviados; curso con examen aprobado; módulo con todos sus cursos completos o con su insignia otorgada. Desbloqueado: lo anterior de su nivel completo y su padre desbloqueado; una actividad o un caso además exige la lección leída, y un examen todas las lecciones del curso completas. Lo agregado a un curso o módulo ya completado no bloquea nada (DEC-10). De solo lectura (STABLE).",
+      "estado": "decidido",
+      "detalles": {
+        "invocacion": "prisma.$queryRaw",
+        "seguridad": "SECURITY INVOKER (echo_app), STABLE"
+      }
+    },
+    {
+      "id": "DEC-100",
+      "tipo": "decision",
+      "nombre": "Todo curso publicado tiene examen",
+      "descripcion": "Cada curso publicado tiene exactamente un examen activo; el script de carga (OP-35) rechaza publicar un curso sin él. Así «curso completo = examen aprobado» se cumple siempre en el desbloqueo (DEC-03) y en el avance (DEC-14).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "DEC-101",
+      "tipo": "decision",
+      "nombre": "Errores de BD con el código de la API",
+      "descripcion": "Las funciones y disparadores de la app lanzan sus errores con el CodigoError de la API como mensaje y un SQLSTATE propio de clase EC: EC400 DATOS_INVALIDOS, EC403 BLOQUEADO_POR_AVANCE, EC404 NO_ENCONTRADO, EC409 EN_ESPERA (DETAIL = disponible_en en ISO 8601), EC410 EXAMEN_APROBADO, EC411 INTENTO_CERRADO, EC422 RESPUESTAS_INCOMPLETAS (DETAIL = ids de pregunta). El backend solo los traduce a la respuesta { codigo, mensaje } (DEC-85). Un intento ajeno se reporta como NO_ENCONTRADO (INV-07).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "DEC-102",
+      "tipo": "decision",
+      "nombre": "Creación de roles y base sombra",
+      "descripcion": "Los roles se crean una vez por entorno con backend/prisma/sql/roles.sql, ejecutado por el superusuario; el script no guarda contraseñas (llegan como variables de psql y viven en .env o en Railway) y se puede repetir. echo_migracion actúa como echo_propietario con ALTER ROLE … SET role, así que todo lo que crean las migraciones es de echo_propietario. Ningún rol de la app puede crear bases ni roles; en desarrollo prisma migrate dev usa una base sombra ya creada (echo_sombra, DATABASE_URL_SOMBRA). Producción solo usa migrate deploy. Los permisos sobre tablas, funciones y vistas van en migraciones. roles.sql también crea echo_admin (DEC-97) con NOINHERIT y GRANT echo_propietario … WITH INHERIT FALSE, SET TRUE: solo actúa como dueño con SET ROLE explícito. Con los disparadores de eventos instalados, prisma migrate reset ya no puede borrar el esquema; la base local se reinicia con backend/prisma/sql/reiniciar_local.sh (npm run bd:reiniciar), que la borra y la crea con el superusuario, aplica las migraciones, instala auditoria_ddl.sql y carga la semilla.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "DEC-103",
+      "tipo": "decision",
+      "nombre": "Semilla de desarrollo igual a la API simulada",
+      "descripcion": "La semilla de desarrollo (backend/prisma/semilla) carga el mismo contenido y las mismas cuentas de ejemplo que la API simulada del frontend, con los mismos ids, para que las pantallas y las pruebas vean los mismos datos con el backend real. El contenido y los documentos legales los carga echo_contenido (huella calculada de docs/legal) y las cuentas echo_app; nunca el superusuario ni en producción. Se carga sobre una base recién reiniciada (npm run bd:reiniciar).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, al construir la base de datos del backend (migraciones del 09/11/2026)"
+      }
+    },
+    {
+      "id": "DEC-104",
+      "tipo": "decision",
+      "nombre": "Estructura de carpetas del backend",
+      "descripcion": "backend/src se organiza por áreas, una por MOD-* del grafo y con los mismos nombres que el frontend (DEC-86): areas/cuenta, contenido, cuestionarios (compartida por evaluables y examen, sin controlador), evaluables, examen, progreso y resultados. Lo compartido va en infraestructura/ (configuracion, base-de-datos, seguridad, correo; módulos globales) y comun/ (errores, guardias, decoradores, utilidades). Los procesos (limpieza diaria, carga de contenido) van en src/procesos como puntos de entrada propios que el servidor web nunca importa (DEC-63). Reglas: las áreas usan infraestructura/ y comun/, nunca al revés; las áreas no se importan entre sí salvo cuestionarios; la guardia de sesión vive en areas/cuenta/sesion y se registra como guardia global, con @Publica() en las rutas abiertas.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, antes de la Fase 2 del backend",
+        "descartadas": "Por capas (controllers/services), hexagonal por módulo y monorepo de Nest (apps/libs)"
+      }
+    },
+    {
+      "id": "DEC-105",
+      "tipo": "decision",
+      "nombre": "Dependencias del backend",
+      "descripcion": "Versiones exactas: argon2 0.45.2 (DEC-72), class-validator 0.15.1 y class-transformer 0.5.1 (ValidationPipe de Nest) y @nestjs/swagger 11.4.8, solo para generar el OpenAPI que se compara con docs/api/openapi.yaml (DEC-90); no se publica ninguna página de documentación. Sin dependencia: los correos se envían con fetch a la API de Resend; la cookie de sesión se lee con código propio; el límite por IP y el bloqueo por fallos (DEC-26) se hacen en memoria con código propio; la configuración se valida con código propio (dotenv ya está). NestJS se queda en 11 hasta después del piloto.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 12/11/2026, antes de la Fase 2 del backend",
+        "descartadas": "@node-rs/argon2 y hash-wasm; SDK resend; zod; cookie-parser; @nestjs/throttler; @nestjs/config; NestJS 12"
       }
     }
   ],
@@ -13155,24 +13164,6 @@
       "relacion": "afina"
     },
     {
-<<<<<<< HEAD
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "TBL-MODULO",
-      "relacion": "lee"
-    },
-    {
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "TBL-CURSO",
-      "relacion": "lee"
-    },
-    {
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "TBL-LECCION",
-      "relacion": "lee"
-    },
-    {
-      "origen": "FN-ESTADO-DESBLOQUEO",
-=======
       "origen": "DEC-97",
       "destino": "DEC-45",
       "relacion": "depende_de"
@@ -13224,24 +13215,10 @@
     },
     {
       "origen": "ROL-ADMIN",
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
       "destino": "TBL-CUESTIONARIO",
       "relacion": "lee"
     },
     {
-<<<<<<< HEAD
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "TBL-PROGRESO-LECCION",
-      "relacion": "lee"
-    },
-    {
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "TBL-INTENTO",
-      "relacion": "lee"
-    },
-    {
-      "origen": "FN-ESTADO-DESBLOQUEO",
-=======
       "origen": "ROL-ADMIN",
       "destino": "TBL-CUESTIONARIO",
       "relacion": "escribe"
@@ -13288,38 +13265,20 @@
     },
     {
       "origen": "ROL-ADMIN",
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
       "destino": "TBL-INSIGNIA",
       "relacion": "lee"
     },
     {
-<<<<<<< HEAD
-      "origen": "FN-ESTADO-DESBLOQUEO",
-=======
       "origen": "ROL-ADMIN",
       "destino": "TBL-INSIGNIA",
       "relacion": "escribe"
     },
     {
       "origen": "ROL-ADMIN",
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
       "destino": "TBL-INSIGNIA-USUARIO",
       "relacion": "lee"
     },
     {
-<<<<<<< HEAD
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "DEC-03",
-      "relacion": "aplica"
-    },
-    {
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "DEC-10",
-      "relacion": "aplica"
-    },
-    {
-      "origen": "FN-ESTADO-DESBLOQUEO",
-=======
       "origen": "ROL-ADMIN",
       "destino": "TBL-INSIGNIA-USUARIO",
       "relacion": "escribe"
@@ -13471,146 +13430,10 @@
     },
     {
       "origen": "FN-AUDITAR",
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
       "destino": "DEC-97",
       "relacion": "aplica"
     },
     {
-<<<<<<< HEAD
-      "origen": "FN-ESTADO-DESBLOQUEO",
-      "destino": "ROL-APP",
-      "relacion": "ejecutada_por"
-    },
-    {
-      "origen": "DEC-97",
-      "destino": "DEC-03",
-      "relacion": "depende_de"
-    },
-    {
-      "origen": "FN-INICIAR-INTENTO",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "C-02",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "OP-15",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "OP-16",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "OP-17",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "OP-18",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "OP-22",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "OP-24",
-      "destino": "FN-ESTADO-DESBLOQUEO",
-      "relacion": "usa"
-    },
-    {
-      "origen": "DEC-98",
-      "destino": "DEC-33",
-      "relacion": "depende_de"
-    },
-    {
-      "origen": "DEC-98",
-      "destino": "DEC-03",
-      "relacion": "depende_de"
-    },
-    {
-      "origen": "OP-35",
-      "destino": "DEC-98",
-      "relacion": "regida_por"
-    },
-    {
-      "origen": "OP-23",
-      "destino": "FN-INICIAR-INTENTO",
-      "relacion": "ejecuta"
-    },
-    {
-      "origen": "DEC-99",
-      "destino": "DEC-85",
-      "relacion": "depende_de"
-    },
-    {
-      "origen": "FN-INICIAR-INTENTO",
-      "destino": "DEC-99",
-      "relacion": "aplica"
-    },
-    {
-      "origen": "FN-ENVIAR-INTENTO",
-      "destino": "DEC-99",
-      "relacion": "aplica"
-    },
-    {
-      "origen": "FN-ANONIMIZAR",
-      "destino": "DEC-99",
-      "relacion": "aplica"
-    },
-    {
-      "origen": "FN-EXPORTAR",
-      "destino": "DEC-99",
-      "relacion": "aplica"
-    },
-    {
-      "origen": "TRG-RESPUESTA-VALIDA",
-      "destino": "DEC-99",
-      "relacion": "aplica"
-    },
-    {
-      "origen": "ROL-PROPIETARIO",
-      "destino": "DEC-100",
-      "relacion": "definida_por"
-    },
-    {
-      "origen": "ROL-MIGRACION",
-      "destino": "DEC-100",
-      "relacion": "definida_por"
-    },
-    {
-      "origen": "ROL-APP",
-      "destino": "DEC-100",
-      "relacion": "definida_por"
-    },
-    {
-      "origen": "ROL-CONTENIDO",
-      "destino": "DEC-100",
-      "relacion": "definida_por"
-    },
-    {
-      "origen": "ROL-LECTURA",
-      "destino": "DEC-100",
-      "relacion": "definida_por"
-    },
-    {
-      "origen": "DEC-101",
-      "destino": "DEC-90",
-      "relacion": "depende_de"
-    },
-    {
-      "origen": "INV-14",
-      "destino": "DEC-101",
-      "relacion": "deriva_de"
-=======
       "origen": "FN-AUDITAR-DDL",
       "destino": "DEC-97",
       "relacion": "aplica"
@@ -13799,7 +13622,226 @@
       "origen": "DEC-98",
       "destino": "DEC-71",
       "relacion": "depende_de"
->>>>>>> 8d6d8838c8d8197e8ed7f5daa805b42340d5e1d0
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-MODULO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-CURSO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-CUESTIONARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-PROGRESO-LECCION",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-INTENTO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-INSIGNIA",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "TBL-INSIGNIA-USUARIO",
+      "relacion": "lee"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "DEC-03",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "DEC-10",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "DEC-99",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ESTADO-DESBLOQUEO",
+      "destino": "ROL-APP",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "DEC-99",
+      "destino": "DEC-03",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "FN-INICIAR-INTENTO",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "C-02",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-15",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-16",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-17",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-18",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-22",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "OP-24",
+      "destino": "FN-ESTADO-DESBLOQUEO",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-100",
+      "destino": "DEC-33",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-100",
+      "destino": "DEC-03",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-35",
+      "destino": "DEC-100",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-23",
+      "destino": "FN-INICIAR-INTENTO",
+      "relacion": "ejecuta"
+    },
+    {
+      "origen": "DEC-101",
+      "destino": "DEC-85",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "FN-INICIAR-INTENTO",
+      "destino": "DEC-101",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ENVIAR-INTENTO",
+      "destino": "DEC-101",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-ANONIMIZAR",
+      "destino": "DEC-101",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-EXPORTAR",
+      "destino": "DEC-101",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "TRG-RESPUESTA-VALIDA",
+      "destino": "DEC-101",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "ROL-PROPIETARIO",
+      "destino": "DEC-102",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-MIGRACION",
+      "destino": "DEC-102",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-APP",
+      "destino": "DEC-102",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-CONTENIDO",
+      "destino": "DEC-102",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "ROL-LECTURA",
+      "destino": "DEC-102",
+      "relacion": "definida_por"
+    },
+    {
+      "origen": "DEC-103",
+      "destino": "DEC-90",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "INV-14",
+      "destino": "DEC-103",
+      "relacion": "deriva_de"
+    },
+    {
+      "origen": "DEC-104",
+      "destino": "DEC-86",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-104",
+      "destino": "DEC-63",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-105",
+      "destino": "DEC-72",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-105",
+      "destino": "DEC-90",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-105",
+      "destino": "DEC-26",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "ROL-ADMIN",
+      "destino": "DEC-102",
+      "relacion": "definida_por"
     }
   ]
 }

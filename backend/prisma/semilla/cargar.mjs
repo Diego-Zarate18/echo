@@ -62,6 +62,13 @@ async function principal() {
 }
 
 principal().catch((error) => {
+  // 23503: una llave foránea apunta a un id que no existe. Pasa cuando los contadores de identidad no empiezan en 1
+  // (por ejemplo, después de correr las pruebas SQL): los ids del contenido quedan corridos.
+  if (error.code === '23503') {
+    console.error('No se pudo cargar la semilla: los ids del contenido no empiezan en 1. Reinicia la base primero.');
+    process.exitCode = 1;
+    return;
+  }
   console.error(`No se pudo cargar la semilla: ${error.message}`);
   process.exitCode = 1;
 });

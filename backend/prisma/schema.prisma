@@ -357,3 +357,30 @@ model InsigniaUsuario {
   @@id([usuarioId, insigniaId])
   @@map("insignia_usuario")
 }
+
+// Bitácora de la administración de la base (DEC-97, INV-31). La escriben solo funciones de la base y solo
+// echo_admin la lee: @@ignore la deja fuera del cliente que usa el backend, pero Prisma la sigue conociendo
+// para no intentar borrarla en las migraciones.
+model AuditoriaBd {
+  id                BigInt   @id @default(autoincrement())
+  ocurridoEn        DateTime @default(dbgenerated("clock_timestamp()")) @map("ocurrido_en") @db.Timestamptz(6)
+  rolSesion         String   @default(dbgenerated("SESSION_USER")) @map("rol_sesion") @db.Text
+  rolEfectivo       String   @default(dbgenerated("COALESCE(NULLIF(current_setting('role'::text), 'none'::text), (SESSION_USER)::text)")) @map("rol_efectivo") @db.Text
+  direccionIp       String?  @default(dbgenerated("inet_client_addr()")) @map("direccion_ip") @db.Inet
+  aplicacion        String?  @default(dbgenerated("current_setting('application_name'::text)")) @db.Text
+  idTransaccion     BigInt   @default(dbgenerated("txid_current()")) @map("id_transaccion")
+  tipoEvento        String   @map("tipo_evento") @db.Text
+  comando           String?  @db.Text
+  tabla             String?  @db.Text
+  registroId        String?  @map("registro_id") @db.Text
+  columnasCambiadas String[] @map("columnas_cambiadas") @db.Text
+  datosAnteriores   Json?    @map("datos_anteriores") @db.JsonB
+  datosNuevos       Json?    @map("datos_nuevos") @db.JsonB
+  sentencia         String?  @db.Text
+  motivo            String?  @db.Text
+
+  @@index([ocurridoEn(sort: Desc)], map: "ix_auditoria_ocurrido")
+  @@index([tabla, ocurridoEn(sort: Desc)], map: "ix_auditoria_tabla_ocurrido")
+  @@map("auditoria_bd")
+  @@ignore
+}
