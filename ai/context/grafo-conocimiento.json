@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.6.4",
-    "actualizado": "2026-11-12",
-    "fase": "Backend: base de datos completa (6 migraciones con la auditoría, semilla y pruebas SQL). Siguiente: Fase 2 del backend (infraestructura transversal). El frontend sigue con otra persona del equipo desde la Tarea 12.",
+    "version": "1.6.5",
+    "actualizado": "2026-11-13",
+    "fase": "Backend: Fase 2 terminada (infraestructura transversal: configuración, base de datos, errores, guardias de origen, límite por IP y sesión, seguridad, correo; GET /api/sesion y POST /api/sesion/renovar). Siguiente: Fase 3 del backend (cuenta). El frontend sigue con otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -109,6 +109,11 @@
         "version": "1.6.4",
         "fecha": "2026-11-12",
         "cambio": "Migración de la auditoría (DEC-97): rol_efectivo desde el parámetro role, motivo vacío = nulo, trg_auditoria y trg_auditoria_truncate con WHEN (session_user <> echo_app), dos disparadores de inmutabilidad y dos de eventos (auditoria_ddl.sql), echo_admin en roles.sql y reinicio local con reiniciar_local.sh (DEC-102). motivo sin valor por defecto: lo ponen las funciones de auditoría."
+      },
+      {
+        "version": "1.6.5",
+        "fecha": "2026-11-13",
+        "cambio": "Fase 2 del backend: sesión de la base en UTC para el servidor (DEC-106), backend sin pruebas automáticas versionadas (DEC-107) y cliente de Prisma generado en backend/src/generated/prisma (DEC-108). DEC-105 revisada: google-auth-library 11.3.4 para la Fase 3 y sin Jest. DEC-66 revisada: Resend solo para pruebas hasta tener dominio."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -211,15 +216,15 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 481,
-      "aristas": 1449,
+      "nodos": 484,
+      "aristas": 1456,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 6,
         "tecnologia": 32,
-        "decision": 105,
+        "decision": 108,
         "invariante": 31,
         "tabla": 22,
         "rol_bd": 6,
@@ -5309,10 +5314,11 @@
       "id": "DEC-66",
       "tipo": "decision",
       "nombre": "Correo con Resend",
-      "descripcion": "Los correos de verificación, recuperación, cambio de correo y «ya tienes cuenta» se envían con Resend desde el backend. La llave de API vive en variables de entorno de Railway.",
+      "descripcion": "Los correos de verificación, recuperación, cambio de correo y «ya tienes cuenta» se envían con Resend desde el backend. La llave de API vive en variables de entorno de Railway. Mientras el equipo no tenga un dominio verificado, Resend se usa solo para pruebas: el remitente es onboarding@resend.dev y los correos solo llegan a la dirección de la cuenta de Resend. Sin RESEND_API_KEY en desarrollo, los correos no se envían.",
       "estado": "decidido",
       "detalles": {
-        "origen": "PEND-07 (18/10)"
+        "origen": "PEND-07 (18/10)",
+        "revisada": "1.6.5 (13/11): uso solo para pruebas hasta tener dominio"
       }
     },
     {
@@ -6493,11 +6499,43 @@
       "id": "DEC-105",
       "tipo": "decision",
       "nombre": "Dependencias del backend",
-      "descripcion": "Versiones exactas: argon2 0.45.2 (DEC-72), class-validator 0.15.1 y class-transformer 0.5.1 (ValidationPipe de Nest) y @nestjs/swagger 11.4.8, solo para generar el OpenAPI que se compara con docs/api/openapi.yaml (DEC-90); no se publica ninguna página de documentación. Sin dependencia: los correos se envían con fetch a la API de Resend; la cookie de sesión se lee con código propio; el límite por IP y el bloqueo por fallos (DEC-26) se hacen en memoria con código propio; la configuración se valida con código propio (dotenv ya está). NestJS se queda en 11 hasta después del piloto.",
+      "descripcion": "Versiones exactas: argon2 0.45.2 (DEC-72), class-validator 0.15.1 y class-transformer 0.5.1 (ValidationPipe de Nest) y @nestjs/swagger 11.4.8, solo para generar el OpenAPI que se compara con docs/api/openapi.yaml (DEC-90); no se publica ninguna página de documentación. google-auth-library 11.3.4, la biblioteca oficial de Google, para entrar con Google (OP-03): arma la URL de consentimiento, canjea el código y verifica el token de identidad. Sin dependencia: los correos se envían con fetch a la API de Resend; la cookie de sesión se lee con código propio; el límite por IP y el bloqueo por fallos (DEC-26) se hacen en memoria con código propio; la configuración se valida con código propio (dotenv ya está). NestJS se queda en 11 hasta después del piloto.",
       "estado": "decidido",
       "detalles": {
         "origen": "Aprobada por la persona del equipo el 12/11/2026, antes de la Fase 2 del backend",
-        "descartadas": "@node-rs/argon2 y hash-wasm; SDK resend; zod; cookie-parser; @nestjs/throttler; @nestjs/config; NestJS 12"
+        "descartadas": "@node-rs/argon2 y hash-wasm; SDK resend; zod; cookie-parser; @nestjs/throttler; @nestjs/config; NestJS 12",
+        "revisada": "1.6.5 (13/11): google-auth-library 11.3.4 aprobada para la Fase 3; la cookie temporal del registro con Google se cifra con node:crypto; salen las dependencias de Jest (DEC-107)"
+      }
+    },
+    {
+      "id": "DEC-106",
+      "tipo": "decision",
+      "nombre": "Sesión de la base en UTC para el servidor",
+      "descripcion": "El servidor abre sus conexiones a PostgreSQL con la zona horaria de la sesión en UTC (PrismaService, options=-c timezone=UTC) y no arranca si la sesión no está en UTC. El adaptador de Prisma para pg lee los TIMESTAMPTZ como si la sesión estuviera en UTC y descarta el desfase que manda PostgreSQL: con la base local en America/Mexico_City, todas las fechas saldrían corridas 6 horas (por ejemplo, la vigencia de la sesión). DATABASE_URL no lleva el parámetro options. No cambia lo que guarda la base ni INV-03.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 13/11/2026, al terminar la Fase 2 del backend"
+      }
+    },
+    {
+      "id": "DEC-107",
+      "tipo": "decision",
+      "nombre": "El backend no versiona pruebas automáticas",
+      "descripcion": "El repositorio del backend no guarda archivos *.spec.ts, la carpeta test/ ni Jest: se quitaron los archivos de ejemplo de Nest, los scripts test* y las dependencias jest, ts-jest, supertest, @nestjs/testing, @types/jest y @types/supertest. El backend se verifica con npm run build, npm run lint, las pruebas SQL de backend/prisma/sql/pruebas y la colección de Postman, que vive fuera del repositorio. Las pruebas que se escriban para comprobar una fase se corren aparte y no se suben.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Pedida por la persona del equipo el 12/11/2026 para dejar el repositorio lo más limpio posible; dependencias retiradas el 13/11/2026"
+      }
+    },
+    {
+      "id": "DEC-108",
+      "tipo": "decision",
+      "nombre": "Cliente de Prisma generado dentro de src",
+      "descripcion": "El cliente de Prisma se genera en backend/src/generated/prisma en formato CommonJS (generator con output ../src/generated/prisma y moduleFormat cjs), para que Nest lo compile junto con el resto de src y dist/main.js quede en su lugar. No se versiona (backend/.gitignore) ni se revisa con ESLint o Prettier: hay que correr npm run prisma:generar después de npm install y de cada cambio al esquema, antes de compilar. tsconfig.build.json solo incluye src.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 13/11/2026, al terminar la Fase 2 del backend",
+        "reemplaza": "backend/generated/prisma (fuera de src)"
       }
     }
   ],
@@ -13837,6 +13875,41 @@
       "origen": "DEC-105",
       "destino": "DEC-26",
       "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-106",
+      "destino": "TEC-PRISMA",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-106",
+      "destino": "TEC-PG",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-107",
+      "destino": "DEC-105",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-108",
+      "destino": "DEC-65",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-108",
+      "destino": "DEC-104",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-108",
+      "destino": "TEC-PRISMA",
+      "relacion": "usa"
+    },
+    {
+      "origen": "DEC-105",
+      "destino": "TEC-OAUTH",
+      "relacion": "usa"
     },
     {
       "origen": "ROL-ADMIN",
