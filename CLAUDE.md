@@ -54,8 +54,12 @@ Se corren desde `frontend/`:
 Se corren desde `backend/`. Usa siempre el Prisma instalado en el proyecto:
 **nunca** `npx prisma@latest` ni `npx prisma` fuera del proyecto (descargaría la última versión).
 - `npm install`: instala las dependencias exactas (`.npmrc` con `save-exact=true`; `.nvmrc` con Node 22).
-- `npm run start:dev`: servidor en modo desarrollo. `npm run build`, `npm run lint`, `npm run test`, `npm run test:e2e`.
-- `npm run prisma:validar` / `prisma:generar`: valida el esquema / genera el cliente en `backend/generated/prisma`.
+- `npm run start:dev`: servidor en modo desarrollo (puerto 4000, rutas bajo `/api`). `npm run build`, `npm run lint`.
+- El backend no versiona pruebas automáticas (`*.spec.ts`, carpeta `test/`): se verifica con `build`, `lint` y las pruebas SQL.
+- `npm run prisma:validar` / `prisma:generar`: valida el esquema / genera el cliente en `backend/src/generated/prisma`
+  (no se versiona: hay que generarlo después de `npm install` y de cada cambio al esquema, antes de compilar).
+- El servidor fija la sesión de PostgreSQL en UTC (`PrismaService`): el adaptador de Prisma lee los `timestamptz` como
+  UTC y con otra zona las fechas saldrían corridas. No pongas `options` en `DATABASE_URL`.
 - `npm run prisma:crear-migracion -- --name <nombre>`: crea la migración SIN aplicarla. Edita el SQL si hace falta (CHECK,
   índices parciales, GIN, funciones, disparadores, vistas, permisos). Una migración ya aplicada nunca se edita: lo nuevo va en otra.
 - `npm run prisma:desplegar`: aplica las migraciones pendientes (`migrate deploy`; es lo único que se usa en producción).

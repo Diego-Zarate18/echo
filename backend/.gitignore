@@ -3,8 +3,8 @@ node_modules/
 dist/
 coverage/
 
-# Cliente de Prisma generado
-/generated/
+# Cliente de Prisma generado (npm run prisma:generar)
+/src/generated/
 
 # Variables de entorno: nunca se versionan (solo la plantilla)
 .env

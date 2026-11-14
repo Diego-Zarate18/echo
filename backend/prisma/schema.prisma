@@ -4,8 +4,9 @@
 // La conexión está en prisma.config.ts.
 
 generator cliente {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
