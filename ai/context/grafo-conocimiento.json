@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.6.5",
+    "version": "1.6.9",
     "actualizado": "2026-11-13",
-    "fase": "Backend: Fase 2 terminada (infraestructura transversal: configuración, base de datos, errores, guardias de origen, límite por IP y sesión, seguridad, correo; GET /api/sesion y POST /api/sesion/renovar). Siguiente: Fase 3 del backend (cuenta). El frontend sigue con otra persona del equipo desde la Tarea 12.",
+    "fase": "Backend: Fase 3 (cuenta y acceso) implementada en sus partes 3A, 3B y 3C; falta comprobarla en el equipo y en el navegador. La Fase 2 está terminada. Siguiente: Fase 4. El frontend sigue con otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -114,6 +114,26 @@
         "version": "1.6.5",
         "fecha": "2026-11-13",
         "cambio": "Fase 2 del backend: sesión de la base en UTC para el servidor (DEC-106), backend sin pruebas automáticas versionadas (DEC-107) y cliente de Prisma generado en backend/src/generated/prisma (DEC-108). DEC-105 revisada: google-auth-library 11.3.4 para la Fase 3 y sin Jest. DEC-66 revisada: Resend solo para pruebas hasta tener dominio."
+      },
+      {
+        "version": "1.6.6",
+        "fecha": "2026-11-13",
+        "cambio": "Fase 3A del backend (acceso con correo): registro sobre una cuenta pendiente (DEC-109) con fn_borrar_cuenta_pendiente (FN-BORRAR-PENDIENTE, migración 20261114030000), enlaces de correo donde solo el último sirve (DEC-110), recuperación solo en cuentas activas (DEC-111). Para la parte 3B: cookies temporales cifradas con llave derivada (DEC-112) y correo de Google que ya usa otra cuenta (DEC-113). Revisadas: DEC-26 (el intento se cuenta antes de revisar la contraseña), DEC-77 (correos sin esperar a Resend) y DEC-107 (una fase termina con build, lint y su colección de Postman)."
+      },
+      {
+        "version": "1.6.7",
+        "fecha": "2026-11-13",
+        "cambio": "Fase 3B del backend (Google y aceptación, OP-03 y OP-13): DEC-112 y DEC-113 implementadas; DEC-105 precisa cómo se usa google-auth-library (fetch de Node, PKCE S256, state, nonce y correo verificado); OP-03 anota su implementación y que el reingreso para eliminar la cuenta llega con la parte 3C."
+      },
+      {
+        "version": "1.6.8",
+        "fecha": "2026-11-13",
+        "cambio": "Fase 3C del backend (perfil: OP-08 a OP-12, OP-14, OP-39 y OP-41): reingreso con Google en una cookie atada a la sesión (DEC-114, propuesta); OP-03, OP-12 y OP-14 anotan su implementación; DEC-79 agrega el aviso de cambio de correo; DEC-112 suma la cookie de reingreso."
+      },
+      {
+        "version": "1.6.9",
+        "fecha": "2026-11-13",
+        "cambio": "DEC-114 aprobada: el reingreso con Google para eliminar la cuenta se guarda en una cookie cifrada atada a la sesión, sin columna nueva en sesion."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -216,19 +236,19 @@
       "protege_a": "decisión → actor"
     },
     "estadisticas": {
-      "nodos": 484,
-      "aristas": 1456,
+      "nodos": 491,
+      "aristas": 1479,
       "por_tipo": {
         "proyecto": 1,
         "objetivo": 6,
         "restriccion": 12,
         "actor": 6,
         "tecnologia": 32,
-        "decision": 108,
+        "decision": 114,
         "invariante": 31,
         "tabla": 22,
         "rol_bd": 6,
-        "funcion_bd": 10,
+        "funcion_bd": 11,
         "disparador": 5,
         "vista_bd": 2,
         "consulta": 13,
@@ -858,7 +878,8 @@
       "estado": "decidido",
       "detalles": {
         "origen": "P-22 (versión final: columnas en usuario, sin tabla intento_acceso)",
-        "limite_por_ip": "60 peticiones cada 10 minutos por IP en las rutas de cuenta (registro, sesión, recuperación, reenvío); 429 DEMASIADAS_SOLICITUDES con Retry-After"
+        "limite_por_ip": "60 peticiones cada 10 minutos por IP en las rutas de cuenta (registro, sesión, recuperación, reenvío); 429 DEMASIADAS_SOLICITUDES con Retry-After",
+        "revisada": "1.6.6 (13/11): el intento se cuenta antes de revisar la contraseña, en la misma sentencia que pone la pausa; si la contraseña es correcta el contador vuelve a cero. Así, muchas peticiones al mismo tiempo no revisan la contraseña después del 5.º fallo."
       }
     },
     {
@@ -3220,7 +3241,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Media",
         "recibe": "Datos de Google: sub, correo, nombre, apellido",
-        "devuelve": "Sesión"
+        "devuelve": "Sesión",
+        "implementacion": "1.6.7 (13/11), parte 3B: el regreso compara el state con la cookie temporal, canjea el código con PKCE, verifica el token (firma, emisor, destinatario, vencimiento y nonce) y exige el correo verificado por Google. Cualquier fallo, incluida la cancelación, redirige a /iniciar-sesion?error=google. Con proposito=eliminar el regreso es el reingreso de OP-14 (DEC-114)."
       }
     },
     {
@@ -3348,7 +3370,8 @@
         "frecuencia": "Baja",
         "recibe": "Código del enlace",
         "devuelve": "Correo actualizado",
-        "enlace_invalido": "ENLACE_INVALIDO con motivo «vencido» (también para un código inexistente) o «usado»; el código es secreto, así que no delata cuentas"
+        "enlace_invalido": "ENLACE_INVALIDO con motivo «vencido» (también para un código inexistente) o «usado»; el código es secreto, así que no delata cuentas",
+        "implementacion": "1.6.8 (13/11): al confirmar se actualiza correo_verificado_en. Si el correo ya no está libre o la cuenta tiene Google, responde ENLACE_INVALIDO con motivo «vencido» y el enlace no se gasta."
       }
     },
     {
@@ -3362,7 +3385,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Baja",
         "recibe": "Contraseña o reingreso con Google, confirmación",
-        "devuelve": "Sesión cerrada"
+        "devuelve": "Sesión cerrada",
+        "implementacion": "1.6.8 (13/11), parte 3C: con contraseña, la pide (CONTRASENA_INCORRECTA si no coincide); solo con Google, exige la cookie de reingreso de DEC-114. Anonimiza con fn_anonimizar_usuario, cierra las sesiones y borra la cookie. Una cuenta con contraseña y Google usa la contraseña."
       }
     },
     {
@@ -5585,7 +5609,8 @@
           "cambio_de_correo_enviado": "Revisa tu correo nuevo para confirmar el cambio. El enlace vence en 30 minutos."
         },
         "sin_cambio_de_esquema": true,
-        "revision": "19/10 (v1.3.0): se quita el estado «cuenta bloqueada» con contraseña correcta, que funcionaba como oráculo durante el bloqueo; el aviso de la pausa va dentro del mensaje genérico."
+        "revision": "19/10 (v1.3.0): se quita el estado «cuenta bloqueada» con contraseña correcta, que funcionaba como oráculo durante el bloqueo; el aviso de la pausa va dentro del mensaje genérico.",
+        "envio_de_correos": "1.6.6 (13/11): los correos del registro, el reenvío y la recuperación se mandan después de guardar y sin esperar a Resend, para que el tiempo de respuesta sea el mismo exista o no la cuenta."
       }
     },
     {
@@ -5614,7 +5639,8 @@
           "ya_tienes_cuenta",
           "cambio_documentos",
           "invitacion_encuesta"
-        ]
+        ],
+        "revisada": "1.6.8 (13/11): aviso_cambio_correo, al correo nuevo cuando ya tiene cuenta (OP-11, DEC-77); no lleva enlace ni dice qué cuenta pidió el cambio. Los textos de la cuenta están en backend/src/areas/cuenta/correos y falta revisarlos con el equipo."
       }
     },
     {
@@ -6445,6 +6471,18 @@
       }
     },
     {
+      "id": "FN-BORRAR-PENDIENTE",
+      "tipo": "funcion_bd",
+      "nombre": "fn_borrar_cuenta_pendiente(correo)",
+      "descripcion": "Borra la cuenta pendiente de ese correo, sin historial, con las mismas condiciones que fn_limpieza_diaria; sus enlaces, sesiones y aceptaciones se borran en cascada. Devuelve true si borró la cuenta. La usan el registro (DEC-109) y el registro con Google (DEC-93).",
+      "estado": "decidido",
+      "detalles": {
+        "invocacion": "backend, dentro de la transacción del registro",
+        "seguridad": "SECURITY DEFINER con search_path fijo; solo echo_app la ejecuta",
+        "migracion": "20261114030000_borrar_cuenta_pendiente"
+      }
+    },
+    {
       "id": "DEC-100",
       "tipo": "decision",
       "nombre": "Todo curso publicado tiene examen",
@@ -6504,7 +6542,8 @@
       "detalles": {
         "origen": "Aprobada por la persona del equipo el 12/11/2026, antes de la Fase 2 del backend",
         "descartadas": "@node-rs/argon2 y hash-wasm; SDK resend; zod; cookie-parser; @nestjs/throttler; @nestjs/config; NestJS 12",
-        "revisada": "1.6.5 (13/11): google-auth-library 11.3.4 aprobada para la Fase 3; la cookie temporal del registro con Google se cifra con node:crypto; salen las dependencias de Jest (DEC-107)"
+        "revisada": "1.6.5 (13/11): google-auth-library 11.3.4 aprobada para la Fase 3; la cookie temporal del registro con Google se cifra con node:crypto; salen las dependencias de Jest (DEC-107)",
+        "google": "1.6.7 (13/11): OAuth2Client con transporterOptions.fetchImplementation = fetch de Node y 10 s de tiempo límite. Flujo de código con PKCE S256, state y nonce; se exige email_verified."
       }
     },
     {
@@ -6521,10 +6560,11 @@
       "id": "DEC-107",
       "tipo": "decision",
       "nombre": "El backend no versiona pruebas automáticas",
-      "descripcion": "El repositorio del backend no guarda archivos *.spec.ts, la carpeta test/ ni Jest: se quitaron los archivos de ejemplo de Nest, los scripts test* y las dependencias jest, ts-jest, supertest, @nestjs/testing, @types/jest y @types/supertest. El backend se verifica con npm run build, npm run lint, las pruebas SQL de backend/prisma/sql/pruebas y la colección de Postman, que vive fuera del repositorio. Las pruebas que se escriban para comprobar una fase se corren aparte y no se suben.",
+      "descripcion": "El repositorio del backend no guarda archivos *.spec.ts, la carpeta test/ ni Jest: se quitaron los archivos de ejemplo de Nest, los scripts test* y las dependencias jest, ts-jest, supertest, @nestjs/testing, @types/jest y @types/supertest. El backend se verifica con npm run build, npm run lint, las pruebas SQL de backend/prisma/sql/pruebas y la colección de Postman, que vive fuera del repositorio. Las pruebas que se escriban para comprobar una fase se corren aparte y no se suben. Una fase termina cuando pasan npm run build, npm run lint y la colección de Postman de esa fase.",
       "estado": "decidido",
       "detalles": {
-        "origen": "Pedida por la persona del equipo el 12/11/2026 para dejar el repositorio lo más limpio posible; dependencias retiradas el 13/11/2026"
+        "origen": "Pedida por la persona del equipo el 12/11/2026 para dejar el repositorio lo más limpio posible; dependencias retiradas el 13/11/2026",
+        "revisada": "1.6.6 (13/11): criterio de fin de fase con la colección de Postman, en lugar de pruebas e2e"
       }
     },
     {
@@ -6536,6 +6576,71 @@
       "detalles": {
         "origen": "Aprobada por la persona del equipo el 13/11/2026, al terminar la Fase 2 del backend",
         "reemplaza": "backend/generated/prisma (fuera de src)"
+      }
+    },
+    {
+      "id": "DEC-109",
+      "tipo": "decision",
+      "nombre": "Registro sobre una cuenta pendiente",
+      "descripcion": "Si alguien se registra con un correo que tiene una cuenta pendiente (sin verificar), esa cuenta se borra con sus enlaces y aceptaciones y se crea la nueva con los datos del último registro. Nunca se reenvía el enlace de la cuenta vieja: su contraseña la pudo haber puesto otra persona y quien verificara el correo activaría una cuenta ajena (pre-secuestro de cuenta, como en DEC-93). Solo quien puede abrir el correo logra activar una cuenta. El borrado lo hace fn_borrar_cuenta_pendiente, porque echo_app no puede borrar usuarios. Una cuenta activa con ese correo sigue la regla de DEC-77: no se crea nada y se manda «ya tienes cuenta».",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 13/11/2026, en el plan de la Fase 3 del backend"
+      }
+    },
+    {
+      "id": "DEC-110",
+      "tipo": "decision",
+      "nombre": "Enlaces de correo: solo el último sirve",
+      "descripcion": "Al crear un enlace (verificación, recuperación o cambio de correo) se borran los anteriores del mismo tipo que el alumno no usó: solo el último enlace sirve. Usar un enlace es una sola sentencia que lo marca como usado solo si sigue vigente y sin usar, así que dos clics al mismo tiempo no pueden usarlo dos veces. Un enlace inválido responde ENLACE_INVALIDO con motivo «usado», o «vencido» también para un código que no existe o de otro tipo.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 13/11/2026, en el plan de la Fase 3 del backend",
+        "vigencias": "verificación 24 h; recuperación y cambio de correo 30 min",
+        "rutas_frontend": "/verificar-correo?codigo=, /recuperar-contrasena/nueva?codigo= y /verificar-correo?tipo=cambio-correo&codigo="
+      }
+    },
+    {
+      "id": "DEC-111",
+      "tipo": "decision",
+      "nombre": "Recuperar contraseña solo en cuentas activas",
+      "descripcion": "El enlace de recuperación (OP-06) solo se manda a una cuenta activa con contraseña. A una cuenta pendiente, solo de Google o inexistente no se manda nada, y la respuesta es la misma (DEC-77). Una cuenta pendiente se resuelve volviendo a registrarse (DEC-109) o con el reenvío de la verificación. Restablecer la contraseña quita la pausa por fallos y cierra todas las sesiones (DEC-12).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 13/11/2026, en el plan de la Fase 3 del backend"
+      }
+    },
+    {
+      "id": "DEC-112",
+      "tipo": "decision",
+      "nombre": "Cookies temporales cifradas con una llave derivada",
+      "descripcion": "Las cookies temporales del inicio con Google (la de state, nonce y PKCE hacia Google, y __Host-echo_registro_google, DEC-28) se cifran y firman con AES-256-GCM. La llave se deriva de SECRETO_CLAVE_OPACA con HKDF y una etiqueta propia, así que es distinta de la que firma las claves opacas (DEC-91) y no hace falta otra variable de entorno. Implementada en la parte 3B (13/11/2026).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 13/11/2026, en el plan de la Fase 3 del backend",
+        "descartada": "Una variable SECRETO_COOKIES aparte",
+        "cookies": "__Host-echo_google_estado (state, nonce y verificador PKCE de la ida) y __Host-echo_registro_google; cada una usa su nombre como dato asociado de AES-GCM, así que el valor de una no sirve como el de la otra. Desde la 1.6.8 también __Host-echo_reingreso_google (DEC-114)."
+      }
+    },
+    {
+      "id": "DEC-113",
+      "tipo": "decision",
+      "nombre": "Correo de Google que ya usa otra cuenta",
+      "descripcion": "Al entrar con Google, Echo copia a la cuenta el correo que manda Google (DEC-23). Si ese correo ya pertenece a otra cuenta de Echo, la base no permite repetirlo: el alumno entra de todos modos y su cuenta conserva el correo anterior. Implementada en la parte 3B (13/11/2026).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Aprobada por la persona del equipo el 13/11/2026, en el plan de la Fase 3 del backend"
+      }
+    },
+    {
+      "id": "DEC-114",
+      "tipo": "decision",
+      "nombre": "Reingreso con Google en una cookie atada a la sesión",
+      "descripcion": "Para eliminar una cuenta que solo entra con Google (OP-14), el alumno vuelve a entrar con Google con proposito=eliminar. Si la petición trae una sesión válida y la identidad de Google es la de esa misma cuenta, el regreso no abre otra sesión: deja la cookie __Host-echo_reingreso_google, cifrada como las de DEC-112, con el id de la sesión y del alumno y 5 minutos de vigencia, y redirige a /perfil?reingreso=google. POST /api/perfil/eliminacion solo la acepta para esa misma sesión y ese alumno; sin ella responde REINGRESO_REQUERIDO. Cualquier fallo del reingreso redirige a /perfil?error=google. No necesita una columna nueva en sesion.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Implementada en la parte 3C y aprobada por la persona del equipo el 13/11/2026",
+        "alternativa": "Una columna sesion.reingreso_google_en con su migración"
       }
     }
   ],
@@ -13915,6 +14020,121 @@
       "origen": "ROL-ADMIN",
       "destino": "DEC-102",
       "relacion": "definida_por"
+    },
+    {
+      "origen": "DEC-109",
+      "destino": "DEC-93",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-109",
+      "destino": "DEC-77",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-109",
+      "destino": "TBL-USUARIO",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "DEC-110",
+      "destino": "TBL-TOKEN-CORREO",
+      "relacion": "aplica_a"
+    },
+    {
+      "origen": "DEC-111",
+      "destino": "DEC-77",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-112",
+      "destino": "DEC-91",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-112",
+      "destino": "DEC-28",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-113",
+      "destino": "DEC-23",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "DEC-109",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-01",
+      "destino": "FN-BORRAR-PENDIENTE",
+      "relacion": "ejecuta"
+    },
+    {
+      "origen": "OP-02",
+      "destino": "DEC-110",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-06",
+      "destino": "DEC-111",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-06",
+      "destino": "DEC-110",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-07",
+      "destino": "DEC-111",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-03",
+      "destino": "DEC-112",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "OP-03",
+      "destino": "DEC-113",
+      "relacion": "regida_por"
+    },
+    {
+      "origen": "FN-BORRAR-PENDIENTE",
+      "destino": "TBL-USUARIO",
+      "relacion": "escribe"
+    },
+    {
+      "origen": "FN-BORRAR-PENDIENTE",
+      "destino": "DEC-109",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-BORRAR-PENDIENTE",
+      "destino": "DEC-93",
+      "relacion": "aplica"
+    },
+    {
+      "origen": "FN-BORRAR-PENDIENTE",
+      "destino": "ROL-APP",
+      "relacion": "ejecutada_por"
+    },
+    {
+      "origen": "DEC-114",
+      "destino": "DEC-112",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-114",
+      "destino": "DEC-27",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "OP-14",
+      "destino": "DEC-114",
+      "relacion": "regida_por"
     }
   ]
 }

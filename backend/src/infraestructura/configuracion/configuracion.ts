@@ -17,7 +17,12 @@ export interface Configuracion {
   proxiesConfiables: number;
   /** Resend; nulo en desarrollo si no está configurado (no se envía nada). */
   resend: { clave: string; remitente: string } | null;
+  /** Cliente OAuth de Google (OP-03); nulo en desarrollo si no está configurado (entrar con Google falla). */
+  google: { idCliente: string; secreto: string; urlRegreso: string } | null;
 }
+
+/** Ruta del regreso de Google en la API; GOOGLE_URL_REGRESO debe apuntar ahí desde el origen del frontend. */
+export const RUTA_REGRESO_GOOGLE = '/api/auth/google/callback';
 
 export const CONFIGURACION = Symbol('CONFIGURACION');
 
@@ -101,6 +106,33 @@ export function leerConfiguracion(
     );
   }
 
+  const idGoogle = texto('GOOGLE_CLIENT_ID');
+  const secretoGoogle = texto('GOOGLE_CLIENT_SECRET');
+  const regresoGoogle = texto('GOOGLE_URL_REGRESO');
+  const hayGoogle = [idGoogle, secretoGoogle, regresoGoogle].filter(
+    Boolean,
+  ).length;
+  if (hayGoogle > 0 && hayGoogle < 3) {
+    problemas.push(
+      'GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET y GOOGLE_URL_REGRESO van juntas: las tres o ninguna',
+    );
+  }
+  if (produccion && hayGoogle === 0) {
+    problemas.push(
+      'GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET y GOOGLE_URL_REGRESO son obligatorias en producción',
+    );
+  }
+  if (
+    regresoGoogle &&
+    origenFrontend &&
+    regresoGoogle !== origenFrontend + RUTA_REGRESO_GOOGLE
+  ) {
+    // El regreso pasa por el frontend (DEC-85): ahí viven las cookies de sesión y la temporal de Google.
+    problemas.push(
+      `GOOGLE_URL_REGRESO debe ser URL_FRONTEND seguida de ${RUTA_REGRESO_GOOGLE}`,
+    );
+  }
+
   if (problemas.length > 0) throw new ConfiguracionInvalidaError(problemas);
 
   return {
@@ -111,5 +143,13 @@ export function leerConfiguracion(
     secretoClaveOpaca: Buffer.from(secreto, 'hex'),
     proxiesConfiables,
     resend: claveResend ? { clave: claveResend, remitente } : null,
+    google:
+      hayGoogle === 3
+        ? {
+            idCliente: idGoogle,
+            secreto: secretoGoogle,
+            urlRegreso: regresoGoogle,
+          }
+        : null,
   };
 }

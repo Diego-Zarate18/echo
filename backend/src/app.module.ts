@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { CuentaModule } from './areas/cuenta/cuenta.module';
 import { SesionGuard } from './areas/cuenta/sesion/sesion.guard';
 import { SesionModule } from './areas/cuenta/sesion/sesion.module';
 import { FiltroErrores } from './comun/errores/filtro-errores';
@@ -9,6 +10,7 @@ import { OrigenGuard } from './comun/guardias/origen.guard';
 import { BaseDeDatosModule } from './infraestructura/base-de-datos/base-de-datos.module';
 import { ConfiguracionModule } from './infraestructura/configuracion/configuracion.module';
 import { CorreoModule } from './infraestructura/correo/correo.module';
+import { GoogleModule } from './infraestructura/google/google.module';
 import { SeguridadModule } from './infraestructura/seguridad/seguridad.module';
 
 @Module({
@@ -17,7 +19,9 @@ import { SeguridadModule } from './infraestructura/seguridad/seguridad.module';
     BaseDeDatosModule,
     SeguridadModule,
     CorreoModule,
+    GoogleModule,
     SesionModule,
+    CuentaModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: FiltroErrores },

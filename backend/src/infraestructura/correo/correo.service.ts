@@ -12,6 +12,7 @@ export type TipoCorreo =
   | 'verificacion'
   | 'recuperacion'
   | 'cambio_correo'
+  | 'aviso_cambio_correo'
   | 'ya_tienes_cuenta'
   | 'cambio_documentos'
   | 'invitacion_encuesta';

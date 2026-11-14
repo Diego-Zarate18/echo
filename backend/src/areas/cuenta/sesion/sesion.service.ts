@@ -1,6 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import type { Request } from 'express';
+import type { Prisma } from '../../../generated/prisma/client';
 import type { AlumnoSesion } from '../../../comun/decoradores/alumno-actual';
 import { PrismaService } from '../../../infraestructura/base-de-datos/prisma.service';
+import {
+  esCodigoBienFormado,
+  generarCodigo,
+  huellaDeCodigo,
+} from '../../../infraestructura/seguridad/codigos';
+import type { CodigoGenerado } from '../../../infraestructura/seguridad/codigos';
+import { leerCookieSesion } from './cookie-sesion';
+
+type Cliente = Pick<Prisma.TransactionClient, '$executeRaw'>;
+
+/** Largo máximo del navegador guardado con la sesión (CHECK chk_sesion_agente_usuario). */
+const LARGO_AGENTE = 500;
 
 interface FilaSesion {
   sesion_id: string;
@@ -92,5 +106,59 @@ export class SesionService {
         terminos: fila.terminos_pendiente,
       },
     };
+  }
+
+  /**
+   * Abre una sesión nueva para el alumno. Devuelve el código, que solo viaja en la cookie (INV-08); la base guarda
+   * su huella. Se puede llamar dentro de una transacción.
+   */
+  async crear(
+    cliente: Cliente,
+    usuarioId: string,
+    peticion: Request,
+  ): Promise<CodigoGenerado> {
+    const generado = generarCodigo();
+    const agente = (peticion.headers['user-agent'] ?? '').slice(
+      0,
+      LARGO_AGENTE,
+    );
+    await cliente.$executeRaw`
+      INSERT INTO sesion (usuario_id, token_hash, agente_usuario)
+      VALUES (${usuarioId}::uuid, ${generado.huella}, ${agente || null})`;
+    return generado;
+  }
+
+  /** Cierra la sesión indicada (OP-05). */
+  async revocar(sesionId: string): Promise<void> {
+    await this.prisma.$executeRaw`
+      UPDATE sesion SET revocada_en = now()
+      WHERE id = ${sesionId}::uuid AND revocada_en IS NULL`;
+  }
+
+  /** Cierra la sesión que trae la petición, si trae una; sirve al iniciar otra encima. */
+  async revocarLaDeLaPeticion(peticion: Request): Promise<void> {
+    const codigo = leerCookieSesion(peticion);
+    if (!esCodigoBienFormado(codigo)) return;
+    await this.prisma.$executeRaw`
+      UPDATE sesion SET revocada_en = now()
+      WHERE token_hash = ${huellaDeCodigo(codigo)} AND revocada_en IS NULL`;
+  }
+
+  /** Cierra las demás sesiones del alumno y deja abierta la indicada (OP-10). */
+  async revocarLasDemas(usuarioId: string, sesionId: string): Promise<void> {
+    await this.prisma.$executeRaw`
+      UPDATE sesion SET revocada_en = now()
+      WHERE usuario_id = ${usuarioId}::uuid AND id <> ${sesionId}::uuid
+        AND revocada_en IS NULL`;
+  }
+
+  /** Cierra todas las sesiones abiertas del alumno (OP-05, OP-07). */
+  async revocarTodas(
+    usuarioId: string,
+    cliente: Cliente = this.prisma,
+  ): Promise<void> {
+    await cliente.$executeRaw`
+      UPDATE sesion SET revocada_en = now()
+      WHERE usuario_id = ${usuarioId}::uuid AND revocada_en IS NULL`;
   }
 }

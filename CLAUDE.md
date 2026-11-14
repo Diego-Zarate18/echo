@@ -57,6 +57,7 @@ Se corren desde `backend/`. Usa siempre el Prisma instalado en el proyecto:
 - `npm run start:dev`: servidor en modo desarrollo (puerto 4000, rutas bajo `/api`). `npm run build`, `npm run lint`.
 - El backend no versiona pruebas automáticas (`*.spec.ts`, carpeta `test/`, Jest): se verifica con `build`, `lint`, las
   pruebas SQL y la colección de Postman, que vive fuera del repositorio (DEC-107).
+  Una fase termina cuando pasan `build`, `lint` y la colección de Postman de esa fase.
 - `npm run prisma:validar` / `prisma:generar`: valida el esquema / genera el cliente en `backend/src/generated/prisma`
   (DEC-108; no se versiona: hay que generarlo después de `npm install` y de cada cambio al esquema, antes de compilar).
 - El servidor fija la sesión de PostgreSQL en UTC (`PrismaService`): el adaptador de Prisma lee los `timestamptz` como
@@ -99,7 +100,7 @@ ids: `alumno@example.com`, `otra.alumna@example.com` y `pendiente@example.com`, 
 - La app se conecta como `echo_app`, las migraciones como `echo_migracion` y la carga de contenido como `echo_contenido`.
   El administrador entra como `echo_admin`, y todo lo que hacen los roles de administración queda en `auditoria_bd`, que
   solo crece (DEC-97, INV-31). Nunca uses el superusuario (INV-09).
-- La lógica de BD se limita a las 10 funciones, 5 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
+- La lógica de BD se limita a las 11 funciones, 5 disparadores y 2 vistas del grafo; el backend las invoca con `$queryRaw`.
   La regla de desbloqueo vive solo en `fn_estado_desbloqueo` (DEC-99): el backend la consulta y nunca la repite.
 - Los errores de las funciones traen el código de la API como mensaje y un SQLSTATE `EC4xx` (DEC-101); el backend solo los
   traduce a `{ codigo, mensaje }`.
