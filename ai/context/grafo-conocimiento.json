@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.6.9",
+    "version": "1.7.0",
     "actualizado": "2026-11-13",
-    "fase": "Backend: Fase 3 (cuenta y acceso) implementada en sus partes 3A, 3B y 3C; falta comprobarla en el equipo y en el navegador. La Fase 2 está terminada. Siguiente: Fase 4. El frontend sigue con otra persona del equipo desde la Tarea 12.",
+    "fase": "Backend: Fase 4 (contenido y navegación, OP-15 a OP-21) implementada; falta comprobarla en el equipo con Postman. Las Fases 2 y 3 están terminadas. Siguiente: Fase 5 (actividades y casos). El frontend sigue con otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -134,6 +134,11 @@
         "version": "1.6.9",
         "fecha": "2026-11-13",
         "cambio": "DEC-114 aprobada: el reingreso con Google para eliminar la cuenta se guarda en una cookie cifrada atada a la sesión, sin columna nueva en sesion."
+      },
+      {
+        "version": "1.7.0",
+        "fecha": "2026-11-13",
+        "cambio": "Fase 4: área de contenido (7 endpoints) sobre fn_estado_desbloqueo y v_avance_curso; DEC-115 (diferencias con el simulador); revisión de DEC-32; OP-15 a OP-21 marcadas como implementadas."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -945,7 +950,8 @@
       "descripcion": "Sin distinguir acentos, sobre título y descripción o resumen de módulos, cursos y lecciones. Lo bloqueado aparece como bloqueado. Mensaje si no hay resultados (RF-ORG-04).",
       "estado": "decidido",
       "detalles": {
-        "origen": "P-28; RF-ORG-03"
+        "origen": "P-28; RF-ORG-03",
+        "revisada": "1.7.0 (13/11): se implementa con los índices GIN de la base (to_tsvector('spanish', f_unaccent(...))). Cada palabra de la consulta cuenta como inicio de palabra y deben aparecer todas; las palabras vacías del español (de, la, el…) no cuentan y los signos se ignoran. Por eso «códigos» también encuentra «código» y «privacidad datos» encuentra «Privacidad de datos», cosa que el simulador del frontend (que busca la frase tal cual) no hace (DEC-115)."
       }
     },
     {
@@ -3400,7 +3406,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Alta",
         "recibe": "Sesión",
-        "devuelve": "Por módulo: título, descripción, estado (bloqueado, disponible, completado), % de avance, insignia"
+        "devuelve": "Por módulo: título, descripción, estado (bloqueado, disponible, completado), % de avance, insignia",
+        "implementada": "Fase 4 (13/11/2026): backend/src/areas/contenido"
       }
     },
     {
@@ -3414,7 +3421,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Alta",
         "recibe": "Slug del módulo",
-        "devuelve": "Por curso: título, estado, % de avance"
+        "devuelve": "Por curso: título, estado, % de avance",
+        "implementada": "Fase 4 (13/11/2026): backend/src/areas/contenido"
       }
     },
     {
@@ -3428,7 +3436,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Alta",
         "recibe": "Slug del curso",
-        "devuelve": "Lecciones con estado y su actividad y casos; examen con estado (bloqueado, disponible, en curso, en espera con minutos restantes, aprobado); lecciones «nuevas»"
+        "devuelve": "Lecciones con estado y su actividad y casos; examen con estado (bloqueado, disponible, en curso, en espera con minutos restantes, aprobado); lecciones «nuevas»",
+        "implementada": "Fase 4 (13/11/2026): backend/src/areas/contenido"
       }
     },
     {
@@ -3442,7 +3451,8 @@
         "tipo_acceso": "L+E",
         "frecuencia": "Alta",
         "recibe": "Slug de la lección",
-        "devuelve": "Secciones con texto (Markdown) e imágenes con texto alternativo, última sección vista, lección anterior y siguiente"
+        "devuelve": "Secciones con texto (Markdown) e imágenes con texto alternativo, última sección vista, lección anterior y siguiente",
+        "implementada": "Fase 4 (13/11/2026): backend/src/areas/contenido"
       }
     },
     {
@@ -3456,7 +3466,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Alta",
         "recibe": "Lección, número de sección",
-        "devuelve": "—"
+        "devuelve": "—",
+        "implementada": "Fase 4 (13/11/2026): backend/src/areas/contenido"
       }
     },
     {
@@ -3470,7 +3481,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Media",
         "recibe": "Lección",
-        "devuelve": "Estado actualizado y acceso a la actividad"
+        "devuelve": "Estado actualizado y acceso a la actividad",
+        "implementada": "Fase 4 (13/11/2026): backend/src/areas/contenido"
       }
     },
     {
@@ -3484,7 +3496,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Baja",
         "recibe": "Palabra clave",
-        "devuelve": "Módulos, cursos y lecciones que coinciden, con su estado"
+        "devuelve": "Módulos, cursos y lecciones que coinciden, con su estado",
+        "implementada": "Fase 4 (13/11/2026): backend/src/areas/contenido"
       }
     },
     {
@@ -6641,6 +6654,17 @@
       "detalles": {
         "origen": "Implementada en la parte 3C y aprobada por la persona del equipo el 13/11/2026",
         "alternativa": "Una columna sesion.reingreso_google_en con su migración"
+      }
+    },
+    {
+      "id": "DEC-115",
+      "tipo": "decision",
+      "nombre": "Fase 4: donde el backend y el simulador difieren, manda la base",
+      "descripcion": "El backend de contenido (OP-15 a OP-21) responde igual que el simulador del frontend en todas las acciones comparadas, salvo dos diferencias a propósito: (1) la búsqueda es de texto completo con los índices de la base (DEC-32), no de subcadena; (2) en PUT /api/lecciones/{leccion}/seccion-vista, un valor que no es entero (\"a\", 1.5) da FORMATO_INVALIDO y no OBLIGATORIO, como en el resto de la API. Los candados y el avance salen de fn_estado_desbloqueo y v_avance_curso (INV-06); el backend solo los combina.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Fase 4, 13/11/2026; comparación automática de 75 respuestas contra el simulador (71 iguales, sin contar el texto de mensaje)",
+        "nota_frontend": "El simulador puede seguir como está; si se quiere igualar, su búsqueda tendría que separar palabras y buscar prefijos."
       }
     }
   ],
@@ -14135,6 +14159,16 @@
       "origen": "OP-14",
       "destino": "DEC-114",
       "relacion": "regida_por"
+    },
+    {
+      "origen": "DEC-115",
+      "destino": "DEC-32",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-115",
+      "destino": "MOD-CONTENIDO",
+      "relacion": "afecta_a"
     }
   ]
 }
