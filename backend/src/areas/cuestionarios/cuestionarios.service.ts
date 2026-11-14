@@ -267,7 +267,8 @@ export class CuestionariosService {
   /**
    * Retroalimentación completa de un intento ya enviado (PreguntaCalificada): en actividades y exámenes
    * aprobados, con la respuesta correcta; en casos, la decisión con su etiqueta (DEC-16). Solo se llama después
-   * de fn_enviar_intento, que es quien califica (INV-04).
+   * de fn_enviar_intento, que es quien califica (INV-04). Muestra las preguntas que se respondieron en ese intento,
+   * aunque después se hayan retirado: el historial enseña lo que vio el alumno (DEC-15).
    */
   async calificadas(
     cliente: Cliente,
@@ -288,7 +289,10 @@ export class CuestionariosService {
       >`
         SELECT p.id, p.tipo, p.enunciado, p.retroalimentacion, p.fundamento_id, r.opcion_id, r.puntaje
         FROM intento i
-        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id AND p.activa
+        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id
+         AND (EXISTS (SELECT 1 FROM respuesta_opcion ro WHERE ro.intento_id = i.id AND ro.pregunta_id = p.id)
+              OR EXISTS (SELECT 1 FROM respuesta_pareja rx JOIN pareja px ON px.id = rx.pareja_izquierda_id
+                         WHERE rx.intento_id = i.id AND px.pregunta_id = p.id))
         LEFT JOIN respuesta_opcion r ON r.intento_id = i.id AND r.pregunta_id = p.id
         WHERE i.id = ${intentoId}::uuid AND i.estado = 'enviado'
         ORDER BY p.orden`,
@@ -305,7 +309,10 @@ export class CuestionariosService {
       >`
         SELECT o.id, o.pregunta_id, o.texto, o.valor, o.retroalimentacion, o.consecuencia, o.fundamento_id
         FROM intento i
-        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id AND p.activa
+        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id
+         AND (EXISTS (SELECT 1 FROM respuesta_opcion ro WHERE ro.intento_id = i.id AND ro.pregunta_id = p.id)
+              OR EXISTS (SELECT 1 FROM respuesta_pareja rx JOIN pareja px ON px.id = rx.pareja_izquierda_id
+                         WHERE rx.intento_id = i.id AND px.pregunta_id = p.id))
         JOIN opcion o ON o.pregunta_id = p.id
         WHERE i.id = ${intentoId}::uuid
           AND (o.activa OR EXISTS (SELECT 1 FROM respuesta_opcion r WHERE r.intento_id = i.id AND r.opcion_id = o.id))
@@ -321,7 +328,10 @@ export class CuestionariosService {
       >`
         SELECT x.id, x.pregunta_id, x.texto_izquierdo, x.texto_derecho, rp.pareja_derecha_id AS derecha_elegida
         FROM intento i
-        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id AND p.activa
+        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id
+         AND (EXISTS (SELECT 1 FROM respuesta_opcion ro WHERE ro.intento_id = i.id AND ro.pregunta_id = p.id)
+              OR EXISTS (SELECT 1 FROM respuesta_pareja rx JOIN pareja px ON px.id = rx.pareja_izquierda_id
+                         WHERE rx.intento_id = i.id AND px.pregunta_id = p.id))
         JOIN pareja x ON x.pregunta_id = p.id
         LEFT JOIN respuesta_pareja rp ON rp.intento_id = i.id AND rp.pareja_izquierda_id = x.id
         WHERE i.id = ${intentoId}::uuid
@@ -513,7 +523,10 @@ export class CuestionariosService {
         SELECT p.id, p.tipo, p.enunciado, r.puntaje, o.texto AS elegida,
                l.slug AS repaso_slug, l.titulo AS repaso_titulo
         FROM intento i
-        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id AND p.activa
+        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id
+         AND (EXISTS (SELECT 1 FROM respuesta_opcion ro WHERE ro.intento_id = i.id AND ro.pregunta_id = p.id)
+              OR EXISTS (SELECT 1 FROM respuesta_pareja rx JOIN pareja px ON px.id = rx.pareja_izquierda_id
+                         WHERE rx.intento_id = i.id AND px.pregunta_id = p.id))
         LEFT JOIN respuesta_opcion r ON r.intento_id = i.id AND r.pregunta_id = p.id
         LEFT JOIN opcion o ON o.id = r.opcion_id
         LEFT JOIN leccion l ON l.id = p.leccion_repaso_id
@@ -530,7 +543,10 @@ export class CuestionariosService {
         SELECT x.pregunta_id, rp.pareja_derecha_id = x.id AS acierto,
                x.texto_izquierdo AS izquierda, d.texto_derecho AS derecha
         FROM intento i
-        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id AND p.activa
+        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id
+         AND (EXISTS (SELECT 1 FROM respuesta_opcion ro WHERE ro.intento_id = i.id AND ro.pregunta_id = p.id)
+              OR EXISTS (SELECT 1 FROM respuesta_pareja rx JOIN pareja px ON px.id = rx.pareja_izquierda_id
+                         WHERE rx.intento_id = i.id AND px.pregunta_id = p.id))
         JOIN pareja x ON x.pregunta_id = p.id
         LEFT JOIN respuesta_pareja rp ON rp.intento_id = i.id AND rp.pareja_izquierda_id = x.id
         LEFT JOIN pareja d ON d.id = rp.pareja_derecha_id

@@ -15,3 +15,4 @@ coverage/
 *.dump
 *.backup
 *.7z
+*.gpg

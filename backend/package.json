@@ -20,6 +20,9 @@
     "prisma:desplegar": "prisma migrate deploy",
     "bd:semilla": "node prisma/semilla/cargar.mjs",
     "bd:reiniciar": "bash prisma/sql/reiniciar_local.sh",
+    "proceso:limpieza-diaria": "node dist/procesos/limpieza-diaria.js",
+    "contenido:revisar": "nest build && node dist/procesos/carga-contenido/index.js --revisar",
+    "contenido:cargar": "nest build && node dist/procesos/carga-contenido/index.js",
     "lint": "eslint \"src/**/*.ts\" --fix"
   },
   "dependencies": {
@@ -37,7 +40,8 @@
     "pg": "8.16.3",
     "prisma": "7.10.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "yaml": "2.9.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

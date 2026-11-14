@@ -4,6 +4,8 @@ import { ContenidoModule } from './areas/contenido/contenido.module';
 import { CuentaModule } from './areas/cuenta/cuenta.module';
 import { EvaluablesModule } from './areas/evaluables/evaluables.module';
 import { ExamenModule } from './areas/examen/examen.module';
+import { ProgresoModule } from './areas/progreso/progreso.module';
+import { ResultadosModule } from './areas/resultados/resultados.module';
 import { SesionGuard } from './areas/cuenta/sesion/sesion.guard';
 import { SesionModule } from './areas/cuenta/sesion/sesion.module';
 import { FiltroErrores } from './comun/errores/filtro-errores';
@@ -28,6 +30,8 @@ import { SeguridadModule } from './infraestructura/seguridad/seguridad.module';
     ContenidoModule,
     EvaluablesModule,
     ExamenModule,
+    ProgresoModule,
+    ResultadosModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: FiltroErrores },

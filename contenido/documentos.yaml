@@ -1,0 +1,12 @@
+- tipo: aviso_privacidad
+  version: "1.0"
+  archivo: docs/legal/aviso-de-privacidad-v1.0.md
+  requiere_aceptacion: true
+  resumen: Primera versión del aviso de privacidad integral.
+  publicado_en: 2026-10-21T06:00:00Z
+- tipo: terminos
+  version: "1.0"
+  archivo: docs/legal/terminos-y-condiciones-v1.0.md
+  requiere_aceptacion: true
+  resumen: Primera versión de los términos y condiciones.
+  publicado_en: 2026-10-21T06:00:00Z

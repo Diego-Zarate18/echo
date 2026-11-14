@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.9.0",
+    "version": "1.11.0",
     "actualizado": "2026-11-14",
-    "fase": "Backend: Fase 6 (exámenes, OP-24 a OP-27 y la insignia OP-32) implementada; falta comprobarla en el equipo con Postman. Las Fases 2 a 5 están terminadas. Siguiente: Fase 7 (progreso y resultados). El frontend sigue con otra persona del equipo desde la Tarea 12.",
+    "fase": "Backend: Fase 8 (limpieza diaria, carga de contenido, retiro y respaldo) implementada; falta comprobarla en el equipo. Las Fases 2 a 7 están terminadas. Siguiente: Fase 9 (cumplimiento del contrato). El frontend sigue con otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -154,6 +154,16 @@
         "version": "1.9.0",
         "fecha": "2026-11-14",
         "cambio": "Fase 6: área examen; DEC-118 (plan aprobado); OP-24 a OP-27 y OP-32 marcadas como implementadas."
+      },
+      {
+        "version": "1.10.0",
+        "fecha": "2026-11-14",
+        "cambio": "Fase 7: áreas progreso y resultados; DEC-119; revisión de DEC-104; OP-28 a OP-30 marcadas como implementadas."
+      },
+      {
+        "version": "1.11.0",
+        "fecha": "2026-11-14",
+        "cambio": "Fase 8: procesos de limpieza y carga de contenido, respaldo con gpg; DEC-120; revisiones de DEC-69 y OP-37; OP-34 a OP-37 marcadas como implementadas."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -3623,7 +3633,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Media",
         "recibe": "Sesión",
-        "devuelve": "% general, % por módulo y curso, insignias obtenidas con fecha, insignias pendientes con sus requisitos"
+        "devuelve": "% general, % por módulo y curso, insignias obtenidas con fecha, insignias pendientes con sus requisitos",
+        "implementada": "Fase 7 (14/11/2026): backend/src/areas/progreso y backend/src/areas/resultados"
       }
     },
     {
@@ -3637,7 +3648,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Media",
         "recibe": "Filtros opcionales: módulo, tipo, fecha inicial y final",
-        "devuelve": "Lista con fecha, módulo, curso, tipo, título, calificación y número de intento; marca el mejor (o el primero en casos)"
+        "devuelve": "Lista con fecha, módulo, curso, tipo, título, calificación y número de intento; marca el mejor (o el primero en casos)",
+        "implementada": "Fase 7 (14/11/2026): backend/src/areas/progreso y backend/src/areas/resultados"
       }
     },
     {
@@ -3651,7 +3663,8 @@
         "tipo_acceso": "L",
         "frecuencia": "Baja",
         "recibe": "Intento",
-        "devuelve": "Cada pregunta con la respuesta elegida, su puntaje y la retroalimentación"
+        "devuelve": "Cada pregunta con la respuesta elegida, su puntaje y la retroalimentación",
+        "implementada": "Fase 7 (14/11/2026): backend/src/areas/progreso y backend/src/areas/resultados"
       }
     },
     {
@@ -3709,7 +3722,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Diaria",
         "recibe": "—",
-        "devuelve": "—"
+        "devuelve": "—",
+        "implementada": "Fase 8 (14/11/2026): src/procesos/limpieza-diaria.ts (npm run proceso:limpieza-diaria)"
       }
     },
     {
@@ -3723,7 +3737,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Por publicación",
         "recibe": "Script versionado",
-        "devuelve": "—"
+        "devuelve": "—",
+        "implementada": "Fase 8 (14/11/2026): src/procesos/carga-contenido (npm run contenido:revisar y contenido:cargar)"
       }
     },
     {
@@ -3737,7 +3752,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Ocasional",
         "recibe": "Pregunta u opción",
-        "devuelve": "—"
+        "devuelve": "—",
+        "implementada": "Fase 8 (14/11/2026): src/procesos/carga-contenido: una pregunta respondida que cambia o se quita se retira"
       }
     },
     {
@@ -5411,11 +5427,12 @@
       "id": "DEC-69",
       "tipo": "decision",
       "nombre": "Respaldo manual cifrado",
-      "descripcion": "pg_dump 18 (formato custom) con credenciales de echo_migracion. Reglas: (1) se cifra al crearse (7-Zip AES-256 con contraseña); (2) se guarda fuera del repositorio, en carpeta ignorada por .gitignore; (3) solo sirve para restaurar producción, nunca se carga en desarrollo; (4) se conservan las últimas 7 copias; (5) lo hace una persona designada; (6) se toma antes de cada migración, antes de cada carga de contenido y una vez por semana; (7) se prueba restaurar al menos una vez en una base local vacía; (8) la versión de pg_dump debe ser la 18. Tamaño estimado: ~5 MB comprimido con 100 estudiantes.",
+      "descripcion": "pg_dump 18 (formato custom) con credenciales de echo_migracion. Reglas: (1) se cifra al crearse (gpg AES-256 con contraseña, al vuelo: el volcado sin cifrar no toca el disco); (2) se guarda fuera del repositorio, en carpeta ignorada por .gitignore; (3) solo sirve para restaurar producción, nunca se carga en desarrollo; (4) se conservan las últimas 7 copias; (5) lo hace una persona designada; (6) se toma antes de cada migración, antes de cada carga de contenido y una vez por semana; (7) se prueba restaurar al menos una vez en una base local vacía; (8) la versión de pg_dump debe ser la 18. Tamaño estimado: ~5 MB comprimido con 100 estudiantes.",
       "estado": "decidido",
       "detalles": {
         "origen": "PEND-03 (18/10)",
-        "auditoria": "Cada respaldo y cada restauración se registran con fn_registrar_accion_manual (DEC-97)"
+        "auditoria": "Cada respaldo y cada restauración se registran con fn_registrar_accion_manual (DEC-97)",
+        "revisada": "1.11.0 (14/11): gpg en lugar de 7-Zip (viene con Git para Windows); script prisma/sql/respaldo.sh y procedimiento en docs/backend/respaldos.md."
       }
     },
     {
@@ -5518,15 +5535,16 @@
       "id": "OP-37",
       "tipo": "operacion",
       "nombre": "Respaldo manual cifrado",
-      "descripcion": "pg_dump 18 + cifrado 7-Zip, siguiendo las 8 reglas de DEC-69.",
+      "descripcion": "pg_dump 18 + cifrado con gpg, siguiendo las 8 reglas de DEC-69.",
       "estado": "decidido",
       "detalles": {
         "origen": "Nueva (18/10)",
         "tipo_acceso": "L",
         "frecuencia": "Antes de cada migración y carga de contenido, y semanal",
         "recibe": "Credenciales de echo_migracion",
-        "devuelve": "Archivo .7z cifrado fuera del repositorio",
-        "restauracion": "Ver DEC-95: reaplicar fn_anonimizar_usuario a las cuentas anonimizadas después de la fecha del respaldo antes de reabrir"
+        "devuelve": "Archivo .dump.gpg cifrado fuera del repositorio",
+        "restauracion": "Ver DEC-95: reaplicar fn_anonimizar_usuario a las cuentas anonimizadas después de la fecha del respaldo antes de reabrir",
+        "implementada": "Fase 8 (14/11/2026): prisma/sql/respaldo.sh y docs/backend/respaldos.md"
       }
     },
     {
@@ -6568,7 +6586,8 @@
       "estado": "decidido",
       "detalles": {
         "origen": "Aprobada por la persona del equipo el 12/11/2026, antes de la Fase 2 del backend",
-        "descartadas": "Por capas (controllers/services), hexagonal por módulo y monorepo de Nest (apps/libs)"
+        "descartadas": "Por capas (controllers/services), hexagonal por módulo y monorepo de Nest (apps/libs)",
+        "revisada": "1.10.0 (14/11): además de cuestionarios, areas/progreso importa areas/contenido por su árbol de avance (DEC-119)."
       }
     },
     {
@@ -6726,6 +6745,30 @@
       "detalles": {
         "origen": "Plan aprobado por la persona del equipo el 14/11/2026 (Fase 6)",
         "comparacion_con_el_simulador": "Mismas respuestas en 84 acciones, salvo el orden de la columna derecha de la actividad 3, que depende del secreto de cada servidor."
+      }
+    },
+    {
+      "id": "DEC-119",
+      "tipo": "decision",
+      "nombre": "Fase 7: progreso y resultados",
+      "descripcion": "Mi progreso (OP-28) usa el mismo árbol de contenido que la navegación (ContenidoService.arbol), así que el avance y los estados siempre coinciden con /api/modulos; por eso areas/progreso importa areas/contenido, una segunda excepción a la regla de DEC-104 además de cuestionarios. cursosFaltantes es 0 si la insignia ya se obtuvo (C-11) y, si no, los cursos del módulo que no están completos. Mis resultados (OP-29) lista solo intentos enviados del alumno, del más reciente al más antiguo, aunque su contenido se haya retirado; destacado es el mejor intento (el primero si empatan) en actividades y exámenes y el primero en casos (C-08). Los días de los filtros se convierten con AT TIME ZONE 'America/Mexico_City' (DEC-30); un módulo que no existe, un tipo desconocido, una fecha imposible o un filtro repetido dan 422 FORMATO_INVALIDO. El detalle (OP-30) responde 404 para intentos ajenos o aún abiertos y muestra las preguntas en su orden base; un examen reprobado va sin solución (DEC-11).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Fase 7, 14/11/2026",
+        "diferencias_con_el_simulador": "El simulador acepta una fecha imposible como 2026-02-30 (la convierte en el 2 de marzo) y, con un filtro repetido, toma el primero; el backend responde 422 en los dos casos.",
+        "excepcion_a_DEC-104": "Si se prefiere no tener esta excepción, el árbol de contenido podría pasar a un área compartida como cuestionarios."
+      }
+    },
+    {
+      "id": "DEC-120",
+      "tipo": "decision",
+      "nombre": "Carga de contenido: formato y reglas de actualización",
+      "descripcion": "El contenido vive en contenido/ en la raíz del repositorio: Markdown con encabezado YAML para las lecciones (cada «## Título» es una sección; una imagen Markdown al inicio de una sección es su imagen) y YAML para módulos, cursos, actividades, casos, exámenes, fundamentos y documentos legales; carpetas y archivos se llaman NN-slug (NN es el orden). Dependencia: yaml 2.9.1. src/procesos/carga-contenido lo valida todo antes de escribir (DEC-08, DEC-33, DEC-100, DEC-117, llaves desconocidas) y lo aplica como echo_contenido en una sola transacción; npm run contenido:revisar hace lo mismo y deshace al final. Módulos, cursos y lecciones se reconocen por su slug y nunca se borran (publicado: false); lo que está en la base y no en los archivos solo se avisa. Las preguntas se reconocen por su posición: si cambiaron o ya no están, se borran si nadie las respondió y se retiran (activa = false) si sí (INV-02, DEC-15); para saberlo, el script intenta borrar dentro de un SAVEPOINT y la base lo impide con ON DELETE RESTRICT, así que echo_contenido no necesita leer respuestas ni intentos. Lo mismo para un caso con intentos, que además libera su posición. Una versión publicada de un documento legal nunca se edita.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Formato y plan aprobados por la persona del equipo el 14/11/2026 (Fase 8); el contenido real lo escribe y lo carga el equipo",
+        "historial": "Las consultas del historial (detalle de un intento) muestran las preguntas respondidas en ese intento aunque después se hayan retirado (DEC-15).",
+        "prueba": "La semilla convertida a este formato y cargada en una base vacía queda igual a la de contenido.sql, y una segunda carga no cambia nada."
       }
     }
   ],
@@ -14304,6 +14347,91 @@
     {
       "origen": "DEC-118",
       "destino": "MOD-EXAMEN",
+      "relacion": "afecta_a"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "C-08",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "C-11",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "DEC-30",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "INV-07",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "DEC-11",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "DEC-104",
+      "relacion": "afina"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "MOD-PROGRESO",
+      "relacion": "afecta_a"
+    },
+    {
+      "origen": "DEC-119",
+      "destino": "MOD-RESULTADOS",
+      "relacion": "afecta_a"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "DEC-33",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "INV-02",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "DEC-15",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "DEC-08",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "DEC-100",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "DEC-117",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "DEC-87",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "DEC-28",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-120",
+      "destino": "MOD-CARGA",
       "relacion": "afecta_a"
     }
   ]
