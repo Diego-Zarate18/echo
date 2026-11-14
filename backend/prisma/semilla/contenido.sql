@@ -138,7 +138,7 @@ INSERT INTO pregunta (cuestionario_id, tipo, enunciado, orden, fundamento_id, le
   (3, 'relacion', 'Relaciona cada principio con lo que pide.', 2, 2, 2, 'Cada principio orienta una parte del trabajo.'),
   (4, 'opcion_multiple', '¿Qué complementa un código de ética?', 1, NULL, 1, 'El código complementa a la ley.'),
   (4, 'verdadero_falso', 'El código de ACM pide evaluar los riesgos de un sistema.', 2, 2, 2, 'Es el principio 2.5.'),
-  (4, 'relacion', 'Relaciona cada situación con el principio que la orienta.', 3, 1, 2, 'Cada situación se resuelve con un principio distinto.'),
+  (4, 'opcion_multiple', 'Guardar contraseñas sin cifrar va contra un principio del código de ACM. ¿Cuál?', 3, 1, 2, 'Una contraseña sin cifrar puede exponer a las personas: es un daño evitable.'),
   (4, 'opcion_multiple', 'Ante un dilema, ¿qué conviene preguntarse primero?', 4, NULL, 1, 'Primero, a quién afecta la decisión.'),
   (4, 'verdadero_falso', 'Un formulario que no se puede usar con teclado excluye a algunas personas.', 5, NULL, 1, 'La accesibilidad también es una decisión ética.'),
   (5, 'verdadero_falso', 'El correo electrónico es un dato personal.', 1, 3, 3, 'Identifica a una persona.'),
@@ -151,7 +151,7 @@ INSERT INTO pregunta (cuestionario_id, tipo, enunciado, orden, fundamento_id, le
   (10, 'verdadero_falso', 'Copiar código ajeno sin permiso en tu proyecto está bien si lo cambias un poco.', 1, 4, 5, 'Cambiarlo no te da permiso.'),
   (10, 'opcion_multiple', '¿Qué piden casi todas las licencias libres?', 2, 4, 6, 'Dar crédito.');
 
--- opcion: ids 1 a 38
+-- opcion: ids 1 a 41. Las de la pregunta 8 van al final (39 a 41) para no correr los ids de las demás.
 INSERT INTO opcion (pregunta_id, texto, valor, retroalimentacion, consecuencia, fundamento_id, orden) VALUES
   (1, 'Orienta cómo actuar ante decisiones profesionales.', 1, 'Correcto: es una guía para decidir.', NULL, NULL, 1),
   (1, 'Sustituye a las leyes del país.', 0, 'No: las complementa.', NULL, NULL, 2),
@@ -190,16 +190,16 @@ INSERT INTO opcion (pregunta_id, texto, valor, retroalimentacion, consecuencia, 
   (18, 'Verdadero', 0, 'No: necesitas permiso o una licencia.', NULL, NULL, 1),
   (18, 'Falso', 1, 'Correcto.', NULL, NULL, 2),
   (19, 'Dar crédito a quien escribió el código', 1, 'Correcto.', NULL, NULL, 1),
-  (19, 'Pagar una cuota', 0, 'No.', NULL, NULL, 2);
+  (19, 'Pagar una cuota', 0, 'No.', NULL, NULL, 2),
+  (8, 'Evitar el daño', 1, 'Correcto.', NULL, NULL, 1),
+  (8, 'Ser honesto', 0, 'Ser honesto es informar los límites de un sistema.', NULL, NULL, 2),
+  (8, 'Entregar siempre a tiempo', 0, 'Es deseable, pero no es un principio del código.', NULL, NULL, 3);
 
--- pareja: ids 1 a 6
+-- pareja: ids 1 a 3. Los exámenes no llevan relación de columnas (DEC-117): solo la actividad 3 la tiene.
 INSERT INTO pareja (pregunta_id, texto_izquierdo, texto_derecho, orden) VALUES
   (5, 'Evitar el daño', 'Prever consecuencias negativas', 1),
   (5, 'Respetar la privacidad', 'Usar solo los datos necesarios', 2),
-  (5, 'Ser honesto', 'Informar los límites de un sistema', 3),
-  (8, 'Guardar contraseñas sin cifrar', 'Evitar el daño', 1),
-  (8, 'Pedir solo los datos necesarios', 'Respetar la privacidad', 2),
-  (8, 'Avisar que un sistema puede fallar', 'Ser honesto', 3);
+  (5, 'Ser honesto', 'Informar los límites de un sistema', 3);
 
 -- Los ids deben coincidir con los del simulador (las pruebas del frontend usan /api/actividades/1, /api/examenes/4…).
 -- Si la base no se reinició, los contadores de identidad no empiezan en 1 y los ids quedan corridos.
@@ -207,7 +207,7 @@ DO $semilla$
 BEGIN
   IF (SELECT max(id) FROM modulo) <> 2 OR (SELECT max(id) FROM cuestionario) <> 10
      OR (SELECT id FROM cuestionario WHERE titulo = 'Examen: Códigos de ética') <> 4
-     OR (SELECT max(id) FROM opcion) <> 38 OR (SELECT max(id) FROM pareja) <> 6 THEN
+     OR (SELECT max(id) FROM opcion) <> 41 OR (SELECT max(id) FROM pareja) <> 3 THEN
     RAISE EXCEPTION 'Los ids del contenido no coinciden con los del simulador. Reinicia la base: npm run bd:reiniciar';
   END IF;
 END

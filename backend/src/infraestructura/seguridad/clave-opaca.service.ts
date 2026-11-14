@@ -24,6 +24,18 @@ export class ClaveOpacaService {
   }
 
   /**
+   * Semilla fija para mezclar la columna derecha de una pregunta de relación cuando no hay semilla de intento
+   * (actividades y casos): el mismo alumno la ve siempre en el mismo orden y otro alumno en otro, y sin el secreto
+   * no se puede predecir. Es un entero de 32 bits sin signo.
+   */
+  semillaDeOrden(usuarioId: string, preguntaId: number): number {
+    return createHmac('sha256', this.secreto)
+      .update(`orden\n${usuarioId}\n${preguntaId}`, 'utf8')
+      .digest()
+      .readUInt32BE(0);
+  }
+
+  /**
    * Traduce la clave que mandó el alumno al id de la pareja, buscando entre las parejas de la pregunta.
    * Devuelve null si no corresponde a ninguna.
    */

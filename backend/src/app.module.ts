@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ContenidoModule } from './areas/contenido/contenido.module';
 import { CuentaModule } from './areas/cuenta/cuenta.module';
+import { EvaluablesModule } from './areas/evaluables/evaluables.module';
 import { SesionGuard } from './areas/cuenta/sesion/sesion.guard';
 import { SesionModule } from './areas/cuenta/sesion/sesion.module';
 import { FiltroErrores } from './comun/errores/filtro-errores';
@@ -24,6 +25,7 @@ import { SeguridadModule } from './infraestructura/seguridad/seguridad.module';
     SesionModule,
     CuentaModule,
     ContenidoModule,
+    EvaluablesModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: FiltroErrores },

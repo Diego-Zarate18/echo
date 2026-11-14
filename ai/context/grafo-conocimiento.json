@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.7.0",
-    "actualizado": "2026-11-13",
-    "fase": "Backend: Fase 4 (contenido y navegación, OP-15 a OP-21) implementada; falta comprobarla en el equipo con Postman. Las Fases 2 y 3 están terminadas. Siguiente: Fase 5 (actividades y casos). El frontend sigue con otra persona del equipo desde la Tarea 12.",
+    "version": "1.8.1",
+    "actualizado": "2026-11-14",
+    "fase": "Backend: Fase 5 (actividades y casos, OP-22 y OP-23) implementada; falta comprobarla en el equipo con Postman. Las Fases 2 a 4 están terminadas. Siguiente: Fase 6 (examen). El frontend sigue con otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -139,6 +139,16 @@
         "version": "1.7.0",
         "fecha": "2026-11-13",
         "cambio": "Fase 4: área de contenido (7 endpoints) sobre fn_estado_desbloqueo y v_avance_curso; DEC-115 (diferencias con el simulador); revisión de DEC-32; OP-15 a OP-21 marcadas como implementadas."
+      },
+      {
+        "version": "1.8.0",
+        "fecha": "2026-11-14",
+        "cambio": "Fase 5: áreas cuestionarios (compartida) y evaluables; DEC-116 (plan aprobado); revisiones de DEC-91 y OP-32; OP-22 y OP-23 marcadas como implementadas."
+      },
+      {
+        "version": "1.8.1",
+        "fecha": "2026-11-14",
+        "cambio": "DEC-117: exámenes sin relación de columnas; revisión de DEC-61 y DEC-116; semilla ajustada (pregunta 8 del examen 4)."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -1173,10 +1183,11 @@
       "id": "DEC-61",
       "tipo": "decision",
       "nombre": "Actividades solo de opciones",
-      "descripcion": "Actividades y exámenes usan opción múltiple, verdadero/falso y relación de columnas; los casos usan «decisión». No hay texto libre («completar información» se elige de opciones).",
+      "descripcion": "Actividades usan opción múltiple, verdadero/falso y relación de columnas; los exámenes, solo opción múltiple y verdadero/falso (DEC-117); los casos usan «decisión». No hay texto libre («completar información» se elige de opciones).",
       "estado": "decidido",
       "detalles": {
-        "origen": "Respuesta del equipo 14/10; corrige 7.5"
+        "origen": "Respuesta del equipo 14/10; corrige 7.5",
+        "revisada": "1.8.1 (14/11): los exámenes ya no llevan relación de columnas (DEC-117)."
       }
     },
     {
@@ -3512,7 +3523,8 @@
         "frecuencia": "Media",
         "recibe": "Actividad o caso",
         "devuelve": "Instrucciones, preguntas y opciones (SIN sus valores)",
-        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7.",
+        "implementada": "Fase 5 (14/11/2026): backend/src/areas/evaluables, con backend/src/areas/cuestionarios"
       }
     },
     {
@@ -3527,7 +3539,8 @@
         "frecuencia": "Media",
         "recibe": "Respuesta de cada pregunta",
         "devuelve": "Calificación, retroalimentación por pregunta (con la correcta en actividades), etiqueta de decisión y consecuencia en casos",
-        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7.",
+        "implementada": "Fase 5 (14/11/2026): backend/src/areas/evaluables, con backend/src/areas/cuestionarios"
       }
     },
     {
@@ -3657,7 +3670,8 @@
         "tipo_acceso": "E",
         "frecuencia": "Baja",
         "recibe": "Alumno, módulo",
-        "devuelve": "—"
+        "devuelve": "—",
+        "nota": "1.8.0: la otorga fn_enviar_intento solo al aprobar un examen; se implementa en la Fase 6, no en la 5."
       }
     },
     {
@@ -6070,7 +6084,8 @@
       "descripcion": "En una pregunta de relacionar columnas, la API nunca expone los ids de pareja en la columna derecha, porque coincidirían con los de la izquierda y revelarían la respuesta (INV-04). Cada elemento derecho lleva una clave opaca: HMAC-SHA-256 del alumno, la pregunta y la pareja, con un secreto del servidor; al guardar, el backend la traduce a pareja_derecha_id. No cambia el esquema.",
       "estado": "decidido",
       "detalles": {
-        "origen": "Hallazgo de la Tarea 05 (21/10)"
+        "origen": "Hallazgo de la Tarea 05 (21/10)",
+        "revisada": "1.8.0 (14/11): implementada en ClaveOpacaService (clave de 43 caracteres base64url). El mismo secreto da la semilla fija con que se mezcla la columna derecha en actividades y casos (DEC-116)."
       }
     },
     {
@@ -6665,6 +6680,31 @@
       "detalles": {
         "origen": "Fase 4, 13/11/2026; comparación automática de 75 respuestas contra el simulador (71 iguales, sin contar el texto de mensaje)",
         "nota_frontend": "El simulador puede seguir como está; si se quiere igualar, su búsqueda tendría que separar palabras y buscar prefijos."
+      }
+    },
+    {
+      "id": "DEC-116",
+      "tipo": "decision",
+      "nombre": "Fase 5: cómo se arman y se envían actividades y casos",
+      "descripcion": "Actividades y casos muestran preguntas y opciones en su orden base; la columna derecha de una relación siempre va mezclada, con una semilla fija por alumno y pregunta derivada de SECRETO_CLAVE_OPACA (HMAC), así que al recargar se ve igual y otro alumno la ve en otro orden. Las consultas que arman la pregunta para responder solo leen columnas visibles: valor, retroalimentación, consecuencia y fundamento no salen de la base en ese camino (INV-04). Al enviar, el backend valida el cuerpo contra el cuestionario (422 FORMATO_INVALIDO si una respuesta no corresponde; RESPUESTAS_INCOMPLETAS con preguntasPendientes si falta una pregunta o una unión de una relación) y luego, en una transacción, llama a fn_iniciar_intento, guarda las respuestas y llama a fn_enviar_intento. Enviar una actividad nunca otorga insignia: solo la otorga aprobar el examen que completa el módulo (Fase 6).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Plan aprobado por la persona del equipo el 14/11/2026 (Fase 5)",
+        "diferencia_con_el_simulador": "Una relación con uniones faltantes responde RESPUESTAS_INCOMPLETAS (como fn_enviar_intento), no FORMATO_INVALIDO; una pregunta repetida en el cuerpo es FORMATO_INVALIDO.",
+        "nota_fase_6": "El problema de intercambiar derechas en una relación ya guardada no se presenta: los exámenes no llevan relación de columnas (DEC-117)."
+      }
+    },
+    {
+      "id": "DEC-117",
+      "tipo": "decision",
+      "nombre": "Exámenes sin relación de columnas",
+      "descripcion": "Un examen solo tiene preguntas de opción múltiple y verdadero/falso. La relación de columnas queda para las actividades. Así, guardar y cambiar respuestas de examen (OP-26) solo toca respuesta_opcion, y no hace falta resolver el intercambio de derechas en respuesta_pareja (ux_respuesta_pareja_derecha) ni dar a echo_app permiso de borrar respuestas.",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Pedido de la persona del equipo el 14/11/2026, al preparar la Fase 6",
+        "semilla": "La pregunta 8 del examen 4 pasó de relación a opción múltiple con el mismo id; sus opciones son las 39 a 41 (al final, para no correr los demás ids) y se quitaron sus parejas (ya solo hay 3, de la actividad 3).",
+        "frontend": "El simulador (frontend/simulador/contenido.mjs) debe hacer el mismo cambio para seguir igual a la semilla (DEC-103).",
+        "donde_se_valida": "La base no restringe el tipo de pregunta por tipo de cuestionario; lo valida el script de carga de contenido (Fase 8), como los valores de DEC-08."
       }
     }
   ],
@@ -14168,6 +14208,46 @@
     {
       "origen": "DEC-115",
       "destino": "MOD-CONTENIDO",
+      "relacion": "afecta_a"
+    },
+    {
+      "origen": "DEC-116",
+      "destino": "INV-04",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-116",
+      "destino": "DEC-91",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-116",
+      "destino": "DEC-09",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-116",
+      "destino": "INV-05",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-116",
+      "destino": "MOD-EVALUABLES",
+      "relacion": "afecta_a"
+    },
+    {
+      "origen": "DEC-117",
+      "destino": "DEC-61",
+      "relacion": "modifica"
+    },
+    {
+      "origen": "DEC-117",
+      "destino": "DEC-103",
+      "relacion": "afecta_a"
+    },
+    {
+      "origen": "DEC-117",
+      "destino": "MOD-EXAMEN",
       "relacion": "afecta_a"
     }
   ]
