@@ -1,9 +1,9 @@
 {
   "meta": {
     "nombre": "Grafo de conocimiento — Echo",
-    "version": "1.8.1",
+    "version": "1.9.0",
     "actualizado": "2026-11-14",
-    "fase": "Backend: Fase 5 (actividades y casos, OP-22 y OP-23) implementada; falta comprobarla en el equipo con Postman. Las Fases 2 a 4 están terminadas. Siguiente: Fase 6 (examen). El frontend sigue con otra persona del equipo desde la Tarea 12.",
+    "fase": "Backend: Fase 6 (exámenes, OP-24 a OP-27 y la insignia OP-32) implementada; falta comprobarla en el equipo con Postman. Las Fases 2 a 5 están terminadas. Siguiente: Fase 7 (progreso y resultados). El frontend sigue con otra persona del equipo desde la Tarea 12.",
     "historial": [
       {
         "version": "0.1.0",
@@ -149,6 +149,11 @@
         "version": "1.8.1",
         "fecha": "2026-11-14",
         "cambio": "DEC-117: exámenes sin relación de columnas; revisión de DEC-61 y DEC-116; semilla ajustada (pregunta 8 del examen 4)."
+      },
+      {
+        "version": "1.9.0",
+        "fecha": "2026-11-14",
+        "cambio": "Fase 6: área examen; DEC-118 (plan aprobado); OP-24 a OP-27 y OP-32 marcadas como implementadas."
       }
     ],
     "proposito": "Fuente de verdad del contexto, requerimientos, decisiones técnicas, modelo de datos y vistas de Echo, para personas y agentes de IA.",
@@ -3555,7 +3560,8 @@
         "frecuencia": "Media",
         "recibe": "Examen",
         "devuelve": "Instrucciones, número de preguntas, calificación mínima, estado, minutos de espera restantes, intentos previos",
-        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7.",
+        "implementada": "Fase 6 (14/11/2026): backend/src/areas/examen, con backend/src/areas/cuestionarios"
       }
     },
     {
@@ -3570,7 +3576,8 @@
         "frecuencia": "Media",
         "recibe": "Examen",
         "devuelve": "Preguntas en el orden de la semilla y respuestas ya guardadas",
-        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7.",
+        "implementada": "Fase 6 (14/11/2026): backend/src/areas/examen, con backend/src/areas/cuestionarios"
       }
     },
     {
@@ -3585,7 +3592,8 @@
         "frecuencia": "Alta",
         "recibe": "Intento, pregunta, opción elegida o parejas",
         "devuelve": "Confirmación de guardado",
-        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7.",
+        "implementada": "Fase 6 (14/11/2026): backend/src/areas/examen, con backend/src/areas/cuestionarios"
       }
     },
     {
@@ -3600,7 +3608,8 @@
         "frecuencia": "Media",
         "recibe": "Intento",
         "devuelve": "Calificación, aprobado o no, aciertos y errores, retroalimentación (sin respuestas correctas si reprobó), lecciones a repasar, minutos de espera, insignia nueva",
-        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7."
+        "identificador": "cuestionario.id (BIGINT); cuestionario no tiene slug. Los intentos, por UUID v7.",
+        "implementada": "Fase 6 (14/11/2026): backend/src/areas/examen, con backend/src/areas/cuestionarios"
       }
     },
     {
@@ -3671,7 +3680,8 @@
         "frecuencia": "Baja",
         "recibe": "Alumno, módulo",
         "devuelve": "—",
-        "nota": "1.8.0: la otorga fn_enviar_intento solo al aprobar un examen; se implementa en la Fase 6, no en la 5."
+        "nota": "1.8.0: la otorga fn_enviar_intento solo al aprobar un examen; se implementa en la Fase 6, no en la 5.",
+        "implementada": "Fase 6 (14/11/2026): backend/src/areas/examen, con backend/src/areas/cuestionarios"
       }
     },
     {
@@ -6705,6 +6715,17 @@
         "semilla": "La pregunta 8 del examen 4 pasó de relación a opción múltiple con el mismo id; sus opciones son las 39 a 41 (al final, para no correr los demás ids) y se quitaron sus parejas (ya solo hay 3, de la actividad 3).",
         "frontend": "El simulador (frontend/simulador/contenido.mjs) debe hacer el mismo cambio para seguir igual a la semilla (DEC-103).",
         "donde_se_valida": "La base no restringe el tipo de pregunta por tipo de cuestionario; lo valida el script de carga de contenido (Fase 8), como los valores de DEC-08."
+      }
+    },
+    {
+      "id": "DEC-118",
+      "tipo": "decision",
+      "nombre": "Fase 6: cómo se resuelven y envían los exámenes",
+      "descripcion": "La portada responde 403 si el curso está bloqueado y, si no, el estado del examen (C-05) con la hora del servidor. Iniciar llama a fn_iniciar_intento: 201 si el intento es nuevo y 200 si lo retoma, con las preguntas mezcladas con la semilla del intento (DEC-09; las de verdadero/falso conservan el orden de sus opciones) y las respuestas ya guardadas. Guardar una respuesta solo toca respuesta_opcion (DEC-117); una opción que no es de la pregunta da 422 con campos.opcionId. Enviar llama a fn_enviar_intento en una transacción: aprobado trae la retroalimentación completa, el curso completado y la insignia si fn_enviar_intento la otorgó; reprobado trae qué se eligió, el puntaje y la lección de repaso de cada pregunta, sin la respuesta correcta (DEC-11), las lecciones de repaso sin repetir y cuándo puede volver a intentarlo. Un intento ajeno responde 404 (INV-07).",
+      "estado": "decidido",
+      "detalles": {
+        "origen": "Plan aprobado por la persona del equipo el 14/11/2026 (Fase 6)",
+        "comparacion_con_el_simulador": "Mismas respuestas en 84 acciones, salvo el orden de la columna derecha de la actividad 3, que depende del secreto de cada servidor."
       }
     }
   ],
@@ -14247,6 +14268,41 @@
     },
     {
       "origen": "DEC-117",
+      "destino": "MOD-EXAMEN",
+      "relacion": "afecta_a"
+    },
+    {
+      "origen": "DEC-118",
+      "destino": "DEC-09",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-118",
+      "destino": "DEC-11",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-118",
+      "destino": "DEC-117",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-118",
+      "destino": "INV-04",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-118",
+      "destino": "INV-05",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-118",
+      "destino": "INV-07",
+      "relacion": "depende_de"
+    },
+    {
+      "origen": "DEC-118",
       "destino": "MOD-EXAMEN",
       "relacion": "afecta_a"
     }

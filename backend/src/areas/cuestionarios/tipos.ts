@@ -76,3 +76,22 @@ export interface RespuestasInternas {
   opciones: { preguntaId: number; opcionId: number }[];
   parejas: { izquierdaId: number; derechaId: number }[];
 }
+
+/** RespuestaGuardada: lo que ya eligió el alumno; no dice si es correcto (INV-04). */
+export interface RespuestaGuardada {
+  preguntaId: number;
+  guardadaEn: string;
+  opcionId?: number;
+  uniones?: Union[];
+}
+
+/** PreguntaSinSolucion: examen reprobado; qué falló y qué repasar, sin la correcta (DEC-11). */
+export interface PreguntaSinSolucion {
+  id: number;
+  tipo: TipoPreguntaApi;
+  enunciado: string;
+  puntaje: number;
+  correcta: boolean;
+  respuestaElegida: string[];
+  leccionRepaso: { slug: string; titulo: string } | null;
+}

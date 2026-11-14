@@ -10,6 +10,8 @@ import type {
   Fundamento,
   PreguntaCalificada,
   PreguntaParaResponder,
+  PreguntaSinSolucion,
+  RespuestaGuardada,
   RespuestasInternas,
 } from './tipos';
 
@@ -270,6 +272,7 @@ export class CuestionariosService {
   async calificadas(
     cliente: Cliente,
     intentoId: string,
+    semilla: number | null = null,
   ): Promise<PreguntaCalificada[]> {
     const [preguntas, opciones, parejas, fundamentos] = await Promise.all([
       cliente.$queryRaw<
@@ -359,7 +362,7 @@ export class CuestionariosService {
     };
     const textoPorPareja = new Map(parejas.map((x) => [x.id, x.texto_derecho]));
 
-    return preguntas.map((p): PreguntaCalificada => {
+    const calificadas = preguntas.map((p): PreguntaCalificada => {
       const tipo = TIPO_PREGUNTA_API[p.tipo];
       // Las llaves van en el orden de PreguntaCalificada en el contrato.
       const base = (puntaje: number) => ({
@@ -418,5 +421,150 @@ export class CuestionariosService {
         })),
       };
     });
+    // En exámenes, en el mismo orden en que el alumno las vio (DEC-09).
+    return semilla === null ? calificadas : mezclar(calificadas, semilla);
+  }
+
+  /**
+   * Respuestas ya guardadas de un intento, en el orden de `ordenPreguntas` (RespuestaGuardada). En relación, la
+   * derecha vuelve como su clave opaca (DEC-91). No lee valores ni puntajes (INV-04).
+   */
+  async respuestasGuardadas(
+    usuarioId: string,
+    intentoId: string,
+    ordenPreguntas: number[],
+    cliente: Cliente = this.prisma,
+  ): Promise<RespuestaGuardada[]> {
+    const [opciones, parejas] = await Promise.all([
+      cliente.$queryRaw<
+        { pregunta_id: bigint; opcion_id: bigint; respondido_en: Date }[]
+      >`
+        SELECT pregunta_id, opcion_id, respondido_en FROM respuesta_opcion
+        WHERE intento_id = ${intentoId}::uuid`,
+      cliente.$queryRaw<
+        {
+          pregunta_id: bigint;
+          izquierda: bigint;
+          derecha: bigint;
+          respondido_en: Date;
+        }[]
+      >`
+        SELECT x.pregunta_id, rp.pareja_izquierda_id AS izquierda, rp.pareja_derecha_id AS derecha, rp.respondido_en
+        FROM respuesta_pareja rp JOIN pareja x ON x.id = rp.pareja_izquierda_id
+        WHERE rp.intento_id = ${intentoId}::uuid
+        ORDER BY x.orden`,
+    ]);
+    const guardadas: RespuestaGuardada[] = [];
+    for (const preguntaId of ordenPreguntas) {
+      const opcion = opciones.find((r) => Number(r.pregunta_id) === preguntaId);
+      if (opcion) {
+        guardadas.push({
+          preguntaId,
+          guardadaEn: opcion.respondido_en.toISOString(),
+          opcionId: Number(opcion.opcion_id),
+        });
+        continue;
+      }
+      const uniones = parejas.filter(
+        (r) => Number(r.pregunta_id) === preguntaId,
+      );
+      if (uniones.length > 0) {
+        const ultima = Math.max(
+          ...uniones.map((u) => u.respondido_en.getTime()),
+        );
+        guardadas.push({
+          preguntaId,
+          guardadaEn: new Date(ultima).toISOString(),
+          uniones: uniones.map((u) => ({
+            izquierdaId: Number(u.izquierda),
+            derechaClave: this.claves.generar(
+              usuarioId,
+              preguntaId,
+              Number(u.derecha),
+            ),
+          })),
+        });
+      }
+    }
+    return guardadas;
+  }
+
+  /**
+   * Examen reprobado (PreguntaSinSolucion, DEC-11): el puntaje, lo que eligió el alumno y la lección que conviene
+   * repasar. No lee qué opción era la correcta ni la retroalimentación. Solo después de fn_enviar_intento.
+   */
+  async sinSolucion(
+    cliente: Cliente,
+    intentoId: string,
+    semilla: number | null = null,
+  ): Promise<PreguntaSinSolucion[]> {
+    const [preguntas, parejas] = await Promise.all([
+      cliente.$queryRaw<
+        {
+          id: bigint;
+          tipo: string;
+          enunciado: string;
+          puntaje: Prisma.Decimal | null;
+          elegida: string | null;
+          repaso_slug: string | null;
+          repaso_titulo: string | null;
+        }[]
+      >`
+        SELECT p.id, p.tipo, p.enunciado, r.puntaje, o.texto AS elegida,
+               l.slug AS repaso_slug, l.titulo AS repaso_titulo
+        FROM intento i
+        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id AND p.activa
+        LEFT JOIN respuesta_opcion r ON r.intento_id = i.id AND r.pregunta_id = p.id
+        LEFT JOIN opcion o ON o.id = r.opcion_id
+        LEFT JOIN leccion l ON l.id = p.leccion_repaso_id
+        WHERE i.id = ${intentoId}::uuid AND i.estado = 'enviado'
+        ORDER BY p.orden`,
+      cliente.$queryRaw<
+        {
+          pregunta_id: bigint;
+          acierto: boolean;
+          izquierda: string;
+          derecha: string | null;
+        }[]
+      >`
+        SELECT x.pregunta_id, rp.pareja_derecha_id = x.id AS acierto,
+               x.texto_izquierdo AS izquierda, d.texto_derecho AS derecha
+        FROM intento i
+        JOIN pregunta p ON p.cuestionario_id = i.cuestionario_id AND p.activa
+        JOIN pareja x ON x.pregunta_id = p.id
+        LEFT JOIN respuesta_pareja rp ON rp.intento_id = i.id AND rp.pareja_izquierda_id = x.id
+        LEFT JOIN pareja d ON d.id = rp.pareja_derecha_id
+        WHERE i.id = ${intentoId}::uuid
+        ORDER BY x.pregunta_id, x.orden`,
+    ]);
+    const resultado = preguntas.map((p): PreguntaSinSolucion => {
+      const tipo = TIPO_PREGUNTA_API[p.tipo];
+      let puntaje: number;
+      let respuestaElegida: string[];
+      if (tipo === 'relacion') {
+        const propias = parejas.filter((x) => x.pregunta_id === p.id);
+        const aciertos = propias.filter((x) => x.acierto).length;
+        puntaje = propias.length ? dosDecimales(aciertos / propias.length) : 0;
+        respuestaElegida = propias
+          .filter((x) => x.derecha !== null)
+          .map((x) => `${x.izquierda} → ${x.derecha}`);
+      } else {
+        puntaje = dosDecimales(p.puntaje === null ? 0 : Number(p.puntaje));
+        respuestaElegida = p.elegida === null ? [] : [p.elegida];
+      }
+      return {
+        id: Number(p.id),
+        tipo,
+        enunciado: p.enunciado,
+        puntaje,
+        correcta: puntaje >= 1,
+        respuestaElegida,
+        leccionRepaso:
+          p.repaso_slug === null
+            ? null
+            : { slug: p.repaso_slug, titulo: p.repaso_titulo ?? '' },
+      };
+    });
+    return semilla === null ? resultado : mezclar(resultado, semilla);
   }
 }

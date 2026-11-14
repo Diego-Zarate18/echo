@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ContenidoModule } from './areas/contenido/contenido.module';
 import { CuentaModule } from './areas/cuenta/cuenta.module';
 import { EvaluablesModule } from './areas/evaluables/evaluables.module';
+import { ExamenModule } from './areas/examen/examen.module';
 import { SesionGuard } from './areas/cuenta/sesion/sesion.guard';
 import { SesionModule } from './areas/cuenta/sesion/sesion.module';
 import { FiltroErrores } from './comun/errores/filtro-errores';
@@ -26,6 +27,7 @@ import { SeguridadModule } from './infraestructura/seguridad/seguridad.module';
     CuentaModule,
     ContenidoModule,
     EvaluablesModule,
+    ExamenModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: FiltroErrores },

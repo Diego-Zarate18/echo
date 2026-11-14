@@ -60,9 +60,10 @@ export function traducirErrorBd(
     const minutos = Math.ceil(
       (disponible.getTime() - ahora.getTime()) / 60_000,
     );
+    // En el orden del esquema Error del contrato.
     return new ErrorApi(codigo, {
-      disponibleEn: disponible.toISOString(),
       minutosRestantes: Math.max(1, minutos),
+      disponibleEn: disponible.toISOString(),
     });
   }
 
