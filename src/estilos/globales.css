@@ -1,0 +1,579 @@
+@import "tailwindcss";
+
+/*
+ * Sistema visual «Tierra» (DEC-82, DEC-84).
+ * Los colores son las variables de Figma con el mismo nombre. No se agregan otros:
+ * por eso se vacía la paleta de Tailwind con --color-*: initial.
+ * La referencia completa está en frontend/DESIGN.md.
+ */
+@theme {
+  --color-*: initial;
+
+  /* marca/* */
+  --color-marca-cafe: #3d2213;
+  --color-marca-crema: #fbf3e9;
+  --color-marca-menta: #67eec9;
+  --color-marca-bosque: #3e6a59;
+  --color-marca-terracota: #aa5f2f;
+  /* texto/* */
+  --color-texto-secundario: #6b4a36;
+  /* superficie/* */
+  --color-superficie-hundida: #f1e6d7;
+  --color-superficie-elevada: #fffbf5;
+  /* estado/* */
+  --color-estado-riesgosa: #9e2b25;
+  /* Valor literal de Figma: fondo del logo de la UP Chiapas y bordes del vidrio (blanco al 10–18 %). */
+  --color-blanco: #ffffff;
+
+  /* Tipografía: Nunito para títulos y botones, Nunito Sans para lectura (variables de next/font). */
+  --font-titulo: var(--fuente-nunito), ui-rounded, system-ui, sans-serif;
+  --font-lectura: var(--fuente-nunito-sans), system-ui, sans-serif;
+  --font-sans: var(--font-lectura);
+
+  /* Radios de Figma */
+  --radius-fila: 14px;
+  --radius-aviso: 16px;
+  --radius-logo: 18px;
+  --radius-globo: 20px;
+  --radius-burbuja: 22px;
+  --radius-tarjeta: 24px;
+  --radius-panel: 26px;
+  --radius-hero: 32px;
+
+  /* Sombras de Figma */
+  --shadow-hero: 0 24px 48px -8px rgb(61 34 19 / 0.28);
+  --shadow-vidrio: 0 24px 24px rgb(42 23 13 / 0.5);
+  /* Tarjeta en relieve sobre crema (índice del Aviso de privacidad, 84:789). */
+  --shadow-relieve: -5px -5px 14px rgb(255 255 255 / 0.95), 5px 6px 16px rgb(61 34 19 / 0.07);
+  /* Barra café de las páginas internas (84:764). */
+  --shadow-barra: 0 10px 12px rgb(61 34 19 / 0.18);
+
+  /* Desenfoque del vidrio sutil */
+  --blur-vidrio: 14px;
+
+  /* Escala tipográfica. Los títulos grandes escalan entre 390 y 1440 px. */
+  /* En escritorio también depende del alto de la ventana para que el hero quepa completo. */
+  --text-portada: clamp(2.75rem, min(1.6rem + 3.8vw, 9svh), 4.875rem);
+  --text-portada--line-height: 1.02;
+  --text-portada--letter-spacing: -0.025em;
+  --text-cierre: clamp(2.5rem, 1.6rem + 2.9vw, 4rem);
+  --text-cierre--line-height: 1.02;
+  --text-cierre--letter-spacing: -0.025em;
+  --text-seccion: clamp(2.125rem, 1.45rem + 2.2vw, 3.25rem);
+  --text-seccion--line-height: 1.1;
+  --text-seccion--letter-spacing: -0.015em;
+  --text-entrada: clamp(1.875rem, 1.35rem + 1.7vw, 2.75rem);
+  --text-entrada--line-height: 1.15;
+  --text-entrada--letter-spacing: -0.015em;
+  --text-elemento: clamp(1.375rem, 1.15rem + 0.75vw, 1.75rem);
+  --text-elemento--line-height: 1.1;
+  --text-elemento--letter-spacing: -0.01em;
+  --text-tarjeta: 1.25rem;
+  --text-tarjeta--line-height: 1.25;
+  --text-destacado: 1.1875rem;
+  --text-destacado--line-height: 1.6;
+  --text-amplio: 1.125rem;
+  --text-amplio--line-height: 1.6;
+  --text-cuerpo: 1.0625rem;
+  --text-cuerpo--line-height: 1.6;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5;
+  --text-menor: 0.9375rem;
+  --text-menor--line-height: 1.5;
+  --text-detalle: 0.875rem;
+  --text-detalle--line-height: 1.5;
+  --text-nota: 0.8125rem;
+  --text-nota--line-height: 1.5;
+
+  /*
+   * Movimiento: «el eco que regresa». Un momento de autor en el hero (Moris brota, emite ondas
+   * y la palabra «regresa.» deja su eco), Moris que habla al entrar cada globo, la declaración
+   * de «Qué es Echo» que se ilumina al leerla y Moris que vuelve a brotar en el cierre.
+   * Desaceleración natural, sin rebotes. Nada se repite en bucle (WCAG 2.2.2).
+   */
+  --ease-llegada: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-salida: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Curvas de `animate`: respuesta inmediata de la interfaz y desplazamiento dentro de la pantalla. */
+  --ease-respuesta: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-desplazar: cubic-bezier(0.77, 0, 0.175, 1);
+  --animate-eco: eco 1200ms var(--ease-llegada) both;
+  --animate-brotar: brotar 1000ms var(--ease-llegada) both;
+  --animate-aparecer: aparecer 800ms var(--ease-llegada) both;
+  --animate-regresar: regresar 900ms var(--ease-llegada) both;
+  --animate-trazar: trazar 900ms var(--ease-llegada) both;
+  --animate-encender: encender 500ms var(--ease-llegada) both;
+  /* Respuesta de un formulario: el recuadro llega corto y desde arriba, cerca de donde se mira (Iniciar sesión). */
+  --animate-alerta: alerta 220ms var(--ease-respuesta) both;
+  /* Cambio de texto en un lugar que no se mueve (el saludo del panel de acceso al navegar entre pantallas). */
+  --animate-fundido: desvanecer 200ms var(--ease-respuesta) both;
+}
+
+/*
+ * Ventana de escritorio baja (por ejemplo, 1536 × 705 o 1440 × 900): compacta el ritmo para que cada sección
+ * quepa completa al llegar desde el menú. Desde 960 px de alto se queda el ritmo de Figma, que ya cabe.
+ */
+@custom-variant ventana-baja (@media (min-width: 80rem) and (max-height: 60rem));
+
+/*
+ * Bloque del título de cada sección, al que llevan las anclas del menú. Queda 18 px bajo la barra fija
+ * (8 + 62 + 18 = 88 px). El margen se suma al `scroll-padding-top` de `html` (6rem, pensado para el foco),
+ * por eso se resta.
+ */
+@utility ancla-seccion {
+  scroll-margin-top: calc(5.5rem - 6rem);
+}
+
+/* Fotogramas de las animaciones (fuera de @theme para que siempre se emitan). */
+/* «ÉTICA» llega como un sonido lejano: desenfocada y grande, luego nítida. */
+@keyframes eco {
+  from {
+    opacity: 0;
+    filter: blur(18px);
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+/* Moris brota de la tierra: se descubre de abajo hacia arriba mientras sube. */
+@keyframes brotar {
+  from {
+    clip-path: inset(100% 0 0 0);
+    transform: translateY(14%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: none;
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* «regresa.» llega desde la derecha, como el eco que vuelve. */
+@keyframes regresar {
+  from {
+    opacity: 0;
+    transform: translateX(0.6em);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* Los filamentos se trazan desde Moris hacia afuera (rutas con pathLength="1"). */
+@keyframes trazar {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes encender {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Ondas que salen de Moris: el sonido que se va y regresa. Usan `scale` para no pisar el centrado. */
+@keyframes onda {
+  0% {
+    scale: 0.55;
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    scale: 2.15;
+    opacity: 0;
+  }
+}
+
+/* Rastro del eco de «regresa.»: copias que llegan desde la derecha y se funden con la palabra. */
+@keyframes eco-rastro {
+  from {
+    opacity: var(--opacidad-rastro);
+    translate: var(--distancia-rastro) 0;
+  }
+  to {
+    opacity: 0;
+    translate: 0 0;
+  }
+}
+
+/* La declaración de «Qué es Echo» se ilumina palabra por palabra mientras se lee. */
+@keyframes iluminar {
+  from {
+    opacity: 0.42;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Saludo de Moris al terminar la entrada: un solo salto corto, solo vertical. */
+@keyframes saludo {
+  0% {
+    translate: 0 0;
+    animation-timing-function: var(--ease-respuesta);
+  }
+  40% {
+    translate: 0 -4%;
+    animation-timing-function: var(--ease-desplazar);
+  }
+  100% {
+    translate: 0 0;
+  }
+}
+
+@keyframes alerta {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes desvanecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes globo {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* Ondas del hero: tres anillos crema que salen de Moris al cargar la página. */
+.onda {
+  animation: onda 2600ms var(--ease-salida) both;
+  animation-delay: calc(450ms + var(--orden) * 260ms);
+}
+
+/* Al pasar el puntero sobre Moris, `Ondas.tsx` reinicia estas mismas animaciones. */
+
+/* Sin ondas al cargar (Iniciar sesión): la animación empieza ya terminada y espera al puntero. */
+.onda-en-reposo {
+  animation-delay: -2600ms;
+}
+
+/*
+ * Respuesta del acordeón de la Ayuda (`PreguntasAyuda.tsx`, receta de acordeón de `animate`): se anima el alto
+ * con la fila de la cuadrícula (0fr ↔ 1fr), sin medir en JavaScript. Es una transición, así que se puede
+ * invertir a medio camino. Al cerrar, `visibility` cambia al final: hasta entonces se ve cómo se cierra, y
+ * después la respuesta no se lee ni recibe el foco.
+ */
+.respuesta-acordeon {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 220ms var(--ease-respuesta),
+    visibility 0s linear 220ms;
+}
+
+.respuesta-acordeon[data-abierta="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 220ms var(--ease-respuesta),
+    visibility 0s;
+}
+
+.respuesta-acordeon > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Eco de «regresa.»: dos copias como contenido generado, fuera del texto y del lector de pantalla. */
+.eco-rastro {
+  position: relative;
+  display: inline-block;
+}
+
+.eco-rastro::before,
+.eco-rastro::after {
+  content: attr(data-texto) / "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  animation: eco-rastro 1100ms var(--ease-salida) both;
+}
+
+.eco-rastro::before {
+  --opacidad-rastro: 0.4;
+  --distancia-rastro: 0.55em;
+  animation-delay: 600ms;
+}
+
+.eco-rastro::after {
+  --opacidad-rastro: 0.2;
+  --distancia-rastro: 1.1em;
+  animation-delay: 680ms;
+}
+
+/*
+ * Movimiento ligado al desplazamiento (solo navegadores con scroll-driven animations).
+ * Sin soporte, o con movimiento reducido, todo está visible y en su lugar desde el inicio.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Moris habla: el globo aparece cuando entra en la ventana. */
+    .revelar-globo {
+      animation: globo linear both;
+      animation-timeline: view();
+      animation-range: entry 20% entry 90%;
+    }
+
+    /* La declaración se ilumina mientras sube hacia el centro de la ventana. */
+    .declaracion {
+      view-timeline: --declaracion block;
+    }
+
+    .declaracion .palabra {
+      animation: iluminar linear both;
+      animation-timeline: --declaracion;
+      animation-range: cover calc(8% + var(--i) * 1.6%) cover calc(16% + var(--i) * 1.6%);
+    }
+
+    /* El cierre devuelve el principio: Moris vuelve a brotar. */
+    .brotar-al-ver {
+      animation: brotar linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 85%;
+    }
+  }
+}
+
+/* El saludo llega justo cuando Moris termina de brotar (150 ms + 1000 ms). */
+.saludo {
+  animation: saludo 560ms 1200ms both;
+}
+
+/*
+ * Íconos de trazo que se dibujan una vez al entrar en la ventana (`DibujoDeIconos.tsx` marca el estado).
+ * Sin JavaScript, sin IntersectionObserver o con movimiento reducido nunca se marcan: se ven completos.
+ */
+[data-dibujo] .icono * {
+  stroke-dasharray: 1;
+}
+
+[data-dibujo="pendiente"] .icono * {
+  stroke-dashoffset: 1;
+}
+
+[data-dibujo="dibujado"] .icono * {
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 600ms var(--ease-respuesta) var(--retraso, 0ms);
+}
+
+/* El cierre: Moris se inclina hacia «Crear cuenta» cuando el botón recibe el puntero o el foco. */
+.moris-cierre {
+  transition: translate 250ms var(--ease-respuesta);
+}
+
+.llamado:has(.boton-llamado:focus-visible) .moris-cierre {
+  translate: -12px 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .llamado:has(.boton-llamado:hover) .moris-cierre {
+    translate: -12px 0;
+  }
+}
+
+/* Movimiento reducido: la secuencia del hero se vuelve un fundido corto, sin desplazamientos. */
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-"] {
+    animation-name: desvanecer !important;
+    animation-duration: 250ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  .onda,
+  .eco-rastro::before,
+  .eco-rastro::after {
+    display: none;
+  }
+
+  .saludo {
+    animation: none;
+  }
+
+  .respuesta-acordeon,
+  .respuesta-acordeon[data-abierta="true"] {
+    transition: none;
+  }
+
+  .moris-cierre {
+    transition: none;
+    translate: none !important;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /*
+     * Carril hundido, no crema: con barras clásicas (Windows) un carril del color del fondo se leía como
+     * una franja crema más ancha que el marco de 8 px de la izquierda. Así, a la derecha se ve el marco y,
+     * aparte, la barra de desplazamiento.
+     */
+    scrollbar-color: var(--color-texto-secundario) var(--color-superficie-hundida);
+  }
+
+  /*
+   * Solo en el inicio público, que es café casi de punta a punta: carril café con pulgar claro. Así, a la derecha del
+   * hero se ve la tarjeta, la línea crema de 8 px y la barra oscura, como espejo del borde izquierdo (Figma 84:476 no
+   * tiene barra). Contraste del pulgar con el carril: 11.9:1 (WCAG 1.4.11 pide 3:1).
+   */
+  html:has(#portada) {
+    scrollbar-color: var(--color-superficie-hundida) var(--color-marca-cafe);
+  }
+
+  /*
+   * El carril sigue el fondo de la sección que llena la vista (CarrilSegunFondo.tsx): sobre las secciones crema, carril
+   * crema y pulgar café (contraste 13.3:1). Sin JavaScript queda el café de arriba.
+   */
+  html:has(#portada)[data-carril="claro"] {
+    scrollbar-color: var(--color-marca-cafe) var(--color-marca-crema);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /*
+   * Ni las anclas ni el control con foco quedan bajo la barra fija (WCAG 2.4.11): 70 px de barra y
+   * margen más 24 px de aire. `scroll-padding` también lo usa el navegador al enfocar con el teclado.
+   */
+  html {
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    background-color: var(--color-marca-crema);
+    color: var(--color-marca-cafe);
+    font-family: var(--font-lectura);
+  }
+
+  ::selection {
+    background-color: var(--color-marca-menta);
+    color: var(--color-marca-cafe);
+  }
+
+  /*
+   * Foco visible (DEC-71): anillo de 3 px separado 2 px.
+   * Bosque sobre fondos claros (5.7:1 sobre crema) y menta sobre fondos oscuros (10:1 sobre café).
+   */
+  :focus-visible {
+    outline: 3px solid var(--color-marca-bosque);
+    outline-offset: 2px;
+  }
+
+  [data-fondo="oscuro"] :focus-visible {
+    outline-color: var(--color-marca-menta);
+  }
+
+  [data-fondo="claro"] :focus-visible {
+    outline-color: var(--color-marca-bosque);
+  }
+
+  /* Los íconos conservan el trazo de 1.75 en cualquier tamaño. */
+  .icono * {
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+/*
+ * Apartados desplegables de los documentos legales (DEC-98, componente 170:5215). Son `<details>` nativos: el texto
+ * está en el HTML aunque estén cerrados, Ctrl+F los abre y el teclado funciona sin código.
+ * El chevrón gira y el contenido se abre en 220 ms con `::details-content` + `interpolate-size`; en un navegador que
+ * no los soporta, se abre al instante. Con movimiento reducido no hay animación.
+ */
+@layer components {
+  .chevron-apartado {
+    flex-shrink: 0;
+    transition: rotate 220ms var(--ease-respuesta);
+  }
+
+  .apartado[open] .chevron-apartado {
+    rotate: 180deg;
+  }
+
+  @supports (interpolate-size: allow-keywords) and selector(::details-content) {
+    .apartado {
+      interpolate-size: allow-keywords;
+    }
+
+    .apartado::details-content {
+      block-size: 0;
+      overflow-y: clip;
+      transition:
+        block-size 220ms var(--ease-respuesta),
+        content-visibility 220ms allow-discrete;
+    }
+
+    .apartado[open]::details-content {
+      block-size: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chevron-apartado,
+    .apartado::details-content {
+      transition: none;
+    }
+  }
+
+  /* Al imprimir, todo el documento: el `beforeprint` de ControlesDeApartados abre los apartados y esto los respalda. */
+  @media print {
+    .apartado::details-content {
+      block-size: auto;
+      content-visibility: visible;
+    }
+
+    .apartado > summary .chevron-apartado {
+      display: none;
+    }
+  }
+}
