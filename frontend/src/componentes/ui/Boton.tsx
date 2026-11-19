@@ -10,11 +10,11 @@ import { IconoFlechaDiagonal } from "@/componentes/ui/iconos/iconos";
  * - `contornoClaro`: Botón/Contorno sobre claro (45:127), secundario sobre fondo claro.
  */
 export type VarianteBoton = "crema" | "contorno" | "cafe" | "contornoClaro";
-export type TamanoBoton = "mediano" | "grande";
+export type TamanoBoton = "mediano" | "compacto" | "grande";
 
 type PropsComunes = {
   variante: VarianteBoton;
-  /** `mediano` mide 48 px de alto (encabezado); `grande`, 56 px. */
+  /** `mediano` mide 48 px de alto (encabezado); `compacto`, 52 px (tarjetas de módulo); `grande`, 56 px. */
   tamano?: TamanoBoton;
   /** Círculo café con la flecha diagonal; solo en la variante `crema`. */
   conFlecha?: boolean;
@@ -46,6 +46,7 @@ const variantes: Record<VarianteBoton, string> = {
 
 const tamanos: Record<TamanoBoton, string> = {
   mediano: "h-12",
+  compacto: "h-13",
   grande: "h-14",
 };
 

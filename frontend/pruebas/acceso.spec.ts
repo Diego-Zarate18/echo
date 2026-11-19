@@ -73,8 +73,8 @@ test.describe("SCR-01 · Iniciar sesión y sesión del frontend", () => {
     await page.goto("/iniciar-sesion");
     await entrar(page, ` ${ALUMNA.toUpperCase()} `, CONTRASENA);
     await page.waitForURL("**/modulos");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hola, Alma");
-    await expect(page.locator("main[data-provisional]")).toHaveCount(1);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Te damos la bienvenida, Alma");
+    await expect(page.locator("main#contenido")).toHaveCount(1);
 
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await page.waitForURL(/\/iniciar-sesion/);
@@ -167,7 +167,7 @@ test.describe("SCR-01 · Iniciar sesión y sesión del frontend", () => {
     // Al entrar de nuevo, regresa a donde estaba.
     await entrar(page, ALUMNA, CONTRASENA);
     await page.waitForURL("**/modulos?pestana=2");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hola, Alma");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Te damos la bienvenida, Alma");
   });
 
   test("aceptación pendiente (INV-30): el formulario y el layout llevan a /aceptar", async ({ page }) => {
@@ -259,6 +259,6 @@ test.describe("SCR-01 · Iniciar sesión y sesión del frontend", () => {
     expect(await enfocado()).toBe("inicio-contrasena");
     await page.keyboard.press("Enter");
     await page.waitForURL("**/modulos");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Hola, Alma");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Te damos la bienvenida, Alma");
   });
 });

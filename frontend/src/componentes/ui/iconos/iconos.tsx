@@ -326,3 +326,76 @@ export function IconoLapiz(props: PropsIcono) {
     </Icono>
   );
 }
+
+// Íconos del encabezado de la app y del buscador (lienzo de 24, trazo de 1.75 como el resto).
+
+/** Cuadrícula de cuatro cuadros: Módulos en el menú principal. */
+export function IconoModulos(props: PropsIcono) {
+  return (
+    <Icono lienzo={24} {...props}>
+      <path d="M4 3h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+      <path d="M15 3h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+      <path d="M15 14h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z" />
+      <path d="M4 14h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1z" />
+    </Icono>
+  );
+}
+
+/** Gráfica de línea: Mi progreso. */
+export function IconoProgreso(props: PropsIcono) {
+  return (
+    <Icono lienzo={24} {...props}>
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="m19 9-5 5-4-4-3 3" />
+    </Icono>
+  );
+}
+
+/** Portapapeles con lista: Mis resultados. */
+export function IconoResultados(props: PropsIcono) {
+  return (
+    <Icono lienzo={24} {...props}>
+      <path d="M9 2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+      <path d="M12 11h4" />
+      <path d="M12 16h4" />
+      <path d="M8 11h.01" />
+      <path d="M8 16h.01" />
+    </Icono>
+  );
+}
+
+/** Flecha que sale de una puerta: Cerrar sesión. */
+export function IconoSalir(props: PropsIcono) {
+  return (
+    <Icono lienzo={24} {...props}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="m16 17 5-5-5-5" />
+      <path d="M21 12H9" />
+    </Icono>
+  );
+}
+
+/** Lupa del buscador. */
+export function IconoBuscar(props: PropsIcono) {
+  return (
+    <Icono lienzo={24} {...props}>
+      <path d="M19 11a8 8 0 1 1-16 0 8 8 0 0 1 16 0z" />
+      <path d="m21 21-4.3-4.3" />
+    </Icono>
+  );
+}
+
+/** Base de datos con candado: sello del módulo de privacidad y datos personales. */
+export function IconoBaseDeDatos(props: PropsIcono) {
+  return (
+    <Icono lienzo={24} {...props}>
+      <path d="M17 5c0 1.38-3.13 2.5-7 2.5S3 6.38 3 5s3.13-2.5 7-2.5S17 3.62 17 5z" />
+      <path d="M3 5v12c0 1.38 3.13 2.5 7 2.5" />
+      <path d="M17 5v4" />
+      <path d="M3 11c0 1.38 3.13 2.5 7 2.5" />
+      <path d="M15 15h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z" />
+      <path d="M16 15v-1.5a2 2 0 0 1 4 0V15" />
+    </Icono>
+  );
+}

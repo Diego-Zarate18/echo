@@ -177,7 +177,7 @@ test.describe("SCR-02, SCR-03 y SCR-19 · Crear cuenta, verificar correo y acept
     for (const texto of OBLIGATORIAS) await page.getByLabel(texto).check();
     await page.getByRole("button", { name: "Crear mi cuenta" }).click();
     await page.waitForURL("**/modulos");
-    await expect(titulo(page)).toHaveText("Hola, Gala");
+    await expect(titulo(page)).toHaveText("Te damos la bienvenida, Gala");
     expect((await aceptaciones()).filter((a) => a.usuario === GOOGLE).map((a) => a.documento).sort()).toEqual(["avisoPrivacidad", "terminos"]);
   });
 
@@ -213,7 +213,7 @@ test.describe("SCR-02, SCR-03 y SCR-19 · Crear cuenta, verificar correo y acept
     await page.getByLabel("He leído y acepto el Aviso de privacidad (versión 1.1).").check();
     await page.getByRole("button", { name: "Aceptar y continuar" }).click();
     await page.waitForURL("**/modulos");
-    await expect(titulo(page)).toHaveText("Hola, Alma");
+    await expect(titulo(page)).toHaveText("Te damos la bienvenida, Alma");
     expect((await aceptaciones()).some((a) => a.usuario === ALUMNA && a.version === "1.1")).toBe(true);
   });
 
@@ -308,7 +308,7 @@ test.describe("SCR-04 · Recuperar y restablecer contraseña", () => {
     await page.getByLabel("Contraseña", { exact: true }).fill(NUEVA_CONTRASENA);
     await page.getByRole("button", { name: "Iniciar sesión" }).click();
     await page.waitForURL("**/modulos");
-    await expect(titulo(page)).toHaveText("Hola, Alma");
+    await expect(titulo(page)).toHaveText("Te damos la bienvenida, Alma");
   });
 
   test("DEC-77: con un correo inexistente, la misma respuesta y ningún correo", async ({ page }) => {
