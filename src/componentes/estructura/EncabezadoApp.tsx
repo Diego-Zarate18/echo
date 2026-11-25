@@ -12,7 +12,7 @@ function iniciales(nombre: string, apellidos: string | null) {
 }
 
 const enlaceEncabezado =
-  "inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta) hover:bg-marca-crema/10";
+  "inline-flex min-h-11 items-center gap-1 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema decoration-2 underline-offset-4 hover:underline max-lg:min-w-11 max-lg:justify-center";
 
 function Barra({ children }: { children?: React.ReactNode }) {
   return (
@@ -47,14 +47,13 @@ export async function EncabezadoApp() {
   return (
     <Barra>
       <MenuPrincipal />
-      <div className="flex items-center gap-1 lg:gap-3">
+      <div className="flex items-center gap-1 lg:gap-5">
         <Link href="/ayuda" className={enlaceEncabezado}>
           <IconoAyuda className="size-5" />
           <span className="max-lg:sr-only">Ayuda</span>
         </Link>
         <Link
           href="/perfil"
-          aria-label={`Mi perfil, ${nombreCompleto}`}
           className="inline-flex min-h-11 items-center gap-2.5 rounded-full border border-marca-crema/28 py-1 pr-1 pl-1 font-titulo text-menor font-bold whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta) hover:bg-marca-crema/10 lg:pr-4"
         >
           <span
@@ -63,9 +62,9 @@ export async function EncabezadoApp() {
           >
             {iniciales(nombre, apellidos)}
           </span>
-          <span aria-hidden="true" className="max-lg:hidden">
-            {nombreCompleto}
-          </span>
+          {/* El nombre accesible sale del contenido (sin aria-label): «Mi perfil, Alma López». En móvil solo se ve el avatar. */}
+          <span className="sr-only">Mi perfil, </span>
+          <span className="max-lg:sr-only">{nombreCompleto}</span>
         </Link>
         <div className="max-lg:hidden">
           <BotonCerrarSesion como="encabezado" />

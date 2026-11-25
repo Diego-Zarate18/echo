@@ -38,10 +38,10 @@ export function MenuPrincipal() {
             href={href}
             aria-current={ruta === href ? "page" : undefined}
             className={[
-              "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-titulo text-menor whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta)",
+              "inline-flex min-h-11 items-center gap-2 rounded-full px-4 font-titulo text-menor whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta)",
               activa
-                ? "border-marca-crema/26 bg-marca-crema/14 font-bold"
-                : "border-transparent font-semibold hover:bg-marca-crema/10",
+                ? "bg-marca-crema/14 font-extrabold ring-1 ring-inset ring-marca-crema/26"
+                : "font-semibold hover:bg-marca-crema/10",
             ].join(" ")}
           >
             <Icono className="size-5" />

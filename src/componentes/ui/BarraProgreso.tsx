@@ -3,14 +3,15 @@ type PropsBarraProgreso = {
   valor: number;
   /** Nombre para lectores de pantalla («Avance del módulo 1»). El porcentaje visible va aparte, junto a la barra. */
   etiqueta: string;
-  /** `claro`: pista café tenue y relleno bosque sobre tarjetas. `oscuro`: pista crema tenue y relleno menta sobre café. */
-  tono?: "claro" | "oscuro";
+  /** `claro`: pista café tenue y relleno bosque sobre tarjetas. `oscuro`: pista crema tenue (22 %) y relleno menta sobre café; `oscuroTenue`, la misma con la pista al 16 %. */
+  tono?: "claro" | "oscuro" | "oscuroTenue";
   className?: string;
 };
 
 const tonos = {
   claro: { pista: "bg-marca-cafe/12", relleno: "bg-marca-bosque" },
   oscuro: { pista: "bg-marca-crema/22", relleno: "bg-marca-menta" },
+  oscuroTenue: { pista: "bg-marca-crema/16", relleno: "bg-marca-menta" },
 } as const;
 
 /** Barra de avance de 10 px. El valor se trunca para no marcar 100 % antes de terminar. */

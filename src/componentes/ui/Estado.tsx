@@ -7,22 +7,22 @@ const estados: Record<EstadoContenido, { texto: string; clases: string; icono: R
   disponible: {
     texto: "Disponible",
     clases: "border-marca-bosque text-marca-bosque",
-    icono: <IconoCirculoPunto className="size-[15px]" />,
+    icono: <IconoCirculoPunto className="size-4" />,
   },
   enCurso: {
     texto: "En curso",
     clases: "border-marca-bosque text-marca-bosque",
-    icono: <IconoCirculoPunto className="size-[15px]" />,
+    icono: <IconoCirculoPunto className="size-4" />,
   },
   completado: {
     texto: "Completado",
     clases: "border-marca-bosque bg-marca-bosque text-marca-crema",
-    icono: <IconoCirculoCheck className="size-[15px]" />,
+    icono: <IconoCirculoCheck className="size-4" />,
   },
   bloqueado: {
     texto: "Bloqueado",
     clases: "border-marca-cafe/25 text-texto-secundario",
-    icono: <IconoCandado className="size-[15px]" />,
+    icono: <IconoCandado className="size-4" />,
   },
 };
 
@@ -32,7 +32,7 @@ export function Estado({ estado, className }: { estado: EstadoContenido; classNa
   return (
     <span
       className={[
-        "inline-flex h-[30px] items-center gap-1.5 rounded-full border px-3 font-titulo text-nota font-semibold whitespace-nowrap",
+        "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 font-titulo text-nota font-bold whitespace-nowrap",
         clases,
         className,
       ]
