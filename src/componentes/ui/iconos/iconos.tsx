@@ -399,3 +399,21 @@ export function IconoBaseDeDatos(props: PropsIcono) {
     </Icono>
   );
 }
+
+/** Palomita simple, para «Enviado» en las filas de actividades y casos de SCR-08. */
+export function IconoCheck(props: PropsIcono) {
+  return (
+    <Icono lienzo={20} {...props}>
+      <path d="M4.16667 10.4167L8.33333 14.5833L15.8333 5.83333" />
+    </Icono>
+  );
+}
+
+/** Chevron a la derecha: el aviso de que la fila entera es un enlace. */
+export function IconoChevronDerecha(props: PropsIcono) {
+  return (
+    <Icono lienzo={22} {...props}>
+      <path d="M8.25 5.5L13.75 11L8.25 16.5" />
+    </Icono>
+  );
+}

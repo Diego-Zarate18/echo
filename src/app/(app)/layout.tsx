@@ -27,7 +27,10 @@ export default function LayoutApp({ children }: LayoutProps<"/">) {
       <div className="pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
         <PiePublico variante="claro" />
       </div>
-      <BarraInferior />
+      {/* `usePathname()` es dato de la solicitud: en rutas dinámicas (`/modulos/[modulo]/[curso]`) debe ir dentro de Suspense. */}
+      <Suspense fallback={null}>
+        <BarraInferior />
+      </Suspense>
     </>
   );
 }
