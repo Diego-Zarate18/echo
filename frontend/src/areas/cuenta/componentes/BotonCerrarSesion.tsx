@@ -42,7 +42,7 @@ export function BotonCerrarSesion({ como = "boton" }: { como?: "boton" | "enlace
           type="button"
           onClick={cerrar}
           aria-disabled={enviando || undefined}
-          className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta) hover:bg-marca-crema/10 aria-disabled:cursor-wait"
+          className="inline-flex min-h-11 items-center gap-1 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema decoration-2 underline-offset-4 hover:underline aria-disabled:cursor-wait"
         >
           <IconoSalir className="size-5" />
           {enviando ? "Cerrando sesión…" : "Cerrar sesión"}

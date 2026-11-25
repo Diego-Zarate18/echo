@@ -26,7 +26,7 @@ export async function Continuar({ modulos }: { modulos: ResumenModulo[] }) {
     : null;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
       <Boton variante="crema" conFlecha href={punto?.href ?? `/modulos/${objetivo.slug}`}>
         {texto}
       </Boton>

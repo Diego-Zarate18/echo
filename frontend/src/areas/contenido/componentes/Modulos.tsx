@@ -91,7 +91,7 @@ export async function Modulos({ searchParams }: { searchParams: Promise<Consulta
             </h2>
             <p className="text-menor text-texto-secundario">Completa cada módulo para desbloquear el siguiente.</p>
           </div>
-          <ul className="mt-6 flex flex-col gap-5">
+          <ul className="mt-10 flex flex-col gap-4">
             {lista.map((modulo) => (
               <li key={modulo.slug}>
                 <TarjetaModulo modulo={modulo} modulos={lista} />

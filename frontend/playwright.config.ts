@@ -11,7 +11,7 @@ const PRUEBAS_DE_API = /(api|build|markdown)\.spec\.ts$/;
  * Pantallas que cambian el estado de la API simulada (inicio de sesión, escenarios, reinicios). El simulador es uno
  * solo para todos, así que corren después de las de API y una después de otra, nunca al mismo tiempo.
  */
-const PRUEBAS_CON_SIMULADOR = /(acceso|cuenta|modulos)\.spec\.ts$/;
+const PRUEBAS_CON_SIMULADOR = /(acceso|cuenta|modulos?)\.spec\.ts$/;
 
 const MOVIL = {
   ...devices["Desktop Chrome"],

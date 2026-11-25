@@ -52,7 +52,7 @@ export function Buscador({ consulta }: { consulta: string }) {
   }
 
   return (
-    <form role="search" action="/modulos" method="get" onSubmit={alEnviar} className="flex w-full max-w-[600px] flex-col gap-3">
+    <form role="search" action="/modulos" method="get" onSubmit={alEnviar} className="flex w-full max-w-[600px] flex-col gap-2">
       <label htmlFor="buscar-en-echo" className="font-titulo text-detalle font-bold text-marca-crema">
         Buscar en Echo
       </label>

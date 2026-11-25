@@ -5,6 +5,8 @@ import { apiServidor } from "@/lib/api/servidor";
 
 export type ResumenModulo = components["schemas"]["ResumenModulo"];
 export type ResultadoBusqueda = components["schemas"]["ResultadoBusqueda"];
+export type DetalleModulo = components["schemas"]["DetalleModulo"];
+export type ResumenCurso = components["schemas"]["ResumenCurso"];
 
 /**
  * Lecturas del contenido. `cache` de React evita pedir lo mismo dos veces en una solicitud (la portada y las
@@ -13,6 +15,7 @@ export type ResultadoBusqueda = components["schemas"]["ResultadoBusqueda"];
 export const cargarModulos = cache(() => apiServidor.listarModulos());
 export const cargarModulo = cache((modulo: string) => apiServidor.obtenerModulo({ ruta: { modulo } }));
 export const cargarCurso = cache((curso: string) => apiServidor.obtenerCurso({ ruta: { curso } }));
+export const cargarPortadaExamen = cache((cuestionario: number) => apiServidor.obtenerPortadaExamen({ ruta: { cuestionario } }));
 
 export type PuntoDeContinuacion = {
   href: string;

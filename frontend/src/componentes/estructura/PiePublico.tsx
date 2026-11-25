@@ -84,7 +84,7 @@ export function PiePublico({ variante, actual }: PropsPiePublico) {
                     <Link
                       href={enlace.href}
                       aria-current={actual === enlace.href ? "page" : undefined}
-                      className="inline-flex min-h-11 items-center rounded-sm font-titulo text-detalle font-bold underline underline-offset-4 hover:decoration-2"
+                      className="inline-flex min-h-[38px] items-center rounded-sm font-titulo text-detalle font-bold underline underline-offset-4 hover:decoration-2"
                     >
                       {enlace.texto}
                     </Link>

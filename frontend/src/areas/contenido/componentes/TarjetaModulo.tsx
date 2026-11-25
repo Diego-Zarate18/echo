@@ -57,34 +57,34 @@ export function TarjetaModulo({ modulo, modulos }: PropsTarjetaModulo) {
     <article
       aria-labelledby={idTitulo}
       className={[
-        "flex flex-col gap-5 rounded-tarjeta px-6 py-7 shadow-relieve md:flex-row md:items-center md:gap-7 md:py-7.5 md:pr-[60px] md:pl-8",
-        bloqueado ? "bg-superficie-hundida" : "bg-superficie-elevada",
+        "flex flex-col gap-5 rounded-tarjeta px-6 py-7 md:flex-row md:items-center md:gap-7 md:pr-[60px] md:pl-8",
+        bloqueado ? "bg-superficie-hundida shadow-hundido md:py-[28.75px]" : "bg-superficie-elevada shadow-relieve md:py-7",
       ].join(" ")}
     >
       <Insignia orden={modulo.orden} obtenida={Boolean(modulo.insignia?.obtenidaEn)} />
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <p className="text-detalle font-semibold text-texto-secundario">Módulo {modulo.orden}</p>
+          <p className="text-detalle font-bold text-texto-secundario">Módulo {modulo.orden}</p>
           <Estado estado={modulo.estado} />
         </div>
-        <h3 id={idTitulo} className="font-titulo text-[1.5625rem] leading-[1.2] font-extrabold text-marca-cafe">
+        <h3 id={idTitulo} className="font-titulo text-[1.625rem] leading-[1.2] font-extrabold tracking-[-0.006em] text-marca-cafe">
           {modulo.titulo}
         </h3>
-        <p className="text-menor text-texto-secundario">{modulo.descripcion}</p>
+        <p className="text-base text-texto-secundario">{modulo.descripcion}</p>
         {bloqueado && textoRequisito ? (
-          <p className="mt-1 flex items-center gap-2 text-menor font-semibold text-marca-cafe">
-            <IconoCandado className="size-[18px]" />
+          <p className="mt-1 flex items-center gap-2.5 text-menor font-semibold text-marca-cafe">
+            <IconoCandado className="size-4 text-texto-secundario" />
             {textoRequisito}
           </p>
         ) : null}
       </div>
 
       {bloqueado ? null : (
-        <div className="flex w-full flex-col gap-3 md:w-[340px] md:items-end">
-          <div className="flex w-full items-center gap-3 md:w-[322px]">
-            <BarraProgreso valor={modulo.avance} etiqueta={`Avance del módulo ${modulo.orden}`} />
-            <span className="min-w-[4ch] shrink-0 text-right font-titulo text-detalle font-bold whitespace-nowrap text-marca-cafe">
+        <div className="flex w-full flex-col gap-3.5 md:w-[340px] md:items-end">
+          <div className="flex w-full items-center gap-3">
+            <BarraProgreso valor={modulo.avance} etiqueta={`Avance del módulo ${modulo.orden}`} className="md:w-[280px] md:flex-none" />
+            <span className="shrink-0 text-left font-titulo text-detalle font-bold whitespace-nowrap text-marca-cafe">
               {formatearPorcentaje(modulo.avance)}
             </span>
           </div>
