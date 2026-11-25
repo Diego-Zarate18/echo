@@ -7,6 +7,10 @@ export type ResumenModulo = components["schemas"]["ResumenModulo"];
 export type ResultadoBusqueda = components["schemas"]["ResultadoBusqueda"];
 export type DetalleModulo = components["schemas"]["DetalleModulo"];
 export type ResumenCurso = components["schemas"]["ResumenCurso"];
+export type DetalleCurso = components["schemas"]["DetalleCurso"];
+export type ResumenLeccion = components["schemas"]["ResumenLeccion"];
+export type ResumenEvaluable = components["schemas"]["ResumenEvaluable"];
+export type ResumenExamen = components["schemas"]["ResumenExamen"];
 
 /**
  * Lecturas del contenido. `cache` de React evita pedir lo mismo dos veces en una solicitud (la portada y las
@@ -15,6 +19,8 @@ export type ResumenCurso = components["schemas"]["ResumenCurso"];
 export const cargarModulos = cache(() => apiServidor.listarModulos());
 export const cargarModulo = cache((modulo: string) => apiServidor.obtenerModulo({ ruta: { modulo } }));
 export const cargarCurso = cache((curso: string) => apiServidor.obtenerCurso({ ruta: { curso } }));
+export const cargarLeccion = cache((leccion: string) => apiServidor.abrirLeccion({ ruta: { leccion } }));
+export const cargarActividad = cache((cuestionario: number) => apiServidor.abrirActividad({ ruta: { cuestionario } }));
 export const cargarPortadaExamen = cache((cuestionario: number) => apiServidor.obtenerPortadaExamen({ ruta: { cuestionario } }));
 
 export type PuntoDeContinuacion = {
