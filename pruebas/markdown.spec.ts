@@ -98,7 +98,7 @@ test.describe("Convertidor de Markdown (lib/markdown)", () => {
   test("lo que no reconoce rompe la conversión con su número de línea", () => {
     fallaEnLinea("Texto\n\n##### Cinco", 3);
     fallaEnLinea("Un [enlace](https://example.com).", 1);
-    fallaEnLinea("Párrafo\n\nCon *énfasis* simple.", 3);
+    fallaEnLinea("Párrafo\n\nCon *énfasis sin cerrar.", 3);
     fallaEnLinea("Una **negrita sin cerrar.", 1);
     fallaEnLinea("```\ncódigo\n```", 1);
     fallaEnLinea("- uno\n  - anidada", 2);

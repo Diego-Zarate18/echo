@@ -92,7 +92,7 @@ export function MenuMovil({ enlaces, etiqueta, escritorioDesde }: PropsMenuMovil
         ref={panelRef}
         id="menu-movil"
         hidden={!abierto}
-        className="absolute inset-x-2 top-full z-40 mt-3 rounded-panel border border-blanco/16 bg-marca-cafe p-3 shadow-vidrio motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0 md:inset-x-auto md:right-0 md:w-[22rem]"
+        className="absolute inset-x-2 top-full z-40 mt-3 rounded-panel border border-blanco/16 bg-marca-cafe p-3 shadow-vidrio motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-(--ease-respuesta) motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0 md:inset-x-auto md:right-0 md:w-[22rem]"
       >
         <nav aria-label={etiqueta}>
           <ul className="flex flex-col">
