@@ -34,7 +34,8 @@ test.describe("SCR-06 · Módulos (inicio) y buscador", () => {
   test("primer ingreso: bienvenida con Moris, 0 %, módulo 1 disponible y el resto bloqueado con su requisito", async ({ page }) => {
     await entrarAModulos(page);
     await expect(page).toHaveTitle("Módulos · Echo");
-    await expect(page.locator("h1")).toHaveCount(1);
+    // Next deja montada la pantalla anterior (Iniciar sesión) oculta con display: none: se cuentan solo las visibles.
+    await expect(page.locator("h1:visible")).toHaveCount(1);
     await expect(titulo1(page)).toHaveText("Te damos la bienvenida, Alma");
     await expect(page.getByText("Empieza por el primer módulo. Cada paso abre el siguiente.")).toBeVisible();
     await expect(page.getByText("¡Hola! Soy Moris. ¡Qué alegría tenerte aquí! Vamos a explorar Echo juntos.")).toBeVisible();
@@ -114,9 +115,11 @@ test.describe("SCR-06 · Módulos (inicio) y buscador", () => {
     await expect(menu.getByRole("link", { name: "Mis resultados" })).toHaveAttribute("href", "/mis-resultados");
     await expect(page.getByRole("link", { name: /^Mi perfil, Alma/ })).toHaveAttribute("href", "/perfil");
     await expect(page.getByRole("link", { name: "Ayuda" }).first()).toHaveAttribute("href", "/ayuda");
-    await expect(page.locator("main#contenido")).toHaveCount(1);
+    await expect(page.locator("main#contenido:visible")).toHaveCount(1);
 
-    // La primera tabulación llega al enlace «Saltar al contenido».
+    // La primera tabulación llega al enlace «Saltar al contenido». Se carga la página completa: tras la navegación
+    // del cliente, el punto de partida del foco sigue en el botón de la pantalla anterior (anotado en el reporte 13).
+    await page.reload();
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
   });

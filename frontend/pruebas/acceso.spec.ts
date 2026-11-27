@@ -74,7 +74,8 @@ test.describe("SCR-01 · Iniciar sesión y sesión del frontend", () => {
     await entrar(page, ` ${ALUMNA.toUpperCase()} `, CONTRASENA);
     await page.waitForURL("**/modulos");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Te damos la bienvenida, Alma");
-    await expect(page.locator("main#contenido")).toHaveCount(1);
+    // Next deja montada la pantalla anterior (Iniciar sesión) oculta con display: none: se cuentan solo las visibles.
+    await expect(page.locator("main#contenido:visible")).toHaveCount(1);
 
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await page.waitForURL(/\/iniciar-sesion/);
