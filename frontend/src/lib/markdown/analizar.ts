@@ -2,13 +2,16 @@
  * Analizador mínimo de Markdown (DEC-57): convierte el subconjunto que usan los textos legales en un árbol que después
  * se dibuja con elementos de React (renderizar.tsx), nunca con HTML en cadena.
  *
- * Subconjunto: títulos `#` a `####`, párrafos, `**negritas**`, listas `-` y `1.`, casillas `- [ ]`, citas `>` y tablas.
+ * Subconjunto: títulos `#` a `####`, párrafos, `**negritas**`, `*cursivas*` (las lecciones), listas `-` y `1.`, casillas `- [ ]`, citas `>` y tablas.
  * Lo que no reconoce lanza un `ErrorDeMarkdown` con su número de línea, para que la compilación falle y nada se pierda
  * en silencio. Para ampliarlo (por ejemplo, imágenes en las lecciones) se agrega un tipo de bloque o de texto aquí y su
  * dibujo en renderizar.tsx.
  */
 
-export type Texto = { tipo: "texto"; valor: string } | { tipo: "negrita"; hijos: Texto[] };
+export type Texto =
+  | { tipo: "texto"; valor: string }
+  | { tipo: "negrita"; hijos: Texto[] }
+  | { tipo: "cursiva"; hijos: Texto[] };
 
 export type ElementoDeLista = { contenido: Texto[]; linea: number };
 
@@ -51,7 +54,17 @@ export function analizarTexto(fuente: string, linea: number): Texto[] {
   if (partes.length % 2 === 0) throw new ErrorDeMarkdown(linea, "«**» sin cerrar");
   const resultado: Texto[] = [];
   partes.forEach((parte, indice) => {
-    if (/\*/.test(parte)) throw new ErrorDeMarkdown(linea, "énfasis con un solo «*»");
+    // `*cursiva*` solo fuera de las negritas; un «*» suelto sigue siendo error.
+    if (indice % 2 === 0 && /\*/.test(parte)) {
+      const trozos = parte.split("*");
+      if (trozos.length % 2 === 0) throw new ErrorDeMarkdown(linea, "«*» sin cerrar");
+      trozos.forEach((trozo, j) => {
+        if (!trozo) return;
+        resultado.push(j % 2 === 1 ? { tipo: "cursiva", hijos: analizarTexto(trozo, linea) } : { tipo: "texto", valor: trozo });
+      });
+      return;
+    }
+    if (/\*/.test(parte)) throw new ErrorDeMarkdown(linea, "«*» dentro de negritas");
     if (/`/.test(parte)) throw new ErrorDeMarkdown(linea, "código en línea");
     if (/!?\[[^\]]*\]\([^)]*\)/.test(parte)) throw new ErrorDeMarkdown(linea, "enlace o imagen");
     if (/<\/?[a-zA-Z]/.test(parte)) throw new ErrorDeMarkdown(linea, "HTML");

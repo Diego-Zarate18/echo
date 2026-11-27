@@ -36,6 +36,8 @@ export function dibujarTexto(textos: Texto[], opciones: Pick<OpcionesDeDibujo, "
   return textos.map((texto, i) =>
     texto.tipo === "texto" ? (
       <span key={`${clave}-${i}`}>{conCorreos(texto.valor, opciones.correos ?? [], `${clave}-${i}`)}</span>
+    ) : texto.tipo === "cursiva" ? (
+      <em key={`${clave}-${i}`}>{dibujarTexto(texto.hijos, opciones, `${clave}-${i}`)}</em>
     ) : (
       <strong key={`${clave}-${i}`} className="font-bold">
         {dibujarTexto(texto.hijos, opciones, `${clave}-${i}`)}
