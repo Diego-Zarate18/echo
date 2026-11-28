@@ -102,7 +102,7 @@ export function ResolverActividad({ actividad, ubicacion, rutaLeccion, rutaCurso
       <section
         aria-labelledby="titulo-actividad"
         data-fondo="oscuro"
-        className="mt-[33px] flex items-center justify-between gap-6 rounded-hero bg-marca-cafe px-6 py-8 shadow-hero md:px-10"
+        className="mt-[33px] flex justify-between gap-6 rounded-hero bg-marca-cafe px-6 py-8 shadow-hero max-md:flex-col md:items-center md:px-10"
       >
         <div className="flex min-w-0 flex-col gap-3">
           <p className="font-titulo text-menor font-semibold text-marca-menta">{encabezado.arriba}</p>
@@ -115,7 +115,7 @@ export function ResolverActividad({ actividad, ubicacion, rutaLeccion, rutaCurso
           <Moris expresion={expresion} alt="" sizes="120px" className="w-[120px] shrink-0 max-md:hidden" />
         ) : (
           // Reglas (Figma 89:1441). La tercera no promete autoguardado: OP-23 guarda todo al enviar.
-          <ul aria-label="Cómo funciona" className="flex shrink-0 flex-col gap-3 rounded-tarjeta border border-marca-crema/20 bg-marca-crema/6 p-5 text-menor text-marca-crema max-md:hidden">
+          <ul aria-label="Cómo funciona" className="flex shrink-0 flex-col gap-3 rounded-tarjeta border border-marca-crema/20 bg-marca-crema/6 p-5 text-menor text-marca-crema">
             <li className="flex items-center gap-2">
               <IconoSinReloj className="size-5 text-marca-menta" />
               Sin cronómetro
