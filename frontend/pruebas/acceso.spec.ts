@@ -76,7 +76,10 @@ test.describe("SCR-01 · Iniciar sesión y sesión del frontend", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Te damos la bienvenida, Alma");
     // Next deja montada la pantalla anterior (Iniciar sesión) oculta con display: none: se cuentan solo las visibles.
     await expect(page.locator("main#contenido:visible")).toHaveCount(1);
+    // Tras la navegación del cliente el foco va al h1 de la pantalla nueva (FocoAlNavegar).
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
 
+    // En móvil «Cerrar sesión» es un ícono del encabezado, con el texto como nombre accesible (DEC-80).
     await page.getByRole("button", { name: "Cerrar sesión" }).click();
     await page.waitForURL(/\/iniciar-sesion/);
     // Sin `volver`: cerrar sesión no es una sesión vencida.

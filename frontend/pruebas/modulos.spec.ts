@@ -117,10 +117,22 @@ test.describe("SCR-06 · Módulos (inicio) y buscador", () => {
     await expect(page.getByRole("link", { name: "Ayuda" }).first()).toHaveAttribute("href", "/ayuda");
     await expect(page.locator("main#contenido:visible")).toHaveCount(1);
 
-    // La primera tabulación llega al enlace «Saltar al contenido». Se carga la página completa: tras la navegación
-    // del cliente, el punto de partida del foco sigue en el botón de la pantalla anterior (anotado en el reporte 13).
+    // La primera tabulación llega al enlace «Saltar al contenido» en la carga completa (tras navegar, el foco va al h1).
     await page.reload();
     await page.keyboard.press("Tab");
     await expect(page.getByRole("link", { name: "Saltar al contenido" })).toBeFocused();
+  });
+
+  test("DEC-80: desde 768 px el menú va arriba, sin barra inferior, y «Cerrar sesión» siempre está en el encabezado", async ({ page }) => {
+    await entrarAModulos(page);
+    await page.setViewportSize({ width: 800, height: 900 });
+    await expect(page.getByRole("banner").getByRole("navigation", { name: "Principal" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Principal" }).filter({ visible: true })).toHaveCount(1);
+    await expect(page.getByRole("banner").getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
+    // El encabezado cabe sin desbordar la página.
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(800);
+    await page.setViewportSize({ width: 767, height: 900 });
+    await expect(page.getByRole("banner").getByRole("navigation", { name: "Principal" })).toBeHidden();
+    await expect(page.getByRole("banner").getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
   });
 });
