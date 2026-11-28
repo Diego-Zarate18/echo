@@ -24,7 +24,7 @@ export default function LayoutApp({ children }: LayoutProps<"/">) {
         <EncabezadoApp />
       </Suspense>
       {children}
-      <div className="pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <div className="pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <PiePublico variante="claro" />
       </div>
       {/* `usePathname()` es dato de la solicitud: en rutas dinámicas (`/modulos/[modulo]/[curso]`) debe ir dentro de Suspense. */}

@@ -34,8 +34,8 @@ export function EncabezadoAppCargando() {
 
 /**
  * Encabezado de las vistas con sesión (SCR-06 › comunes). Escritorio: logo, menú Módulos / Mi progreso / Mis
- * resultados, Ayuda, perfil con el nombre y Cerrar sesión. Móvil: logo, Ayuda y el avatar que lleva al Perfil; el menú
- * va abajo (BarraInferior, DEC-80). Lee la sesión: debe ir dentro de `<Suspense>`.
+ * resultados, Ayuda, perfil con el nombre y Cerrar sesión. Móvil: logo y los íconos de Ayuda, Perfil y Cerrar sesión (Figma 98:3328);
+ * por debajo de 768 px el menú va abajo (BarraInferior, DEC-80). Lee la sesión: debe ir dentro de `<Suspense>`.
  */
 export async function EncabezadoApp() {
   const sesion = await obtenerSesion();
@@ -66,9 +66,7 @@ export async function EncabezadoApp() {
           <span className="sr-only">Mi perfil, </span>
           <span className="max-lg:sr-only">{nombreCompleto}</span>
         </Link>
-        <div className="max-lg:hidden">
-          <BotonCerrarSesion como="encabezado" />
-        </div>
+        <BotonCerrarSesion como="encabezado" />
       </div>
     </Barra>
   );

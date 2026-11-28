@@ -10,7 +10,7 @@ function perteneceA(ruta: string, prefijos: readonly string[]) {
 
 /**
  * Barra inferior de móvil y tableta (DEC-80): Módulos, Mi progreso y Mis resultados. El Perfil va en el encabezado.
- * Solo se ve por debajo de `lg`; ahí el menú del encabezado se oculta. Respeta el área segura del teléfono.
+ * Solo se ve por debajo de `md` (768 px, DEC-80); ahí el menú del encabezado se oculta. Respeta el área segura del teléfono.
  */
 export function BarraInferior() {
   const ruta = usePathname();
@@ -18,7 +18,7 @@ export function BarraInferior() {
     <nav
       aria-label="Principal"
       data-fondo="oscuro"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-marca-crema/14 bg-marca-cafe pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-marca-crema/14 bg-marca-cafe pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       <ul className="mx-auto flex max-w-xl">
         {SECCIONES.map(({ href, texto, Icono, prefijos }) => {

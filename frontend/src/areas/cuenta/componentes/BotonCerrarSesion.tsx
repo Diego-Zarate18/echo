@@ -42,10 +42,11 @@ export function BotonCerrarSesion({ como = "boton" }: { como?: "boton" | "enlace
           type="button"
           onClick={cerrar}
           aria-disabled={enviando || undefined}
-          className="inline-flex min-h-11 items-center gap-1 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema decoration-2 underline-offset-4 hover:underline aria-disabled:cursor-wait"
+          className="inline-flex min-h-11 items-center gap-1 font-titulo text-menor font-semibold whitespace-nowrap text-marca-crema decoration-2 underline-offset-4 hover:underline aria-disabled:cursor-wait max-lg:min-w-11 max-lg:justify-center"
         >
           <IconoSalir className="size-5" />
-          {enviando ? "Cerrando sesión…" : "Cerrar sesión"}
+          {/* Por debajo de lg solo se ve el ícono, como Ayuda y Perfil; el texto queda como nombre accesible (DEC-80). */}
+          <span className="max-lg:sr-only">{enviando ? "Cerrando sesión…" : "Cerrar sesión"}</span>
         </button>
       ) : como === "enlace" ? (
         <button

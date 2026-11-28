@@ -14,7 +14,7 @@ type Seccion = {
   prefijos: readonly string[];
 };
 
-/** Las tres secciones del menú (SCR-06 › comunes): arriba en escritorio y abajo en móvil (DEC-80). */
+/** Las tres secciones del menú (SCR-06 › comunes): arriba en escritorio y abajo en móvil (DEC-80, por debajo de 768 px). */
 export const SECCIONES: readonly Seccion[] = [
   { href: "/modulos", texto: "Módulos", Icono: IconoModulos, prefijos: ["/modulos", "/actividades", "/examenes"] },
   { href: "/mi-progreso", texto: "Mi progreso", Icono: IconoProgreso, prefijos: ["/mi-progreso"] },
@@ -29,7 +29,7 @@ function perteneceA(ruta: string, prefijos: readonly string[]) {
 export function MenuPrincipal() {
   const ruta = usePathname();
   return (
-    <nav aria-label="Principal" className="hidden items-center gap-1.5 lg:flex">
+    <nav aria-label="Principal" className="hidden items-center gap-1 md:flex lg:gap-1.5">
       {SECCIONES.map(({ href, texto, Icono, prefijos }) => {
         const activa = perteneceA(ruta, prefijos);
         return (
@@ -38,7 +38,7 @@ export function MenuPrincipal() {
             href={href}
             aria-current={ruta === href ? "page" : undefined}
             className={[
-              "inline-flex min-h-11 items-center gap-2 rounded-full px-4 font-titulo text-menor whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta)",
+              "inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-titulo text-menor whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta)",
               activa
                 ? "bg-marca-crema/14 font-extrabold ring-1 ring-inset ring-marca-crema/26"
                 : "font-semibold hover:bg-marca-crema/10",
