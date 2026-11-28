@@ -45,7 +45,7 @@ export async function ResultadoGuardado({ params }: { params: Promise<{ cuestion
           { texto: resultado.modulo.titulo, href: `/modulos/${resultado.modulo.slug}` },
           { texto: resultado.curso.titulo, href: ubicacion?.rutaCurso ?? "/modulos" },
           { texto: "Examen", href: `/examenes/${id}` },
-          { texto: `Intento ${resultado.numero}` },
+          { texto: "Resultado del examen" },
         ]}
       />
       <ResultadoDeExamen

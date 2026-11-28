@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Pregunta, estaRespondida, type Respuesta } from "@/componentes/cuestionario/Pregunta";
 import { Alerta } from "@/componentes/ui/Alerta";
 import { Boton } from "@/componentes/ui/Boton";
+import { Migas, type Miga } from "@/componentes/ui/Migas";
 import { IconoBaseDeDatos, IconoSinReloj } from "@/componentes/ui/iconos/iconos";
 import type { components } from "@/lib/api/esquema";
 import type { ErrorApi } from "@/lib/api/errores";
@@ -21,6 +22,8 @@ type Props = {
   curso: string;
   calificacionMinima: number;
   rutaCurso: string | null;
+  /** Migas hasta «Examen»; la última («Resolver» o «Resultado del examen») la pone esta pantalla según su estado. */
+  migas: Miga[];
 };
 
 /**
@@ -28,7 +31,7 @@ type Props = {
  * respuesta en el servidor al elegirla (OP-26): nada se guarda en el navegador. Si se pierde la conexión, la respuesta
  * que no se guardó se reintenta al volver. Al enviar (OP-27) muestra el resultado en la misma pantalla. Sin cronómetro.
  */
-export function ResolverExamen({ cuestionario, titulo, curso, calificacionMinima, rutaCurso }: Props) {
+export function ResolverExamen({ cuestionario, titulo, curso, calificacionMinima, rutaCurso, migas }: Props) {
   const [intento, setIntento] = useState<Intento | null>(null);
   const [errorCarga, setErrorCarga] = useState<ErrorApi | null>(null);
   const [respuestas, setRespuestas] = useState<Record<number, Respuesta>>({});
@@ -91,17 +94,25 @@ export function ResolverExamen({ cuestionario, titulo, curso, calificacionMinima
     if (pendientes.length || errorEnvio || errorCarga) aviso.current?.focus();
   }, [pendientes, errorEnvio, errorCarga]);
 
+  // Al enviar, la URL pasa a /resultado/<intento> (replaceState): las migas tienen que decir lo mismo (Figma 92:2063).
+  const conMigas = (contenido: React.ReactNode) => (
+    <>
+      <Migas elementos={[...migas, { texto: resultado ? "Resultado del examen" : "Resolver" }]} />
+      {contenido}
+    </>
+  );
+
   if (errorCarga) {
-    return (
+    return conMigas(
       <Alerta ref={aviso} tono="error" role="alert" titulo="No pudimos abrir tu intento" className="mt-8">
         {mensajeDeError(errorCarga)}{" "}
         <a href={`/examenes/${cuestionario}`} className="font-bold underline underline-offset-4">Volver a la portada del examen</a>
-      </Alerta>
+      </Alerta>,
     );
   }
-  if (resultado) return <ResultadoDeExamen datos={resultado} />;
+  if (resultado) return conMigas(<ResultadoDeExamen datos={resultado} />);
   if (!intento) {
-    return <div aria-hidden="true" className="mt-8 h-[420px] rounded-tarjeta bg-superficie-hundida" />;
+    return conMigas(<div aria-hidden="true" className="mt-8 h-[420px] rounded-tarjeta bg-superficie-hundida" />);
   }
 
   const preguntas = intento.preguntas;
@@ -155,7 +166,7 @@ export function ResolverExamen({ cuestionario, titulo, curso, calificacionMinima
     window.scrollTo({ top: 0 });
   }
 
-  return (
+  return conMigas(
     <>
       <section
         aria-labelledby="titulo-examen"
@@ -274,6 +285,6 @@ export function ResolverExamen({ cuestionario, titulo, curso, calificacionMinima
           </div>
         </div>
       </div>
-    </>
+    </>,
   );
 }

@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import { ErrorDePantalla } from "@/componentes/estructura/ErrorDePantalla";
-import { Migas } from "@/componentes/ui/Migas";
 import { cargarPortada, cargarUbicacion, idDeCuestionario } from "../datos";
 import { ResolverExamen } from "./ResolverExamen";
 
@@ -29,8 +28,8 @@ export async function Resolucion({ params }: { params: Promise<{ cuestionario: s
   const ubicacion = await cargarUbicacion(examen.curso.slug);
   return (
     <>
-      <Migas
-        elementos={[
+      <ResolverExamen
+        migas={[
           { texto: "Módulos", href: "/modulos" },
           ...(ubicacion
             ? [
@@ -39,10 +38,7 @@ export async function Resolucion({ params }: { params: Promise<{ cuestionario: s
               ]
             : []),
           { texto: "Examen", href: `/examenes/${id}` },
-          { texto: "Resolver" },
         ]}
-      />
-      <ResolverExamen
         cuestionario={id}
         titulo={examen.titulo}
         curso={examen.curso.titulo}
