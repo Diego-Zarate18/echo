@@ -520,6 +520,11 @@
     outline-color: var(--color-marca-bosque);
   }
 
+  /* El h1 recibe el foco por programa al navegar (FocoAlNavegar): no es un control, así que no lleva anillo. */
+  h1[tabindex="-1"]:focus {
+    outline: none;
+  }
+
   /* Los íconos conservan el trazo de 1.75 en cualquier tamaño. */
   .icono * {
     vector-effect: non-scaling-stroke;

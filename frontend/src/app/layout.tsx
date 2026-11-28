@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito, Nunito_Sans } from "next/font/google";
+import { Suspense } from "react";
+import { FocoAlNavegar } from "@/componentes/estructura/FocoAlNavegar";
 import "@/estilos/globales.css";
 
 const nunito = Nunito({
@@ -26,7 +28,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="es-MX" className={`${nunito.variable} ${nunitoSans.variable} antialiased`}>
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-dvh">
+        {children}
+        {/* `usePathname()` es dato de la solicitud: va dentro de Suspense (cacheComponents). */}
+        <Suspense fallback={null}>
+          <FocoAlNavegar />
+        </Suspense>
+      </body>
     </html>
   );
 }
