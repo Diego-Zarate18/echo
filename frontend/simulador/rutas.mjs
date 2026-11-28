@@ -45,6 +45,10 @@ function contrasenaNueva(cuerpo, campo, campos) {
   else if (!contrasenaFuerte(valor)) campos[campo] = "CONTRASENA_DEBIL";
   return valor;
 }
+/** El código del enlace es obligatorio (CodigoEnlaceEntrada): sin él es 422, no ENLACE_INVALIDO. */
+function codigoDeEnlace(cuerpo, campos) {
+  if (typeof cuerpo?.codigo !== "string" || !cuerpo.codigo) campos.codigo = "OBLIGATORIO";
+}
 function casilla(cuerpo, campo, campos) {
   if (cuerpo?.[campo] !== true) campos[campo] = "CASILLA_OBLIGATORIA";
 }
@@ -223,6 +227,9 @@ function registrarCuenta(ctx) {
 }
 
 function verificarCorreo(ctx) {
+  const campos = {};
+  codigoDeEnlace(ctx.cuerpo, campos);
+  sinErrores(campos);
   const { token, usuario } = usarToken(ctx, ctx.cuerpo?.codigo, "verificacion");
   if (usuario.estado !== "pendiente") throw errores.enlaceInvalido("usado");
   token.usadoEn = ctx.ahora.toISOString();
@@ -377,6 +384,7 @@ function solicitarRecuperacion(ctx) {
 
 function restablecerContrasena(ctx) {
   const campos = {};
+  codigoDeEnlace(ctx.cuerpo, campos);
   const contrasena = contrasenaNueva(ctx.cuerpo, "contrasena", campos);
   sinErrores(campos);
   const { token, usuario } = usarToken(ctx, ctx.cuerpo?.codigo, "recuperacion");
@@ -454,6 +462,9 @@ function cambiarCorreo(ctx) {
 }
 
 function confirmarCambioCorreo(ctx) {
+  const campos = {};
+  codigoDeEnlace(ctx.cuerpo, campos);
+  sinErrores(campos);
   const { token, usuario } = usarToken(ctx, ctx.cuerpo?.codigo, "cambioCorreo");
   if (usuarioPorCorreo(ctx.bd, token.correoDestino)) throw errores.enlaceInvalido();
   token.usadoEn = ctx.ahora.toISOString();
@@ -1081,15 +1092,15 @@ function obtenerDetalleIntento(ctx) {
 // limitada: cuenta para el límite de peticiones por IP (RSG-04).
 export const rutas = [
   { metodo: "GET", ruta: "/api/sesion", operationId: "obtenerSesion", sesion: "requerida", conPendiente: true, manejar: (ctx) => ({ estado: 200, cuerpo: sesionVisible(ctx, ctx.usuario) }) },
-  { metodo: "POST", ruta: "/api/sesion", operationId: "iniciarSesion", sesion: "opcional", conPendiente: true, limitada: true, manejar: iniciarSesion },
+  { metodo: "POST", ruta: "/api/sesion", operationId: "iniciarSesion", sesion: "opcional", conExpira: true, conPendiente: true, limitada: true, manejar: iniciarSesion },
   { metodo: "DELETE", ruta: "/api/sesion", operationId: "cerrarSesion", sesion: "requerida", conPendiente: true, manejar: (ctx) => (ctx.cerrarSesionActual(), { estado: 204 }) },
   { metodo: "POST", ruta: "/api/sesion/renovar", operationId: "renovarSesion", sesion: "requerida", conPendiente: true, manejar: (ctx) => ({ estado: 200, cuerpo: sesionVisible(ctx, ctx.usuario) }) },
   { metodo: "DELETE", ruta: "/api/sesiones", operationId: "cerrarTodasLasSesiones", sesion: "requerida", conPendiente: true, manejar: (ctx) => (ctx.revocarSesiones(ctx.usuario.id), { estado: 204 }) },
   { metodo: "POST", ruta: "/api/cuenta/registro", operationId: "registrarCuenta", sesion: "opcional", conPendiente: true, limitada: true, manejar: registrarCuenta },
-  { metodo: "POST", ruta: "/api/cuenta/verificacion", operationId: "verificarCorreo", sesion: "opcional", conPendiente: true, manejar: verificarCorreo },
+  { metodo: "POST", ruta: "/api/cuenta/verificacion", operationId: "verificarCorreo", sesion: "opcional", conExpira: true, conPendiente: true, manejar: verificarCorreo },
   { metodo: "POST", ruta: "/api/cuenta/verificacion/reenvio", operationId: "reenviarVerificacion", sesion: "opcional", conPendiente: true, limitada: true, manejar: reenviarVerificacion },
   { metodo: "GET", ruta: "/api/cuenta/registro-google", operationId: "obtenerRegistroGoogle", sesion: "opcional", conPendiente: true, manejar: obtenerRegistroGoogle },
-  { metodo: "POST", ruta: "/api/cuenta/aceptacion", operationId: "aceptarDocumentos", sesion: "opcional", conPendiente: true, manejar: aceptarDocumentos },
+  { metodo: "POST", ruta: "/api/cuenta/aceptacion", operationId: "aceptarDocumentos", sesion: "opcional", conExpira: true, conPendiente: true, manejar: aceptarDocumentos },
   { metodo: "GET", ruta: "/api/auth/google", operationId: "entrarConGoogle", sesion: "opcional", conPendiente: true, manejar: entrarConGoogle },
   { metodo: "GET", ruta: "/api/auth/google/callback", operationId: "volverDeGoogle", sesion: "opcional", conPendiente: true, manejar: volverDeGoogle },
   { metodo: "GET", ruta: "/api/documentos", operationId: "obtenerDocumentosVigentes", sesion: "opcional", conPendiente: true, manejar: (ctx) => ({ estado: 200, cuerpo: { documentos: Object.values(R.documentosVigentes(ctx.bd)).map(documentoVisible) } }) },

@@ -29,6 +29,9 @@ const tabla = rutas.map((r) => ({
   patron: new RegExp(`^${r.ruta.replace(/\{([a-z]+)\}/gi, "(?<$1>[^/]+)")}$`),
 }));
 
+/** X-Sesion-Expira solo donde el contrato lo declara: rutas con sesión y las tres opcionales que abren o usan una (conExpira). */
+const conExpira = (ruta) => ruta.sesion === "requerida" || Boolean(ruta.conExpira);
+
 function leerCookies(encabezado = "") {
   const cookies = {};
   for (const parte of encabezado.split(";")) {
@@ -164,9 +167,10 @@ async function atender(solicitud, respuesta) {
   const encabezados = {};
   const nuevasCookies = [];
   let actual = null;
+  let ruta = null;
 
   try {
-    const ruta = url.pathname.startsWith("/api/") || url.pathname === "/api"
+    ruta = url.pathname.startsWith("/api/") || url.pathname === "/api"
       ? tabla.find((r) => r.metodo === solicitud.method && r.patron.test(url.pathname))
       : null;
     if (!ruta) throw errores.noEncontrado();
@@ -243,7 +247,7 @@ async function atender(solicitud, respuesta) {
 
     const resultado = await ruta.manejar(ctx);
     if (resultado.encabezados) Object.assign(encabezados, resultado.encabezados);
-    if (actual) encabezados["X-Sesion-Expira"] = ctx.expiraEn();
+    if (actual && conExpira(ruta)) encabezados["X-Sesion-Expira"] = ctx.expiraEn();
     if (resultado.estado === 302) {
       encabezados.Location = resultado.ubicacion;
       return responder(respuesta, 302, undefined, encabezados, nuevasCookies);
@@ -257,7 +261,7 @@ async function atender(solicitud, respuesta) {
     if (conocido.codigo === "NO_AUTENTICADO" && cookies[COOKIE_SESION]) {
       nuevasCookies.push(`${COOKIE_SESION}=; ${ATRIBUTOS_COOKIE}; Max-Age=0`);
     }
-    if (actual && conocido.estado !== 401) {
+    if (actual && conocido.estado !== 401 && ruta && conExpira(ruta)) {
       encabezados["X-Sesion-Expira"] = new Date(new Date(actual.sesion.ultimaActividadEn).getTime() + bd.duracionSesionMs).toISOString();
     }
     return responder(respuesta, conocido.estado, cuerpoDeError(conocido), encabezados, nuevasCookies);
