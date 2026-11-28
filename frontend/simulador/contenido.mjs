@@ -116,7 +116,7 @@ export const preguntas = [
       { id: 2, izquierdo: "Respetar la privacidad", derecho: "Usar solo los datos necesarios", orden: 2 },
       { id: 3, izquierdo: "Ser honesto", derecho: "Informar los límites de un sistema", orden: 3 },
     ] },
-  // Examen 4 (curso 1): cinco preguntas, con relación de columnas
+  // Examen 4 (curso 1): cinco preguntas de opción múltiple y verdadero/falso (DEC-117)
   { id: 6, cuestionarioId: 4, tipo: "opcionMultiple", orden: 1, enunciado: "¿Qué complementa un código de ética?", fundamentoId: null, leccionRepasoId: 1, retroalimentacion: "El código complementa a la ley.",
     opciones: [
       { id: 11, texto: "La ley", valor: 1, retroalimentacion: "Correcto." },
@@ -128,11 +128,12 @@ export const preguntas = [
       { id: 14, texto: "Verdadero", valor: 1, retroalimentacion: "Correcto." },
       { id: 15, texto: "Falso", valor: 0, retroalimentacion: "Sí lo pide." },
     ] },
-  { id: 8, cuestionarioId: 4, tipo: "relacion", orden: 3, enunciado: "Relaciona cada situación con el principio que la orienta.", fundamentoId: 1, leccionRepasoId: 2, retroalimentacion: "Cada situación se resuelve con un principio distinto.",
-    parejas: [
-      { id: 4, izquierdo: "Guardar contraseñas sin cifrar", derecho: "Evitar el daño", orden: 1 },
-      { id: 5, izquierdo: "Pedir solo los datos necesarios", derecho: "Respetar la privacidad", orden: 2 },
-      { id: 6, izquierdo: "Avisar que un sistema puede fallar", derecho: "Ser honesto", orden: 3 },
+  // DEC-117: los exámenes no llevan relación de columnas. Igual que la semilla: misma pregunta 8, opciones 39 a 41.
+  { id: 8, cuestionarioId: 4, tipo: "opcionMultiple", orden: 3, enunciado: "Guardar contraseñas sin cifrar va contra un principio del código de ACM. ¿Cuál?", fundamentoId: 1, leccionRepasoId: 2, retroalimentacion: "Una contraseña sin cifrar puede exponer a las personas: es un daño evitable.",
+    opciones: [
+      { id: 39, texto: "Evitar el daño", valor: 1, retroalimentacion: "Correcto." },
+      { id: 40, texto: "Ser honesto", valor: 0, retroalimentacion: "Ser honesto es informar los límites de un sistema." },
+      { id: 41, texto: "Entregar siempre a tiempo", valor: 0, retroalimentacion: "Es deseable, pero no es un principio del código." },
     ] },
   { id: 9, cuestionarioId: 4, tipo: "opcionMultiple", orden: 4, enunciado: "Ante un dilema, ¿qué conviene preguntarse primero?", fundamentoId: null, leccionRepasoId: 1, retroalimentacion: "Primero, a quién afecta la decisión.",
     opciones: [

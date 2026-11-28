@@ -200,7 +200,10 @@ test.describe("API simulada a través del rewrite de Next", () => {
     const intento = await alumna.json<Json>("POST", "/api/examenes/4/intentos");
     expect(intento.estado).toBe(201);
     expect(llavesPresentes(intento.cuerpo, ANTES_DE_ENVIAR)).toEqual([]);
-    const relacion = intento.cuerpo.preguntas.find((p: Json) => p.tipo === "relacion");
+    // Los exámenes no llevan relación de columnas (DEC-117): vive en la actividad 3.
+    expect(intento.cuerpo.preguntas.some((p: Json) => p.tipo === "relacion")).toBe(false);
+    const actividad3 = await alumna.json<Json>("GET", "/api/actividades/3");
+    const relacion = actividad3.cuerpo.preguntas.find((p: Json) => p.tipo === "relacion");
     // Las claves derechas no se pueden comparar con los ids izquierdos.
     expect(relacion.derecha.map((d: Json) => d.clave)).not.toEqual(expect.arrayContaining(relacion.izquierda.map((i: Json) => String(i.id))));
 
@@ -242,7 +245,6 @@ test.describe("API simulada a través del rewrite de Next", () => {
     }
     const aprobado = await otra.json<Json>("POST", `/api/intentos/${nuevo.cuerpo.id}/envio`);
     expect(aprobado.cuerpo).toMatchObject({ resultado: "aprobado", aciertos: 5, errores: 0, cursoCompletado: { slug: "codigos-de-etica" } });
-    expect(llavesPresentes(aprobado.cuerpo, ["derechaCorrecta"]).length).toBeGreaterThan(0);
     expect(aprobado.cuerpo.preguntas.flatMap((p: Json) => p.opciones ?? []).some((o: Json) => o.correcta)).toBe(true);
     const otraVez = await otra.json<Json>("POST", "/api/examenes/4/intentos");
     expect(otraVez.cuerpo.codigo, "un examen aprobado no se repite (DEC-20)").toBe("EXAMEN_APROBADO");

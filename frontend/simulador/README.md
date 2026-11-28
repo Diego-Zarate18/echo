@@ -47,7 +47,8 @@ Todo es inventado y vive en memoria; cada reinicio vuelve al inicio.
 - **Evaluables:**
   - una actividad por lección;
   - un caso práctico con decisiones de valor 1, 0.5 y 0;
-  - un examen por curso; el del curso 1 tiene 5 preguntas, con una relación de columnas.
+  - un examen por curso; el del curso 1 tiene 5 preguntas (sin relación de columnas: los exámenes no la llevan, DEC-117);
+  - la relación de columnas vive en la actividad 3.
 - **Documentos legales:** aviso y términos v1.0 publicados el 21/10/2026. Su huella SHA-256 se calcula al arrancar
   desde `docs/legal/` (DEC-28).
 
