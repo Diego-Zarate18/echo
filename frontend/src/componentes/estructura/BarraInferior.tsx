@@ -11,6 +11,8 @@ function perteneceA(ruta: string, prefijos: readonly string[]) {
 /**
  * Barra inferior de móvil y tableta (DEC-80): Módulos, Mi progreso y Mis resultados. El Perfil va en el encabezado.
  * Solo se ve por debajo de `md` (768 px, DEC-80); ahí el menú del encabezado se oculta. Respeta el área segura del teléfono.
+ * El destino actual lleva una cápsula detrás del ícono (forma, no solo color) que se abre desde el centro en 200 ms;
+ * con movimiento reducido solo se funde. El texto pasa a negritas y `aria-current` no cambia.
  */
 export function BarraInferior() {
   const ruta = usePathname();
@@ -33,9 +35,16 @@ export function BarraInferior() {
                   activa ? "font-bold" : "font-semibold opacity-80",
                 ].join(" ")}
               >
-                <span
-                  className={`flex h-8 w-14 items-center justify-center rounded-full transition-[background-color] duration-150 ease-(--ease-respuesta) ${activa ? "bg-marca-crema/18" : ""}`}
-                >
+                <span className="relative isolate flex h-8 w-14 items-center justify-center">
+                  <span
+                    aria-hidden="true"
+                    data-indicador
+                    className={[
+                      "pointer-events-none absolute inset-0 -z-10 rounded-full bg-marca-crema/18",
+                      "transition-[opacity,scale] duration-200 ease-(--ease-respuesta) motion-reduce:scale-100 motion-reduce:transition-opacity",
+                      activa ? "scale-100 opacity-100" : "scale-x-50 opacity-0",
+                    ].join(" ")}
+                  />
                   <Icono className="size-5" />
                 </span>
                 {texto}

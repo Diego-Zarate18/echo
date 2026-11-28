@@ -135,4 +135,32 @@ test.describe("SCR-06 · Módulos (inicio) y buscador", () => {
     await expect(page.getByRole("banner").getByRole("navigation", { name: "Principal" })).toBeHidden();
     await expect(page.getByRole("banner").getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
   });
+
+  test("indicador del destino actual: se anima con escala, y con movimiento reducido solo se funde y aria-current sigue", async ({ page }) => {
+    await entrarAModulos(page);
+    // El menú visible: arriba en escritorio, la barra inferior en móvil.
+    const menu = page.getByRole("navigation", { name: "Principal" }).filter({ visible: true });
+    const enlace = (texto: string) => menu.getByRole("link", { name: texto });
+    const indicador = (texto: string) => enlace(texto).locator("[data-indicador]");
+    const transicion = (texto: string) => indicador(texto).evaluate((e) => getComputedStyle(e).transitionProperty);
+    const ancho = async (texto: string) => (await indicador(texto).boundingBox())!.width;
+
+    await expect(indicador("Módulos")).toHaveCSS("opacity", "1");
+    expect(await transicion("Mi progreso")).toContain("scale");
+    // Sin preferencia, la píldora de un destino inactivo espera encogida.
+    expect(await ancho("Mi progreso")).toBeLessThan(await ancho("Módulos"));
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    expect(await transicion("Mi progreso")).toBe("opacity");
+    await expect.poll(() => ancho("Mi progreso")).toBe(await ancho("Módulos"));
+
+    await enlace("Mi progreso").click();
+    await page.waitForURL("**/mi-progreso");
+    await expect(enlace("Mi progreso")).toHaveAttribute("aria-current", "page");
+    await expect(enlace("Módulos")).not.toHaveAttribute("aria-current");
+    await expect(indicador("Mi progreso")).toHaveCSS("opacity", "1");
+    await expect(indicador("Módulos")).toHaveCSS("opacity", "0");
+    expect(await transicion("Módulos")).toBe("opacity");
+    await revisarAccesibilidad(page);
+  });
 });

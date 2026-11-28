@@ -25,7 +25,11 @@ function perteneceA(ruta: string, prefijos: readonly string[]) {
   return prefijos.some((prefijo) => ruta === prefijo || ruta.startsWith(`${prefijo}/`));
 }
 
-/** Menú principal del encabezado de escritorio. La sección actual lleva la píldora y `aria-current="page"`. */
+/**
+ * Menú principal del encabezado de escritorio. La sección actual lleva la píldora y `aria-current="page"`.
+ * La píldora no es solo color: tiene forma, anillo y el texto pasa a negritas. Al cambiar de sección, la nueva crece
+ * desde el 90 % con un fundido (200 ms) y la anterior se va igual; con movimiento reducido solo se funde.
+ */
 export function MenuPrincipal() {
   const ruta = usePathname();
   return (
@@ -38,12 +42,19 @@ export function MenuPrincipal() {
             href={href}
             aria-current={ruta === href ? "page" : undefined}
             className={[
-              "inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-titulo text-menor whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta)",
-              activa
-                ? "bg-marca-crema/14 font-extrabold ring-1 ring-inset ring-marca-crema/26"
-                : "font-semibold hover:bg-marca-crema/10",
+              "relative isolate inline-flex min-h-11 items-center gap-2 rounded-full px-3 font-titulo text-menor whitespace-nowrap text-marca-crema transition-[background-color] duration-150 ease-(--ease-respuesta)",
+              activa ? "font-extrabold" : "font-semibold hover:bg-marca-crema/10",
             ].join(" ")}
           >
+            <span
+              aria-hidden="true"
+              data-indicador
+              className={[
+                "pointer-events-none absolute inset-0 -z-10 rounded-full bg-marca-crema/14 ring-1 ring-marca-crema/26 ring-inset",
+                "transition-[opacity,scale] duration-200 ease-(--ease-respuesta) motion-reduce:scale-100 motion-reduce:transition-opacity",
+                activa ? "scale-100 opacity-100" : "scale-90 opacity-0",
+              ].join(" ")}
+            />
             <Icono className="size-5" />
             {texto}
           </Link>
