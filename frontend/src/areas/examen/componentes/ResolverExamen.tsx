@@ -239,11 +239,11 @@ export function ResolverExamen({ cuestionario, titulo, curso, calificacionMinima
         <div ref={preguntaRef} className="flex min-w-0 flex-col gap-4">
           {pendientes.length ? (
             <Alerta ref={aviso} tono="error" role="alert" titulo={pendientes.length === 1 ? "Te falta responder 1 pregunta" : `Te faltan ${pendientes.length} preguntas`}>
-              <span className="flex flex-wrap gap-x-3">
+              <span className="flex flex-wrap gap-x-3 gap-y-1">
                 {pendientes.map((id) => {
                   const i = preguntas.findIndex((p) => p.id === id);
                   return (
-                    <button key={id} type="button" onClick={() => ir(i)} className="font-bold underline underline-offset-4">
+                    <button key={id} type="button" onClick={() => ir(i)} className="inline-flex min-h-6 items-center font-bold underline underline-offset-4">
                       Pregunta {i + 1}
                     </button>
                   );
