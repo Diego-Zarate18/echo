@@ -26,7 +26,8 @@ export function PantallaDeAcceso({ saludo, entrada, saludoCompacto, children }: 
       <div className="flex flex-1 flex-col lg:min-h-[calc(100dvh-2rem)]">
         {/* En móvil el logo ya lleva al inicio y el botón redondo del panel, a Ayuda. */}
         <nav aria-label="Accesos" className="hidden justify-end gap-7 pt-6 pr-10 lg:flex">
-          <Link href="/" className={claseAcceso}>
+          {/* Sin prefetch: al entrar, `proxy.ts` manda `/` a `/modulos` y el prefetch del segmento (publico) da 404. */}
+          <Link href="/" prefetch={false} className={claseAcceso}>
             <IconoFlechaIzquierda className="size-[18px]" />
             Volver al inicio
           </Link>

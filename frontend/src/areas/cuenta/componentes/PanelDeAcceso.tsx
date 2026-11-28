@@ -41,7 +41,8 @@ export function PanelDeAcceso({ saludo, entrada, saludoCompacto = false }: Props
       </span>
 
       <div className="flex items-start justify-between">
-        <Link href="/" className="rounded-logo">
+        {/* Sin prefetch: al entrar, `proxy.ts` manda `/` a `/modulos` y el prefetch del segmento (publico) da 404. */}
+        <Link href="/" prefetch={false} className="rounded-logo">
           <Logo fondo="oscuro" preload className="w-28 lg:w-[140px]" />
           <span className="sr-only">, ir al inicio</span>
         </Link>
