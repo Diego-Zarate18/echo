@@ -16,6 +16,11 @@ const TIPOS: Record<PreguntaCalificada["tipo"], string> = {
 
 const ETIQUETAS = { optima: "Decisión óptima", aceptable: "Decisión aceptable", riesgosa: "Decisión riesgosa" } as const;
 
+// 3 px a la vista: el borde de 1.5 px de siempre más un anillo interior, para que la caja mida lo mismo que la opción
+// antes de enviar. El color no es lo único: «Correcta»/«Incorrecta» e ícono van al lado (1.4.1); ambos ≥ 5:1 (1.4.11).
+const BORDE_CORRECTA = "border-marca-bosque inset-ring-[1.5px] inset-ring-marca-bosque";
+const BORDE_INCORRECTA = "border-estado-riesgosa inset-ring-[1.5px] inset-ring-estado-riesgosa";
+
 /** Correcta o incorrecta: siempre con ícono y texto (WCAG 1.4.1). */
 function Veredicto({ correcta }: { correcta: boolean }) {
   return correcta ? (
@@ -102,7 +107,7 @@ export function PreguntaConSolucion({
                 key={opcion.id}
                 className={[
                   "flex flex-wrap items-center gap-3 rounded-fila border-[1.5px] px-4 py-3 text-menor text-marca-cafe",
-                  marca === "correcta" ? "border-marca-bosque" : marca === "incorrecta" ? "border-estado-riesgosa" : "border-marca-cafe/40",
+                  marca === "correcta" ? BORDE_CORRECTA : marca === "incorrecta" ? BORDE_INCORRECTA : "border-marca-cafe/40",
                 ].join(" ")}
               >
                 <span
@@ -128,7 +133,7 @@ export function PreguntaConSolucion({
               <span className="rounded-fila bg-superficie-hundida px-4 py-3 font-titulo text-menor font-bold text-marca-cafe">{union.izquierda}</span>
               <span className="flex flex-col gap-1">
                 <span
-                  className={`flex items-center justify-between gap-3 rounded-fila border-[1.5px] px-4 py-3 text-menor text-marca-cafe ${union.correcta ? "border-marca-bosque" : "border-estado-riesgosa"}`}
+                  className={`flex items-center justify-between gap-3 rounded-fila border-[1.5px] px-4 py-3 text-menor text-marca-cafe ${union.correcta ? BORDE_CORRECTA : BORDE_INCORRECTA}`}
                 >
                   {union.derechaElegida ?? "Sin respuesta"}
                   <Veredicto correcta={union.correcta} />
@@ -153,7 +158,7 @@ export function PreguntaConSolucion({
               {ETIQUETAS[pregunta.decision.etiqueta]}
             </Pastilla>
           </div>
-          <p className="flex items-start gap-3 rounded-fila border-[1.5px] border-marca-bosque px-4 py-3 text-menor font-semibold text-marca-cafe">
+          <p className={`flex items-start gap-3 rounded-fila border-[1.5px] ${BORDE_CORRECTA} px-4 py-3 text-menor font-semibold text-marca-cafe`}>
             <IconoCirculoPunto className="mt-0.5 size-[18px] shrink-0 text-marca-bosque" />
             {pregunta.decision.opcionElegida}
           </p>
@@ -213,7 +218,7 @@ export function PreguntaSinRespuestaCorrecta({
         {pregunta.enunciado}
       </h3>
       <div
-        className={`flex flex-col gap-1 rounded-fila border-[1.5px] px-4 py-3 text-menor text-marca-cafe ${pregunta.correcta ? "border-marca-bosque" : "border-estado-riesgosa"}`}
+        className={`flex flex-col gap-1 rounded-fila border-[1.5px] px-4 py-3 text-menor text-marca-cafe ${pregunta.correcta ? BORDE_CORRECTA : BORDE_INCORRECTA}`}
       >
         <span className="text-detalle text-texto-secundario">Tu respuesta:</span>
         {pregunta.respuestaElegida.length ? pregunta.respuestaElegida.map((texto) => <span key={texto}>{texto}</span>) : <span>Sin respuesta</span>}
