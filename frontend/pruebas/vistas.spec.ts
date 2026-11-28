@@ -80,7 +80,7 @@ test.describe("SCR-09 a SCR-16 y aviso de sesión", () => {
     await expect(page.getByRole("status")).toContainText("con estos filtros");
     await page.getByRole("link", { name: /Ver detalle|Examen/ }).first().click();
     await page.waitForURL(/\/mis-resultados\/[0-9a-f-]{36}$/);
-    await expect(page.getByText("no mostramos las respuestas correctas")).toBeVisible();
+    await expect(page.getByText(/sin las respuestas correctas/)).toBeVisible();
     await expect(page.getByText("respuesta correcta", { exact: false })).toHaveCount(0);
     await revisarAccesibilidad(page);
   });

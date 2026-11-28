@@ -61,7 +61,22 @@ function Nota({ texto, correcta }: { texto: string; correcta: boolean }) {
  * Pregunta ya calificada con su solución (actividad, caso o examen aprobado; DEC-11): lo que eligió el alumno, la
  * respuesta correcta, la retroalimentación y el fundamento. En un caso, la decisión con su etiqueta y su consecuencia.
  */
-export function PreguntaConSolucion({ pregunta, numero, total }: { pregunta: PreguntaCalificada; numero: number; total: number }) {
+/** «Puntaje: 1 de 1» del detalle de un intento (Figma 94:2704); cada pregunta vale 1 (los casos pueden dar 0.5). */
+function Puntaje({ valor }: { valor: number }) {
+  return <span className="text-detalle font-bold text-texto-secundario">Puntaje: {valor.toLocaleString("es-MX")} de 1</span>;
+}
+
+export function PreguntaConSolucion({
+  pregunta,
+  numero,
+  total,
+  conPuntaje = false,
+}: {
+  pregunta: PreguntaCalificada;
+  numero: number;
+  total: number;
+  conPuntaje?: boolean;
+}) {
   const id = `revision-${pregunta.id}`;
   return (
     <article aria-labelledby={id} className="flex flex-col gap-4 rounded-tarjeta bg-superficie-elevada p-6 shadow-relieve md:p-7">
@@ -69,7 +84,10 @@ export function PreguntaConSolucion({ pregunta, numero, total }: { pregunta: Pre
         <p className="text-detalle font-bold text-texto-secundario">
           Pregunta {numero} de {total} · {TIPOS[pregunta.tipo]}
         </p>
-        {pregunta.decision ? null : <Veredicto correcta={pregunta.correcta} />}
+        <span className="flex flex-wrap items-center gap-3">
+          {conPuntaje ? <Puntaje valor={pregunta.puntaje} /> : null}
+          {pregunta.decision ? null : <Veredicto correcta={pregunta.correcta} />}
+        </span>
       </div>
       <h3 id={id} className="font-titulo text-tarjeta font-extrabold text-marca-cafe">
         {pregunta.enunciado}
@@ -170,12 +188,14 @@ export function PreguntaSinRespuestaCorrecta({
   numero,
   total,
   hrefLeccion,
+  conPuntaje = false,
 }: {
   pregunta: PreguntaSinSolucion;
   numero: number;
   total: number;
   /** Ruta a la lección de repaso; el contrato solo trae su slug y título. */
   hrefLeccion: string | null;
+  conPuntaje?: boolean;
 }) {
   const id = `revision-${pregunta.id}`;
   return (
@@ -184,7 +204,10 @@ export function PreguntaSinRespuestaCorrecta({
         <p className="text-detalle font-bold text-texto-secundario">
           Pregunta {numero} de {total} · {TIPOS[pregunta.tipo]}
         </p>
-        <Veredicto correcta={pregunta.correcta} />
+        <span className="flex flex-wrap items-center gap-3">
+          {conPuntaje ? <Puntaje valor={pregunta.puntaje} /> : null}
+          <Veredicto correcta={pregunta.correcta} />
+        </span>
       </div>
       <h3 id={id} className="font-titulo text-tarjeta font-extrabold text-marca-cafe">
         {pregunta.enunciado}
