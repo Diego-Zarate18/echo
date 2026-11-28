@@ -143,16 +143,19 @@ test.describe("SCR-06 · Módulos (inicio) y buscador", () => {
     const enlace = (texto: string) => menu.getByRole("link", { name: texto });
     const indicador = (texto: string) => enlace(texto).locator("[data-indicador]");
     const transicion = (texto: string) => indicador(texto).evaluate((e) => getComputedStyle(e).transitionProperty);
-    const ancho = async (texto: string) => (await indicador(texto).boundingBox())!.width;
+    // Ancho de la píldora entre el de su contenedor (el enlace o la cápsula del ícono): 1 cuando está completa.
+    const proporcion = (texto: string) =>
+      indicador(texto).evaluate((e) => Math.round((e.getBoundingClientRect().width / e.parentElement!.getBoundingClientRect().width) * 100) / 100);
 
     await expect(indicador("Módulos")).toHaveCSS("opacity", "1");
     expect(await transicion("Mi progreso")).toContain("scale");
     // Sin preferencia, la píldora de un destino inactivo espera encogida.
-    expect(await ancho("Mi progreso")).toBeLessThan(await ancho("Módulos"));
+    expect(await proporcion("Mi progreso")).toBeLessThan(1);
+    expect(await proporcion("Módulos")).toBe(1);
 
     await page.emulateMedia({ reducedMotion: "reduce" });
     expect(await transicion("Mi progreso")).toBe("opacity");
-    await expect.poll(() => ancho("Mi progreso")).toBe(await ancho("Módulos"));
+    await expect.poll(() => proporcion("Mi progreso")).toBe(1);
 
     await enlace("Mi progreso").click();
     await page.waitForURL("**/mi-progreso");
