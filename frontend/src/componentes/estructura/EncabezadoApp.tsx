@@ -6,7 +6,7 @@ import { obtenerSesion } from "@/lib/sesion";
 import { MenuPrincipal } from "./MenuPrincipal";
 
 /** Iniciales para el avatar: la primera letra del nombre y la del primer apellido («Ana López» → «AL»). */
-function iniciales(nombre: string, apellidos: string | null) {
+export function iniciales(nombre: string, apellidos: string | null) {
   const primera = (texto: string | null | undefined) => Array.from(texto?.trim() ?? "")[0]?.toLocaleUpperCase("es-MX") ?? "";
   return `${primera(nombre)}${primera(apellidos)}` || "E";
 }

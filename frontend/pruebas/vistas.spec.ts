@@ -96,13 +96,13 @@ test.describe("SCR-09 a SCR-16 y aviso de sesión", () => {
     await entrar(page);
     await page.goto("/perfil");
     await revisarAccesibilidad(page);
-    await page.getByLabel("Nombre", { exact: true }).fill("Alma Rosa");
-    await page.getByRole("button", { name: "Guardar nombre" }).click();
+    await page.getByLabel("Nombre(s)", { exact: true }).fill("Alma Rosa");
+    await page.getByRole("button", { name: "Guardar cambios" }).click();
     await expect(page.getByText("Guardamos tu nombre.")).toBeVisible();
     await page.getByLabel(/encuesta de satisfacción/).check();
     await page.getByRole("button", { name: "Guardar preferencias" }).click();
     await expect(page.getByText("Guardamos tus preferencias.")).toBeVisible();
-    await page.getByRole("button", { name: "Eliminar mi cuenta" }).click();
+    await page.getByRole("button", { name: "Eliminar mi cuenta", exact: true }).click();
     const dialogo = page.getByRole("dialog", { name: "¿Eliminar tu cuenta?" });
     await expect(dialogo).toBeVisible();
     await dialogo.getByRole("button", { name: "Sí, eliminar mi cuenta" }).click();

@@ -205,7 +205,7 @@ test.describe("SCR-02, SCR-03 y SCR-19 · Crear cuenta, verificar correo y acept
     // El Perfil es la única pantalla con sesión permitida (INV-30): no se redirige a /aceptar.
     await page.goto("/perfil");
     await expect(page).toHaveURL(/\/perfil$/);
-    await expect(titulo(page)).toHaveText("Perfil");
+    await expect(titulo(page)).toHaveText("Mi perfil");
 
     await page.goto("/aceptar");
     await page.getByRole("button", { name: "Aceptar y continuar" }).click();

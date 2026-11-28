@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { iniciales } from "@/componentes/estructura/EncabezadoApp";
 import { ErrorDePantalla } from "@/componentes/estructura/ErrorDePantalla";
 import { apiServidor } from "@/lib/api/servidor";
 import { formatearFecha } from "@/lib/fechas";
@@ -14,6 +15,7 @@ import {
 
 const DOCUMENTOS = { avisoPrivacidad: "Aviso de privacidad", terminos: "Términos y condiciones" } as const;
 const METODOS = { correo: "Correo y contraseña", google: "Google", ambos: "Correo y contraseña, y Google" } as const;
+const METODOS_EN_FRASE = { correo: "correo y contraseña", google: "Google", ambos: "correo y contraseña, y con Google" } as const;
 
 export function PerfilCargando() {
   return (
@@ -25,13 +27,20 @@ export function PerfilCargando() {
   );
 }
 
-function Seccion({ id, titulo, children }: { id: string; titulo: string; children: ReactNode }) {
+/** Tarjeta del Perfil (Figma 94:2882): título y descripción a la izquierda, el formulario a la derecha. */
+function Seccion({ id, titulo, descripcion, children }: { id: string; titulo: string; descripcion?: ReactNode; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-6 rounded-tarjeta bg-superficie-elevada p-6 shadow-relieve md:p-8">
-      <h2 id={id} className="font-titulo text-tarjeta font-extrabold text-marca-cafe">
-        {titulo}
-      </h2>
-      {children}
+    <section
+      aria-labelledby={id}
+      className="grid gap-6 rounded-tarjeta bg-superficie-elevada p-6 shadow-relieve md:grid-cols-[minmax(0,1fr)_minmax(0,1.7fr)] md:gap-10 md:p-8"
+    >
+      <div className="flex flex-col gap-2">
+        <h2 id={id} className="font-titulo text-tarjeta font-extrabold text-marca-cafe">
+          {titulo}
+        </h2>
+        {descripcion ? <p className="text-detalle text-texto-secundario">{descripcion}</p> : null}
+      </div>
+      <div className="flex min-w-0 flex-col gap-6">{children}</div>
     </section>
   );
 }
@@ -52,36 +61,62 @@ export async function Perfil({ searchParams }: { searchParams: Promise<Record<st
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="font-titulo text-entrada font-extrabold text-marca-cafe">Perfil</h1>
-        <p className="text-cuerpo text-texto-secundario">Con Echo desde el {formatearFecha(perfil.registradoEn)}.</p>
+      <div className="flex items-center gap-4">
+        <span aria-hidden="true" className="flex size-16 shrink-0 items-center justify-center rounded-full bg-marca-bosque font-titulo text-tarjeta font-extrabold text-marca-crema">
+          {iniciales(perfil.nombre, perfil.apellidos)}
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <h1 className="font-titulo text-entrada font-extrabold text-marca-cafe">Mi perfil</h1>
+          <p className="text-menor break-all text-texto-secundario">
+            Entras con {METODOS_EN_FRASE[perfil.metodoAcceso]} · {perfil.correo}
+          </p>
+        </div>
       </div>
 
-      <Seccion id="titulo-datos" titulo="Tus datos">
+      <Seccion id="titulo-datos" titulo="Datos personales" descripcion="Así aparece tu nombre en Echo. Solo pedimos lo necesario para identificarte en el curso.">
         <EditarNombre nombre={perfil.nombre} apellidos={perfil.apellidos ?? ""} />
-        <dl className="grid gap-4 border-t border-marca-cafe/10 pt-6 text-menor text-marca-cafe sm:grid-cols-2">
-          <div>
-            <dt className="text-detalle text-texto-secundario">Correo</dt>
-            <dd className="font-bold break-all">{perfil.correo}</dd>
-          </div>
-          <div>
-            <dt className="text-detalle text-texto-secundario">Cómo entras</dt>
-            <dd className="font-bold">{METODOS[perfil.metodoAcceso]}</dd>
-          </div>
+        <dl className="flex flex-col text-menor text-marca-cafe">
+          {[
+            ["Correo", perfil.correo],
+            ["Método de acceso", METODOS[perfil.metodoAcceso]],
+            ["Fecha de registro", formatearFecha(perfil.registradoEn)],
+          ].map(([termino, valor]) => (
+            <div key={termino} className="grid gap-1 border-b border-marca-cafe/10 py-3 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-4">
+              <dt className="text-detalle font-bold text-texto-secundario">{termino}</dt>
+              <dd className="break-all">{valor}</dd>
+            </div>
+          ))}
         </dl>
       </Seccion>
 
-      <Seccion id="titulo-seguridad" titulo="Seguridad">
-        {perfil.metodoAcceso === "correo" ? (
+      {perfil.metodoAcceso === "correo" ? (
+        <Seccion id="titulo-correo" titulo="Cambiar correo" descripcion="Te enviaremos un enlace al correo nuevo para confirmarlo. Vence en 30 minutos y solo funciona una vez.">
           <CambiarCorreo />
-        ) : (
-          <p className="text-menor text-marca-cafe">Como entras con Google, tu correo se cambia en tu cuenta de Google.</p>
-        )}
-        {conContrasena ? <CambiarContrasena /> : <p className="text-menor text-marca-cafe">Entras con Google, así que no tienes contraseña en Echo.</p>}
+        </Seccion>
+      ) : null}
+
+      {conContrasena ? (
+        <Seccion id="titulo-contrasena" titulo="Cambiar contraseña" descripcion="Al cambiarla se cerrarán tus sesiones en otros dispositivos.">
+          <CambiarContrasena />
+        </Seccion>
+      ) : null}
+
+      {perfil.metodoAcceso !== "correo" ? (
+        <Seccion id="titulo-google" titulo="Correo y contraseña" descripcion="Tu cuenta usa Google para entrar.">
+          <p className="text-menor text-marca-cafe">
+            {conContrasena
+              ? "Tu correo lo administra Google, por eso no se puede cambiar aquí."
+              : "Tu correo lo administra Google, por eso no se puede cambiar aquí. Tampoco necesitas contraseña: entras con el botón «Continuar con Google»."}
+          </p>
+        </Seccion>
+      ) : null}
+
+      <Seccion id="titulo-sesiones" titulo="Sesiones" descripcion="Si usaste Echo en una computadora prestada o perdiste tu teléfono, cierra todas tus sesiones.">
         <CerrarTodasLasSesiones />
       </Seccion>
 
-      <Seccion id="titulo-privacidad" titulo="Privacidad">
+      {/* No está en el marco de Figma, pero SCR-16 lo pide (OP-39, aceptaciones y OP-41): el grafo manda (DEC-84). */}
+      <Seccion id="titulo-privacidad" titulo="Privacidad" descripcion="Puedes cambiarlas cuando quieras. Tu negativa no afecta el servicio.">
         <PreferenciasDePrivacidad preferencias={perfil.preferencias} />
         <div className="flex flex-col gap-3 border-t border-marca-cafe/10 pt-6">
           <h3 className="font-titulo text-cuerpo font-extrabold text-marca-cafe">Documentos que aceptaste</h3>
@@ -116,7 +151,7 @@ export async function Perfil({ searchParams }: { searchParams: Promise<Record<st
         </div>
       </Seccion>
 
-      <Seccion id="titulo-eliminar" titulo="Eliminar mi cuenta">
+      <Seccion id="titulo-eliminar" titulo="Eliminar cuenta" descripcion="Esta acción no se puede deshacer.">
         <EliminarCuenta conContrasena={conContrasena} reingresoGoogle={reingresoGoogle} />
       </Seccion>
     </div>

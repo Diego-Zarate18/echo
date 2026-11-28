@@ -17,7 +17,6 @@ import { RequisitosContrasena, requisitoQueFalta } from "./RequisitosContrasena"
 type Errores = Partial<Record<string, string>>;
 type Aviso = { tono: "error" | "correo"; titulo: string; texto: string; clave: number } | null;
 
-const claseSubtitulo = "font-titulo text-cuerpo font-extrabold text-marca-cafe";
 const claseBotonEnviar = "self-start aria-disabled:cursor-wait aria-disabled:bg-texto-secundario";
 
 /** Aviso de un formulario: recibe el foco al aparecer para que el lector de pantalla lo lea (como en Restablecer). */
@@ -91,11 +90,11 @@ export function EditarNombre({ nombre: nombreInicial, apellidos: apellidosInicia
     <Formulario etiqueta="Editar nombre" onSubmit={enviar}>
       <AvisoDeFormulario aviso={aviso} />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Campo id="perfil-nombre" name="nombre" etiqueta="Nombre" autoComplete="given-name" maxLength={100} value={nombre} error={errores.nombre} onChange={(e) => setNombre(e.target.value)} />
+        <Campo id="perfil-nombre" name="nombre" etiqueta="Nombre(s)" autoComplete="given-name" maxLength={100} value={nombre} error={errores.nombre} onChange={(e) => setNombre(e.target.value)} />
         <Campo
           id="perfil-apellidos"
           name="apellidos"
-          etiqueta="Apellidos"
+          etiqueta="Apellido(s)"
           ayuda="Al menos el primero"
           autoComplete="family-name"
           maxLength={100}
@@ -105,7 +104,7 @@ export function EditarNombre({ nombre: nombreInicial, apellidos: apellidosInicia
         />
       </div>
       <Boton variante="cafe" tamano="mediano" type="submit" aria-disabled={enviando || undefined} className={claseBotonEnviar}>
-        {enviando ? "Guardando…" : "Guardar nombre"}
+        {enviando ? "Guardando…" : "Guardar cambios"}
       </Boton>
     </Formulario>
   );
@@ -152,15 +151,13 @@ export function CambiarCorreo() {
 
   return (
     <Formulario etiqueta="Cambiar correo" onSubmit={enviar}>
-      <h3 className={claseSubtitulo}>Cambiar correo</h3>
-      <p className="-mt-2 text-detalle text-texto-secundario">Te mandaremos un enlace al correo nuevo. El cambio se hace cuando lo abras.</p>
       <AvisoDeFormulario aviso={aviso} />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="flex flex-col gap-4">
         <Campo id="correo-correoNuevo" name="correoNuevo" type="email" etiqueta="Correo nuevo" autoComplete="email" maxLength={254} value={correoNuevo} error={errores.correoNuevo} onChange={(e) => setCorreoNuevo(e.target.value)} />
-        <CampoContrasena id="correo-contrasena" name="contrasena" etiqueta="Tu contraseña" autoComplete="current-password" maxLength={200} value={contrasena} error={errores.contrasena} onChange={(e) => setContrasena(e.target.value)} />
+        <CampoContrasena id="correo-contrasena" name="contrasena" etiqueta="Contraseña actual" ayuda="La pedimos para confirmar que eres tú." autoComplete="current-password" maxLength={200} value={contrasena} error={errores.contrasena} onChange={(e) => setContrasena(e.target.value)} />
       </div>
       <Boton variante="cafe" tamano="mediano" type="submit" aria-disabled={enviando || undefined} className={claseBotonEnviar}>
-        {enviando ? "Enviando…" : "Cambiar correo"}
+        {enviando ? "Enviando…" : "Enviar enlace"}
       </Boton>
     </Formulario>
   );
@@ -207,9 +204,8 @@ export function CambiarContrasena() {
 
   return (
     <Formulario etiqueta="Cambiar contraseña" onSubmit={enviar}>
-      <h3 className={`${claseSubtitulo} border-t border-marca-cafe/10 pt-6`}>Cambiar contraseña</h3>
       <AvisoDeFormulario aviso={aviso} />
-      <div className="grid gap-4 sm:grid-cols-2 sm:items-start">
+      <div className="flex flex-col gap-4">
         <CampoContrasena id="contrasena-contrasenaActual" name="contrasenaActual" etiqueta="Contraseña actual" autoComplete="current-password" maxLength={200} value={actual} error={errores.contrasenaActual} onChange={(e) => setActual(e.target.value)} />
         <div className="flex flex-col gap-3">
           <CampoContrasena
@@ -253,12 +249,11 @@ export function CerrarTodasLasSesiones() {
   }
 
   return (
-    <div className="flex flex-col items-start gap-3 border-t border-marca-cafe/10 pt-6">
-      <h3 className={claseSubtitulo}>Sesiones</h3>
-      <p className="text-detalle text-texto-secundario">Cierra Echo en todos los dispositivos donde entraste, también en este.</p>
+    <div className="flex flex-col items-start gap-3">
+      <p className="text-menor text-marca-cafe">Se cerrará la sesión en todos los dispositivos, incluido este.</p>
       <AvisoDeFormulario aviso={aviso} />
       <Boton variante="contornoClaro" tamano="mediano" type="button" onClick={cerrar} aria-disabled={enviando || undefined}>
-        {enviando ? "Cerrando sesiones…" : "Cerrar todas mis sesiones"}
+        {enviando ? "Cerrando sesiones…" : "Cerrar sesión en todos lados"}
       </Boton>
     </div>
   );
@@ -286,7 +281,6 @@ export function PreferenciasDePrivacidad({ preferencias }: { preferencias: compo
 
   return (
     <Formulario etiqueta="Preferencias de privacidad" onSubmit={enviar}>
-      <p className="text-menor text-marca-cafe">Puedes cambiarlas cuando quieras. Tu negativa no afecta el servicio.</p>
       <AvisoDeFormulario aviso={aviso} />
       <fieldset className="flex flex-col gap-4">
         <legend className="sr-only">Usos opcionales de tus datos</legend>
@@ -359,7 +353,7 @@ export function EliminarCuenta({ conContrasena, reingresoGoogle }: { conContrase
   return (
     <div className="flex flex-col items-start gap-4">
       <p className="text-menor text-marca-cafe">
-        Borraremos tu nombre, tu correo y tus credenciales, y cerraremos tus sesiones. Tu historial se conserva sin forma de saber que era tuyo. No se puede deshacer.
+        Borraremos tu nombre, apellidos, correo y {conContrasena ? "contraseña" : "tu vínculo con Google"}. Tus resultados se conservan sin forma de saber que eran tuyos. Tu correo quedará libre para crear una cuenta nueva desde cero.
       </p>
       {!conContrasena ? <p className="text-detalle text-texto-secundario">Como entras con Google, te pediremos volver a entrar con Google para confirmar.</p> : null}
       {necesitaGoogle && !pedirReingreso ? (
@@ -367,7 +361,7 @@ export function EliminarCuenta({ conContrasena, reingresoGoogle }: { conContrase
           Confirmar con Google
         </Boton>
       ) : (
-        <Boton variante="contornoClaro" tamano="mediano" type="button" onClick={() => dialogo.current?.showModal()}>
+        <Boton variante="contornoClaro" tamano="mediano" type="button" onClick={() => dialogo.current?.showModal()} className="border-estado-riesgosa! text-estado-riesgosa!">
           Eliminar mi cuenta
         </Boton>
       )}
@@ -383,7 +377,7 @@ export function EliminarCuenta({ conContrasena, reingresoGoogle }: { conContrase
             ¿Eliminar tu cuenta?
           </h2>
           <p id="eliminar-descripcion" className="text-menor">
-            Ya no podrás entrar a Echo con esta cuenta ni recuperar tu avance. Esto no se puede deshacer.
+            Borraremos tu nombre, apellidos, correo y {conContrasena ? "contraseña" : "tu vínculo con Google"}, y cerraremos tu sesión. Tus resultados se conservan sin forma de saber que eran tuyos. No se puede deshacer.
           </p>
           <AvisoDeFormulario aviso={aviso} />
           {pedirReingreso ? (
