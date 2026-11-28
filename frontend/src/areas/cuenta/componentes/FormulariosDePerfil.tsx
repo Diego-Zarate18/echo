@@ -95,7 +95,6 @@ export function EditarNombre({ nombre: nombreInicial, apellidos: apellidosInicia
           id="perfil-apellidos"
           name="apellidos"
           etiqueta="Apellido(s)"
-          ayuda="Al menos el primero"
           autoComplete="family-name"
           maxLength={100}
           value={apellidos}
