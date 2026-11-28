@@ -6,7 +6,7 @@ import { ResolverActividad } from "./ResolverActividad";
 
 export function ActividadCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-8">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-8">
       <div className="h-5 w-96 max-w-full rounded-full bg-superficie-hundida" />
       <div className="h-[200px] rounded-hero bg-marca-cafe/90" />
       <div className="h-[420px] rounded-tarjeta bg-superficie-hundida" />

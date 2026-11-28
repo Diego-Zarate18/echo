@@ -9,7 +9,7 @@ import { formatearFecha, formatearPorcentaje } from "@/lib/fechas";
 
 export function MiProgresoCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-8">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-8">
       <div className="h-[240px] rounded-hero bg-marca-cafe/90" />
       <div className="h-[400px] rounded-tarjeta bg-superficie-hundida" />
     </div>

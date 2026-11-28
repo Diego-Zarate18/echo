@@ -10,7 +10,7 @@ import { TarjetaCurso } from "./TarjetaCurso";
 /** Esqueleto de SCR-07 mientras llegan los datos: mismas medidas que la vista final. */
 export function ModuloCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-8">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-8">
       <div className="h-5 w-72 rounded-full bg-superficie-hundida" />
       <div className="h-[274px] rounded-hero bg-marca-cafe/90" />
       <div className="flex flex-col gap-4">

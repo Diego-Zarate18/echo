@@ -25,7 +25,7 @@ const aDiaMesAnio = (iso: string) => (iso ? iso.split("-").reverse().join("/") :
 
 export function MisResultadosCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-6">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-6">
       <div className="h-12 w-72 rounded-fila bg-superficie-hundida" />
       <div className="h-[120px] rounded-tarjeta bg-superficie-hundida" />
       <div className="h-[360px] rounded-tarjeta bg-superficie-hundida" />

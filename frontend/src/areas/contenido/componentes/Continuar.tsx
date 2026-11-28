@@ -3,7 +3,7 @@ import { localizarLeccion, type ResumenModulo } from "../datos/modulos";
 
 /** Esqueleto del botón mientras se busca la lección: guarda el sitio para que la portada no salte. */
 export function ContinuarCargando() {
-  return <div aria-hidden="true" className="h-14 w-full max-w-[420px] rounded-full bg-marca-crema/10" />;
+  return <div aria-hidden="true" className="esqueleto h-14 w-full max-w-[420px] rounded-full bg-marca-crema/10" />;
 }
 
 /**

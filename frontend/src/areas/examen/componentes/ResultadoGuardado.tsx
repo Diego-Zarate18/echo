@@ -5,6 +5,21 @@ import { apiServidor } from "@/lib/api/servidor";
 import { cargarPortada, cargarUbicacion, idDeCuestionario } from "../datos";
 import { ResultadoDeExamen } from "./ResultadoDeExamen";
 
+/** Mientras carga el resultado: migas, el recuadro café de la calificación y las tarjetas de las preguntas. */
+export function ResultadoExamenCargando() {
+  return (
+    <div aria-hidden="true" className="esqueleto flex flex-col">
+      <div className="h-5 w-96 max-w-full rounded-full bg-superficie-hundida" />
+      <div className="mt-[33px] h-[260px] rounded-hero bg-marca-cafe/90" />
+      <div className="mt-8 flex flex-col gap-4">
+        <div className="h-[220px] rounded-tarjeta bg-superficie-hundida" />
+        <div className="h-[220px] rounded-tarjeta bg-superficie-hundida" />
+        <div className="h-[220px] rounded-tarjeta bg-superficie-hundida" />
+      </div>
+    </div>
+  );
+}
+
 /**
  * SCR-13 al volver a un intento (recargar o llegar por enlace). El detalle del intento (OP-30) trae la calificación y
  * las preguntas; la portada (OP-24), la calificación mínima y la espera. La insignia nueva solo se muestra al enviar.

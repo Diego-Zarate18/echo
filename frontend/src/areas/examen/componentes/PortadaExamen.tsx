@@ -21,7 +21,7 @@ import { cargarPortada, cargarUbicacion, idDeCuestionario } from "../datos";
 
 export function PortadaExamenCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-8">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-8">
       <div className="h-5 w-96 max-w-full rounded-full bg-superficie-hundida" />
       <div className="h-[260px] rounded-hero bg-marca-cafe/90" />
       <div className="h-[380px] rounded-tarjeta bg-superficie-hundida" />
@@ -128,7 +128,7 @@ export async function PortadaExamen({ params }: { params: Promise<{ cuestionario
                 <li key={intento.id}>
                   <Link
                     href={`/mis-resultados/${intento.id}`}
-                    className="flex items-center justify-between gap-4 rounded-fila bg-superficie-hundida px-4 py-3 hover:bg-superficie-hundida/70"
+                    className="flex items-center justify-between gap-4 rounded-fila bg-superficie-hundida px-4 py-3 transition-[background-color] duration-150 ease-(--ease-respuesta) hover:bg-superficie-hundida/70"
                   >
                     <span className="flex flex-col">
                       <span className="font-titulo text-menor font-bold text-marca-cafe">Intento {intento.numero}</span>

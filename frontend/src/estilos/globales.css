@@ -421,6 +421,26 @@
   }
 }
 
+/*
+ * Esqueletos de carga (los `*Cargando` dentro de `<Suspense>`). Si la pantalla llega en menos de 150 ms no se ven (sin
+ * destello); si tarda, aparecen con un fundido y laten lento: opacidad 1 ↔ 0.6 en ciclos de 1.6 s (< 1 Hz, lejos de los
+ * 3 destellos por segundo de 2.3.1). Es un indicador de carga, que 2.2.2 permite repetir mientras dura. No se llama
+ * `animate-*` a propósito: la regla reducida de abajo no lo toca y, con movimiento reducido, queda estático.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .esqueleto {
+    animation:
+      desvanecer 200ms var(--ease-respuesta) 150ms both,
+      latido 1600ms ease-in-out 350ms infinite;
+  }
+}
+
+@keyframes latido {
+  50% {
+    opacity: 0.6;
+  }
+}
+
 /* Movimiento reducido: la secuencia del hero se vuelve un fundido corto, sin desplazamientos. */
 @media (prefers-reduced-motion: reduce) {
   [class*="animate-"] {

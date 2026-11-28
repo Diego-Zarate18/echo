@@ -19,7 +19,7 @@ const METODOS_EN_FRASE = { correo: "correo y contraseña", google: "Google", amb
 
 export function PerfilCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-6">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-6">
       <div className="h-12 w-48 rounded-fila bg-superficie-hundida" />
       <div className="h-[280px] rounded-tarjeta bg-superficie-hundida" />
       <div className="h-[280px] rounded-tarjeta bg-superficie-hundida" />

@@ -11,7 +11,7 @@ import { TarjetaLeccion } from "./TarjetaLeccion";
 /** Esqueleto de SCR-08 mientras llegan los datos: mismas medidas que la vista final. */
 export function CursoCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-8">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-8">
       <div className="h-5 w-96 max-w-full rounded-full bg-superficie-hundida" />
       <div className="h-[240px] rounded-hero bg-marca-cafe/90" />
       <div className="flex flex-col gap-4">

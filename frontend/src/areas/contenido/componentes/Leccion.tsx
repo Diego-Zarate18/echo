@@ -17,7 +17,7 @@ type Consulta = { [llave: string]: string | string[] | undefined };
 
 export function LeccionCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-8">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-8">
       <div className="h-5 w-96 max-w-full rounded-full bg-superficie-hundida" />
       <div className="h-[150px] rounded-hero bg-marca-cafe/90" />
       <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -220,7 +220,7 @@ export async function Leccion({
                   ) : (
                     <Link
                       href={`/actividades/${evaluable.id}`}
-                      className="flex items-center gap-3 rounded-fila bg-superficie-elevada px-5 py-3.5 font-titulo font-bold text-marca-cafe shadow-relieve hover:bg-superficie-hundida"
+                      className="flex items-center gap-3 rounded-fila bg-superficie-elevada px-5 py-3.5 font-titulo font-bold text-marca-cafe shadow-relieve transition-[background-color] duration-150 ease-(--ease-respuesta) hover:bg-superficie-hundida"
                     >
                       <Icono className="size-[22px] shrink-0 text-marca-bosque" />
                       {texto}

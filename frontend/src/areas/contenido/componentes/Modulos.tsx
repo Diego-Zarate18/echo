@@ -19,7 +19,7 @@ function leerBusqueda(parametros: Consulta): string {
 /** Esqueleto de SCR-06 mientras llegan la sesión y los módulos: mismas medidas que la vista final. */
 export function ModulosCargando() {
   return (
-    <div aria-hidden="true" className="flex flex-col gap-10">
+    <div aria-hidden="true" className="esqueleto flex flex-col gap-10">
       <div className="h-[433px] rounded-hero bg-marca-cafe/90" />
       <div className="flex flex-col gap-5">
         <div className="h-[178px] rounded-tarjeta bg-superficie-hundida" />
