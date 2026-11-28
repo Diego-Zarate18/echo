@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ErrorDePantalla } from "@/componentes/estructura/ErrorDePantalla";
 import { Boton } from "@/componentes/ui/Boton";
-import { IconoChevronDerecha } from "@/componentes/ui/iconos/iconos";
+import { IconoCirculoCheck } from "@/componentes/ui/iconos/iconos";
 import { apiServidor } from "@/lib/api/servidor";
 import type { components } from "@/lib/api/esquema";
 import { formatearFecha, formatearHora, formatearPorcentaje } from "@/lib/fechas";
@@ -12,6 +12,16 @@ type Tipo = ResultadoIntento["tipo"];
 const TIPOS: Record<Tipo, string> = { actividad: "Actividad", caso: "Caso práctico", examen: "Examen" };
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** El filtro se escribe como DD/MM/AAAA (o llega AAAA-MM-DD en un enlace) y se manda como AAAA-MM-DD, solo si el día existe. */
+function diaDeFiltro(valor: string): string {
+  const dma = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(valor.trim());
+  const iso = dma ? `${dma[3]}-${dma[2].padStart(2, "0")}-${dma[1].padStart(2, "0")}` : valor.trim();
+  if (!FECHA.test(iso)) return "";
+  const dia = new Date(`${iso}T00:00:00Z`);
+  return !Number.isNaN(dia.getTime()) && dia.toISOString().startsWith(iso) ? iso : "";
+}
+const aDiaMesAnio = (iso: string) => (iso ? iso.split("-").reverse().join("/") : "");
 
 export function MisResultadosCargando() {
   return (
@@ -24,16 +34,28 @@ export function MisResultadosCargando() {
 }
 
 /** En un caso la calificación dice qué tan buena fue la decisión (100 óptima, >0 aceptable, 0 riesgosa). */
-function calificacionEnTexto({ tipo, calificacion }: ResultadoIntento) {
-  if (tipo !== "caso") return formatearPorcentaje(calificacion);
-  return calificacion === 100 ? "Decisión óptima" : calificacion > 0 ? "Decisión aceptable" : "Decisión riesgosa";
+function Calificacion({ resultado: { tipo, calificacion } }: { resultado: ResultadoIntento }) {
+  if (tipo !== "caso") return <span className="font-titulo font-extrabold">{formatearPorcentaje(calificacion)}</span>;
+  const [texto, color] =
+    calificacion === 100
+      ? ["Decisión óptima", "border-marca-bosque text-marca-bosque"]
+      : calificacion > 0
+        ? ["Decisión aceptable", "border-marca-cafe text-marca-cafe"]
+        : ["Decisión riesgosa", "border-estado-riesgosa text-estado-riesgosa"];
+  return <span className={`inline-flex min-h-8 items-center rounded-full border-[1.5px] px-3 font-titulo text-detalle font-bold whitespace-nowrap ${color}`}>{texto}</span>;
 }
 
-function Destacado({ resultado }: { resultado: ResultadoIntento }) {
-  if (!resultado.destacado) return null;
+/** «Intento N» y, debajo, si es el que cuenta: el mejor en actividades y exámenes, el primero en casos (C-08). */
+function Intento({ resultado }: { resultado: ResultadoIntento }) {
   return (
-    <span className="inline-flex h-7 items-center rounded-full bg-marca-bosque px-3 font-titulo text-nota font-bold whitespace-nowrap text-marca-crema">
-      {resultado.tipo === "caso" ? "Cuenta el primero" : "Mejor intento"}
+    <span className="flex flex-col gap-0.5">
+      <span>Intento {resultado.numero}</span>
+      {resultado.destacado ? (
+        <span className="inline-flex items-center gap-1 text-detalle font-bold text-marca-bosque">
+          <IconoCirculoCheck className="size-4" />
+          {resultado.tipo === "caso" ? "Cuenta el primero" : "Mejor intento"}
+        </span>
+      ) : null}
     </span>
   );
 }
@@ -50,8 +72,8 @@ export async function MisResultados({ searchParams }: { searchParams: Promise<Re
   const leer = (llave: string) => (typeof crudos[llave] === "string" ? (crudos[llave] as string) : "");
   const modulo = SLUG.test(leer("modulo")) ? leer("modulo") : "";
   const tipo = leer("tipo") in TIPOS ? (leer("tipo") as Tipo) : "";
-  const desde = FECHA.test(leer("desde")) ? leer("desde") : "";
-  const hasta = FECHA.test(leer("hasta")) ? leer("hasta") : "";
+  const desde = diaDeFiltro(leer("desde"));
+  const hasta = diaDeFiltro(leer("hasta"));
   const hayFiltros = Boolean(modulo || tipo || desde || hasta);
 
   const [resultado, modulos] = await Promise.all([
@@ -81,12 +103,15 @@ export async function MisResultados({ searchParams }: { searchParams: Promise<Re
   return (
     <>
       <h1 className="font-titulo text-entrada font-extrabold text-marca-cafe">Mis resultados</h1>
+      <p className="mt-3 max-w-[800px] text-cuerpo text-marca-cafe">
+        Todo lo que has enviado: actividades, casos prácticos y exámenes. Se marca tu mejor intento; en los casos cuenta el primero.
+      </p>
 
       <form method="get" action="/mis-resultados" aria-label="Filtrar resultados" className="mt-8 grid gap-4 rounded-tarjeta bg-superficie-elevada p-5 shadow-relieve sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] lg:items-end md:p-6">
         <label className="flex flex-col gap-2 text-detalle font-bold text-marca-cafe">
           Módulo
           <select name="modulo" defaultValue={modulo} className={claseSelector}>
-            <option value="">Todos</option>
+            <option value="">Todos los módulos</option>
             {opcionesModulo.map((m) => (
               <option key={m.slug} value={m.slug}>{m.titulo}</option>
             ))}
@@ -95,19 +120,20 @@ export async function MisResultados({ searchParams }: { searchParams: Promise<Re
         <label className="flex flex-col gap-2 text-detalle font-bold text-marca-cafe">
           Tipo
           <select name="tipo" defaultValue={tipo} className={claseSelector}>
-            <option value="">Todos</option>
+            <option value="">Todos los tipos</option>
             {(Object.keys(TIPOS) as Tipo[]).map((t) => (
               <option key={t} value={t}>{TIPOS[t]}</option>
             ))}
           </select>
         </label>
         <label className="flex flex-col gap-2 text-detalle font-bold text-marca-cafe">
-          Desde
-          <input type="date" name="desde" defaultValue={desde} max={hasta || undefined} className={claseSelector} />
+          Desde<span className="sr-only"> (día, mes y año)</span>
+          {/* Texto y no type="date": el selector nativo sigue el idioma del navegador (mm/dd/yyyy en inglés). */}
+          <input type="text" inputMode="numeric" name="desde" placeholder="DD/MM/AAAA" autoComplete="off" maxLength={10} defaultValue={aDiaMesAnio(desde)} className={claseSelector} />
         </label>
         <label className="flex flex-col gap-2 text-detalle font-bold text-marca-cafe">
-          Hasta
-          <input type="date" name="hasta" defaultValue={hasta} min={desde || undefined} className={claseSelector} />
+          Hasta<span className="sr-only"> (día, mes y año)</span>
+          <input type="text" inputMode="numeric" name="hasta" placeholder="DD/MM/AAAA" autoComplete="off" maxLength={10} defaultValue={aDiaMesAnio(hasta)} className={claseSelector} />
         </label>
         <div className="flex flex-wrap gap-3 sm:col-span-2 lg:col-span-1">
           <button type="submit" className="inline-flex h-12 items-center rounded-full bg-marca-cafe px-6 font-titulo text-menor font-bold text-marca-crema focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-marca-bosque">
@@ -123,7 +149,7 @@ export async function MisResultados({ searchParams }: { searchParams: Promise<Re
 
       <p role="status" className="mt-6 text-detalle text-texto-secundario">
         {resultados.length === 1 ? "1 resultado" : `${resultados.length} resultados`}
-        {hayFiltros ? " con estos filtros" : ""}
+        {hayFiltros ? " con estos filtros" : ""} · más recientes primero
       </p>
 
       {resultados.length === 0 ? (
@@ -140,37 +166,34 @@ export async function MisResultados({ searchParams }: { searchParams: Promise<Re
             <caption className="sr-only">Tus intentos enviados, del más reciente al más antiguo</caption>
             <thead className="bg-superficie-hundida text-detalle text-texto-secundario">
               <tr>
-                <th scope="col" className="px-5 py-3 font-bold">Fecha</th>
-                <th scope="col" className="px-5 py-3 font-bold">Cuestionario</th>
-                <th scope="col" className="px-5 py-3 font-bold">Tipo</th>
-                <th scope="col" className="px-5 py-3 font-bold">Intento</th>
-                <th scope="col" className="px-5 py-3 font-bold">Calificación</th>
-                <th scope="col" className="px-5 py-3"><span className="sr-only">Detalle</span></th>
+                {["Fecha", "Módulo", "Curso", "Tipo", "Título", "Calificación", "Intento"].map((columna) => (
+                  <th key={columna} scope="col" className="px-4 py-3 font-bold">
+                    {columna}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {resultados.map((r) => (
-                <tr key={r.intentoId} className="border-t border-marca-cafe/10 text-menor text-marca-cafe">
-                  <td className="px-5 py-4 whitespace-nowrap">
-                    {formatearFecha(r.enviadoEn)} <span className="text-texto-secundario">{formatearHora(r.enviadoEn)}</span>
+                <tr key={r.intentoId} className="border-t border-marca-cafe/10 text-detalle text-marca-cafe">
+                  <td className="px-4 py-4">
+                    {formatearFecha(r.enviadoEn)} · {formatearHora(r.enviadoEn)}
                   </td>
-                  <td className="px-5 py-4">
-                    <span className="block font-bold">{r.titulo}</span>
-                    <span className="block text-detalle text-texto-secundario">{r.modulo.titulo} · {r.curso.titulo}</span>
-                  </td>
-                  <td className="px-5 py-4">{TIPOS[r.tipo]}</td>
-                  <td className="px-5 py-4">{r.numero}</td>
-                  <td className="px-5 py-4">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-titulo font-extrabold">{calificacionEnTexto(r)}</span>
-                      <Destacado resultado={r} />
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <Link href={`/mis-resultados/${r.intentoId}`} className="inline-flex min-h-11 items-center gap-1 font-titulo text-detalle font-bold whitespace-nowrap underline underline-offset-4">
-                      Ver detalle<span className="sr-only"> de {r.titulo}, intento {r.numero}</span>
-                      <IconoChevronDerecha className="size-4" />
+                  <td className="px-4 py-4">{r.modulo.titulo}</td>
+                  <td className="px-4 py-4">{r.curso.titulo}</td>
+                  <td className="px-4 py-4">{TIPOS[r.tipo]}</td>
+                  <td className="px-4 py-4">
+                    {/* El título lleva al detalle (Figma 93:2714): sin columna aparte de «Ver detalle». */}
+                    <Link href={`/mis-resultados/${r.intentoId}`} className="inline-flex min-h-11 items-center font-titulo font-bold underline underline-offset-4">
+                      {r.titulo}
+                      <span className="sr-only">, intento {r.numero}</span>
                     </Link>
+                  </td>
+                  <td className="px-4 py-4">
+                    <Calificacion resultado={r} />
+                  </td>
+                  <td className="px-4 py-4">
+                    <Intento resultado={r} />
                   </td>
                 </tr>
               ))}
@@ -182,19 +205,20 @@ export async function MisResultados({ searchParams }: { searchParams: Promise<Re
               <li key={r.intentoId}>
                 <Link href={`/mis-resultados/${r.intentoId}`} className="flex flex-col gap-2 rounded-tarjeta bg-superficie-elevada p-5 text-marca-cafe shadow-relieve">
                   <span className="flex flex-wrap items-center justify-between gap-2 text-detalle text-texto-secundario">
-                    <span>{TIPOS[r.tipo]} · Intento {r.numero}</span>
-                    <span>{formatearFecha(r.enviadoEn)} {formatearHora(r.enviadoEn)}</span>
+                    <span>{TIPOS[r.tipo]}</span>
+                    <span>{formatearFecha(r.enviadoEn)} · {formatearHora(r.enviadoEn)}</span>
                   </span>
                   <span className="font-titulo text-cuerpo font-extrabold">{r.titulo}</span>
                   <span className="text-detalle text-texto-secundario">{r.modulo.titulo} · {r.curso.titulo}</span>
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-titulo font-extrabold">{calificacionEnTexto(r)}</span>
-                    <Destacado resultado={r} />
+                  <span className="flex flex-wrap items-center justify-between gap-2">
+                    <Calificacion resultado={r} />
+                    <Intento resultado={r} />
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
+          <p className="mt-6 text-detalle text-texto-secundario">Abre el título de un intento para ver cada pregunta, tu respuesta y su retroalimentación.</p>
         </>
       )}
     </>
