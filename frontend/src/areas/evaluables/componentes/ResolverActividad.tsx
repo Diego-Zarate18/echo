@@ -6,7 +6,7 @@ import { PreguntaConSolucion } from "@/componentes/cuestionario/Retroalimentacio
 import { Moris } from "@/componentes/marca/Moris";
 import { Alerta } from "@/componentes/ui/Alerta";
 import { Boton } from "@/componentes/ui/Boton";
-import { IconoAlerta, IconoCirculoCheck, IconoCirculoPunto } from "@/componentes/ui/iconos/iconos";
+import { IconoAlerta, IconoArchivo, IconoCirculoCheck, IconoCirculoPunto, IconoRuta, IconoSinReloj } from "@/componentes/ui/iconos/iconos";
 import type { components } from "@/lib/api/esquema";
 import type { ErrorApi } from "@/lib/api/errores";
 import { mensajeDeError } from "@/lib/api/mensajes";
@@ -111,7 +111,25 @@ export function ResolverActividad({ actividad, ubicacion, rutaLeccion, rutaCurso
           </h1>
           <p className="max-w-[640px] text-cuerpo text-marca-crema/85">{encabezado.texto}</p>
         </div>
-        <Moris expresion={expresion} alt="" sizes="120px" className="w-[120px] shrink-0 max-md:hidden" />
+        {resultado ? (
+          <Moris expresion={expresion} alt="" sizes="120px" className="w-[120px] shrink-0 max-md:hidden" />
+        ) : (
+          // Reglas (Figma 89:1441). La tercera no promete autoguardado: OP-23 guarda todo al enviar.
+          <ul aria-label="Cómo funciona" className="flex shrink-0 flex-col gap-3 rounded-tarjeta border border-marca-crema/20 bg-marca-crema/6 p-5 text-menor text-marca-crema max-md:hidden">
+            <li className="flex items-center gap-2">
+              <IconoSinReloj className="size-5 text-marca-menta" />
+              Sin cronómetro
+            </li>
+            <li className="flex items-center gap-2">
+              <IconoRuta className="size-5 text-marca-menta" />
+              Intentos ilimitados
+            </li>
+            <li className="flex items-center gap-2">
+              <IconoArchivo className="size-5 text-marca-menta" />
+              Tus respuestas se guardan al enviar
+            </li>
+          </ul>
+        )}
       </section>
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
