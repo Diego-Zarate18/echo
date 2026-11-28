@@ -12,13 +12,17 @@ BEGIN
 END
 $semilla$;
 
--- imagen: ids 1 a 5
+-- imagen: ids 1 a 8. Las de las secciones son fotografías originales generadas con IA
+-- (frontend/public/imagenes/contenido/); Moris solo es sello de las insignias (ids 4 y 5).
 INSERT INTO imagen (ruta, texto_alternativo, pie) VALUES
-  ('/marca/moris-curioso.png', 'Moris, la semilla de Echo, con cara de curiosidad.', 'Moris pregunta antes de decidir.'),
-  ('/marca/moris-sorprendido.png', 'Moris sorprendido, con los ojos muy abiertos.', NULL),
-  ('/marca/moris-feliz.png', 'Moris sonriendo.', NULL),
+  ('/imagenes/contenido/codigo-de-etica.webp', 'Cuaderno abierto con notas junto a una laptop, sobre un escritorio de madera.', NULL),
+  ('/imagenes/contenido/principios-acm.webp', 'Balanza de latón sobre un escritorio, junto a una laptop cerrada.', NULL),
+  ('/imagenes/contenido/dato-personal.webp', 'Tarjeta de identificación junto a un candado pequeño sobre una mesa de madera.', NULL),
   ('/marca/moris-principal.png', 'Sello del módulo «Ética profesional en TI»: Moris de frente.', NULL),
-  ('/marca/moris-triste.png', 'Sello del módulo «Propiedad intelectual»: Moris pensativo.', NULL);
+  ('/marca/moris-triste.png', 'Sello del módulo «Propiedad intelectual»: Moris pensativo.', NULL),
+  ('/imagenes/contenido/cancelacion-datos.webp', 'Mano tachando una línea en un cuaderno abierto, con una planta al fondo.', NULL),
+  ('/imagenes/contenido/autoria-del-codigo.webp', 'Libro abierto y pluma fuente sobre una mesa de madera junto a una laptop.', NULL),
+  ('/imagenes/contenido/licencia-de-software.webp', 'Documento firmado con un sello de cera y una llave pequeña sobre una mesa.', NULL);
 
 -- fundamento: ids 1 a 4
 INSERT INTO fundamento (tipo, nombre, articulo, descripcion, referencia) VALUES
@@ -92,7 +96,7 @@ Un **dato personal** es cualquier información sobre una persona identificada o 
 
 - Nombre y apellidos.
 - Correo electrónico.
-- Calificaciones.', 1),
+- Calificaciones.', 3),
   (3, 2, 'Quién responde por ellos', 'Quien decide para qué se usan los datos es el **responsable**. Debe informar en un **aviso de privacidad** qué datos recaba y para qué.', NULL),
   (4, 1, 'Acceso y rectificación', '*Contenido de ejemplo.*
 
@@ -102,18 +106,18 @@ Puedes **acceder** a tus datos y **rectificarlos** si están mal.', NULL),
 ### Recuerda
 
 - La solicitud se hace por escrito.
-- El responsable debe responder en un plazo.', 3),
+- El responsable debe responder en un plazo.', 6),
   (4, 3, 'Cómo se ejerce', 'Se escribe al contacto que indica el aviso de privacidad, con lo que pides y cómo te identificas.', NULL),
   (5, 1, 'El código tiene autor', '*Contenido de ejemplo.*
 
-Un programa de cómputo es una **obra**: tiene autor y está protegido desde que se crea.', 2),
+Un programa de cómputo es una **obra**: tiene autor y está protegido desde que se crea.', 7),
   (5, 2, 'Copiar no es lo mismo que aprender', 'Leer código ajeno para aprender está bien. **Copiarlo** sin permiso en tu proyecto, no.
 
 - Revisa la licencia.
 - Da crédito.', NULL),
   (6, 1, 'Qué es una licencia', '*Contenido de ejemplo.*
 
-Una **licencia** dice qué puedes hacer con un código: usarlo, modificarlo o compartirlo.', 3),
+Una **licencia** dice qué puedes hacer con un código: usarlo, modificarlo o compartirlo.', 8),
   (6, 2, 'Licencias libres', 'Algunas licencias piden que **compartas** tus cambios con la misma licencia; otras solo piden **dar crédito**.', NULL);
 
 -- cuestionario: ids 1 a 10

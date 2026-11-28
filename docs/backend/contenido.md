@@ -83,7 +83,7 @@ publicado: true
 
 ## Para qué sirve
 
-![Moris con cara de curiosidad.](/marca/moris-curioso.png "Moris pregunta antes de decidir.")
+![Cuaderno abierto con notas junto a una laptop, sobre un escritorio de madera.](/imagenes/contenido/codigo-de-etica.webp)
 
 Un **código de ética** reúne las normas que orientan cómo actúa una profesión.
 
@@ -98,6 +98,9 @@ Un **código de ética** reúne las normas que orientan cómo actúa una profesi
 
 - La imagen lleva su texto alternativo entre corchetes (obligatorio, DEC-71) y, opcionalmente, un pie entre comillas.
   La ruta es la de la carpeta pública del frontend y empieza con `/`.
+- Las imágenes de las secciones van en `frontend/public/imagenes/contenido/` (`/imagenes/contenido/<nombre>.webp`):
+  fotografías o ilustraciones del tema, WebP o PNG de 1200 × 620 px y ≤ 200 KB, originales o con licencia CC0 /
+  dominio público. Moris es solo de la marca (interfaz y sellos de las insignias, en `/marca/`): no es imagen de contenido.
 - Una misma ruta es la misma imagen en todo Echo: cambiar su texto alternativo lo cambia en todas partes.
 - `publicado_en` (opcional) fija la fecha de publicación; si no se pone, es la fecha en que se publica por primera vez.
   Una lección publicada después de que un alumno aprobó su curso le aparece como «nueva» (DEC-10).

@@ -8,12 +8,17 @@ import { readFileSync } from "node:fs";
 const EJEMPLO = "Contenido de ejemplo.";
 const PUBLICADO = "2026-10-01T15:00:00.000Z";
 
+// Imágenes de las secciones: fotografías originales generadas con IA, en frontend/public/imagenes/contenido/.
+// Moris solo es mascota de la interfaz y sello de las insignias (ids 4 y 5).
 export const imagenes = [
-  { id: 1, ruta: "/marca/moris-curioso.png", textoAlternativo: "Moris, la semilla de Echo, con cara de curiosidad.", pie: "Moris pregunta antes de decidir." },
-  { id: 2, ruta: "/marca/moris-sorprendido.png", textoAlternativo: "Moris sorprendido, con los ojos muy abiertos.", pie: null },
-  { id: 3, ruta: "/marca/moris-feliz.png", textoAlternativo: "Moris sonriendo.", pie: null },
+  { id: 1, ruta: "/imagenes/contenido/codigo-de-etica.webp", textoAlternativo: "Cuaderno abierto con notas junto a una laptop, sobre un escritorio de madera.", pie: null },
+  { id: 2, ruta: "/imagenes/contenido/principios-acm.webp", textoAlternativo: "Balanza de latón sobre un escritorio, junto a una laptop cerrada.", pie: null },
+  { id: 3, ruta: "/imagenes/contenido/dato-personal.webp", textoAlternativo: "Tarjeta de identificación junto a un candado pequeño sobre una mesa de madera.", pie: null },
   { id: 4, ruta: "/marca/moris-principal.png", textoAlternativo: "Sello del módulo «Ética profesional en TI»: Moris de frente.", pie: null },
   { id: 5, ruta: "/marca/moris-triste.png", textoAlternativo: "Sello del módulo «Propiedad intelectual»: Moris pensativo.", pie: null },
+  { id: 6, ruta: "/imagenes/contenido/cancelacion-datos.webp", textoAlternativo: "Mano tachando una línea en un cuaderno abierto, con una planta al fondo.", pie: null },
+  { id: 7, ruta: "/imagenes/contenido/autoria-del-codigo.webp", textoAlternativo: "Libro abierto y pluma fuente sobre una mesa de madera junto a una laptop.", pie: null },
+  { id: 8, ruta: "/imagenes/contenido/licencia-de-software.webp", textoAlternativo: "Documento firmado con un sello de cera y una llave pequeña sobre una mesa.", pie: null },
 ];
 
 export const fundamentos = [
@@ -55,14 +60,14 @@ export const secciones = [
   { id: 3, leccionId: 1, orden: 3, titulo: "Cómo se usa para decidir", imagenId: null, cuerpo: `Ante un dilema, el código te ayuda a hacerte tres preguntas:\n\n- ¿A quién afecta mi decisión?\n- ¿Qué riesgo corre esa persona?\n- ¿Qué principio lo respalda?` },
   { id: 4, leccionId: 2, orden: 1, titulo: "Principios generales", imagenId: 2, cuerpo: `*${EJEMPLO}*\n\nEl código de ACM empieza con principios generales, como **evitar el daño** y **respetar la privacidad**.\n\n### Algunos principios\n\n- Contribuir al bienestar de las personas.\n- Ser honesto y digno de confianza.\n- Respetar la privacidad.` },
   { id: 5, leccionId: 2, orden: 2, titulo: "Responsabilidades profesionales", imagenId: null, cuerpo: `Además de los principios, el código pide **evaluar los riesgos** de un sistema y **reconocer el trabajo** de otras personas.` },
-  { id: 6, leccionId: 3, orden: 1, titulo: "Qué es un dato personal", imagenId: 1, cuerpo: `*${EJEMPLO}*\n\nUn **dato personal** es cualquier información sobre una persona identificada o identificable: su nombre, su correo o su historial.\n\n### Ejemplos\n\n- Nombre y apellidos.\n- Correo electrónico.\n- Calificaciones.` },
+  { id: 6, leccionId: 3, orden: 1, titulo: "Qué es un dato personal", imagenId: 3, cuerpo: `*${EJEMPLO}*\n\nUn **dato personal** es cualquier información sobre una persona identificada o identificable: su nombre, su correo o su historial.\n\n### Ejemplos\n\n- Nombre y apellidos.\n- Correo electrónico.\n- Calificaciones.` },
   { id: 7, leccionId: 3, orden: 2, titulo: "Quién responde por ellos", imagenId: null, cuerpo: `Quien decide para qué se usan los datos es el **responsable**. Debe informar en un **aviso de privacidad** qué datos recaba y para qué.` },
   { id: 8, leccionId: 4, orden: 1, titulo: "Acceso y rectificación", imagenId: null, cuerpo: `*${EJEMPLO}*\n\nPuedes **acceder** a tus datos y **rectificarlos** si están mal.` },
-  { id: 9, leccionId: 4, orden: 2, titulo: "Cancelación y oposición", imagenId: 3, cuerpo: `Puedes pedir que **cancelen** tus datos o **oponerte** a un uso.\n\n### Recuerda\n\n- La solicitud se hace por escrito.\n- El responsable debe responder en un plazo.` },
+  { id: 9, leccionId: 4, orden: 2, titulo: "Cancelación y oposición", imagenId: 6, cuerpo: `Puedes pedir que **cancelen** tus datos o **oponerte** a un uso.\n\n### Recuerda\n\n- La solicitud se hace por escrito.\n- El responsable debe responder en un plazo.` },
   { id: 10, leccionId: 4, orden: 3, titulo: "Cómo se ejerce", imagenId: null, cuerpo: `Se escribe al contacto que indica el aviso de privacidad, con lo que pides y cómo te identificas.` },
-  { id: 11, leccionId: 5, orden: 1, titulo: "El código tiene autor", imagenId: 2, cuerpo: `*${EJEMPLO}*\n\nUn programa de cómputo es una **obra**: tiene autor y está protegido desde que se crea.` },
+  { id: 11, leccionId: 5, orden: 1, titulo: "El código tiene autor", imagenId: 7, cuerpo: `*${EJEMPLO}*\n\nUn programa de cómputo es una **obra**: tiene autor y está protegido desde que se crea.` },
   { id: 12, leccionId: 5, orden: 2, titulo: "Copiar no es lo mismo que aprender", imagenId: null, cuerpo: `Leer código ajeno para aprender está bien. **Copiarlo** sin permiso en tu proyecto, no.\n\n- Revisa la licencia.\n- Da crédito.` },
-  { id: 13, leccionId: 6, orden: 1, titulo: "Qué es una licencia", imagenId: 3, cuerpo: `*${EJEMPLO}*\n\nUna **licencia** dice qué puedes hacer con un código: usarlo, modificarlo o compartirlo.` },
+  { id: 13, leccionId: 6, orden: 1, titulo: "Qué es una licencia", imagenId: 8, cuerpo: `*${EJEMPLO}*\n\nUna **licencia** dice qué puedes hacer con un código: usarlo, modificarlo o compartirlo.` },
   { id: 14, leccionId: 6, orden: 2, titulo: "Licencias libres", imagenId: null, cuerpo: `Algunas licencias piden que **compartas** tus cambios con la misma licencia; otras solo piden **dar crédito**.` },
 ];
 

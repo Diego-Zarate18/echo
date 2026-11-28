@@ -157,8 +157,8 @@ export async function Leccion({
               <Image
                 src={seccion.imagen.ruta}
                 alt={seccion.imagen.textoAlternativo}
-                width={940}
-                height={520}
+                width={1200}
+                height={620}
                 sizes="(min-width: 1024px) 860px, 100vw"
                 className="h-auto max-h-[480px] w-full rounded-globo bg-superficie-hundida object-contain"
               />
